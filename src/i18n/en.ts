@@ -611,7 +611,7 @@ export const en: Dictionary = {
       body: 'Every stage takes inputs and produces one artifact, and nothing advances because time passed — it advances because a gate was cleared. Open it when you are ready to plan; you do not need it to take step one.',
       expandLabel: 'See the five stages and their gates',
       liveLead:
-        'Stage 02 is live. It is also the one that decides everything after it — the first hands-on build is designed for a scenario off this list, so an empty list means there is nothing to design against.',
+        'Stage 02 decides everything after it: the first hands-on build is designed for a scenario off your list, so the list is where to begin.',
       liveCta: 'Collect your scenarios',
     },
 
@@ -636,7 +636,7 @@ export const en: Dictionary = {
     savedNote: 'Saved in this browser only. Nothing is sent anywhere.',
 
     upcomingLabel: 'Coming next',
-    upcomingNote: 'Steps one and two are live, and so is stage 02. The rest of the stage instruments land in the next rounds.',
+    upcomingNote: 'Instruments for the remaining stages. Each one carries an artifact the method already asks for.',
     upcoming: [
       { name: 'Sponsor Charter', stage: 'discover' },
       { name: 'Use Case Canvas & scoring', stage: 'prioritize' },
@@ -666,24 +666,24 @@ export const en: Dictionary = {
     navLabel: 'Lab path',
     eyebrow: 'Stage 04 · Build & learn',
     title: 'The Lab Path Your Scenarios Ask For',
-    lede: 'The point was never to build your expense bot for you. It is to work out, from the scenarios you brought, which tools your people need to be able to reach for — and then teach exactly those. Every module below is here because something on your list needs it.',
+    lede: 'The accelerator works out, from the scenarios you brought, which tools your people need to be able to reach for — then teaches exactly those. Every module below is here because something on your list needs it.',
     composedTitle: 'Composed for your list',
     composedNote: '{modules} modules · about {hours}',
     fromLabel: 'Needed by',
     prereqNote: 'Added as a prerequisite',
     emptyTitle: 'Collect some scenarios first',
     emptyBody:
-      'With nothing collected there is nothing to compose from, so the whole shelf is shown below. It is worth a read either way — but the composed path is the useful output.',
+      'The full shelf is below. Collect a few scenarios and it becomes a path built for them — only the modules they call for, in the order they have to be taken.',
     emptyCta: 'Go to stage 02',
     shelfTitle: 'The whole shelf',
     shelfNote:
-      'One module per capability, written once and reused. A path is a selection from these in dependency order, never a bespoke course.',
+      'One module per capability. A path is a selection from these, in dependency order.',
     teachesLabel: 'Teaches',
     buildLabel: 'You leave with',
     afterLabel: 'After',
     minutesLabel: 'min',
     notYetNote:
-      'The module content itself is being written. What is settled is the shape: which modules your scenarios call for, and the order they have to be taken in.',
+      'Take this order into the room — it is the sequence to run them in. Each module’s step-by-step walkthrough opens from here as it is published.',
     backLabel: 'Back to the three steps',
   },
 
@@ -713,7 +713,7 @@ export const en: Dictionary = {
     removeLabel: 'Remove',
     examplesLabel: 'Examples, by department',
     examplesNote:
-      'These are here to make yours easier to name, not to be chosen from. If one is close, take it and edit the wording to match what actually happens at your place.',
+      'Use these to jog your own. If one is close, take it and edit the wording to match what actually happens at your place.',
     allDepts: 'All',
     addedLabel: 'Added',
     takeLabel: 'We have this too',
@@ -722,7 +722,7 @@ export const en: Dictionary = {
     tierLabel: 'Usually',
     nextTitle: 'What happens to this list',
     nextBody:
-      'The tags are the point. Take the union of them across everything above and you have the set of tools your people need to be able to reach for — which is what the lab path is composed from. Stage 03 then scores the list and cuts it to a Top 3; that instrument is not built yet, so until it is, rank it by hand in the room.',
+      'The tags are what matter. Take the union of them across everything above and you have the set of tools your people need to be able to reach for — which is what the lab path is composed from. Stage 03 then scores the list and cuts it to a Top 3; rank it with the room before you build.',
     nextCta: 'See the lab path this asks for',
     backLabel: 'Back to the three steps',
     departments: {
@@ -742,7 +742,7 @@ export const en: Dictionary = {
     tierNote: 'Scoped to your tier. Higher tiers add items; nothing here is busywork for where you are.',
     noTierTitle: 'Answer the twelve questions first',
     noTierBody:
-      'This list is scoped by tier and pre-flagged from your answers. Without them it would be a generic checklist, which is the thing it exists not to be.',
+      'This list is scoped to your tier and pre-flagged from your answers, so it needs them first.',
     noTierCta: 'Go to step 1',
     flaggedLabel: 'Your answers point here',
     gatesLabel: 'Gates',
@@ -780,10 +780,10 @@ export const en: Dictionary = {
     navLabel: 'Background reading',
     eyebrow: 'Before you start',
     title: 'What You Need To Know First',
-    lede: 'You cannot answer the twelve questions honestly about a tool you have not met. This is the short reading list — grouped by when in the programme it becomes useful, not by topic.',
+    lede: 'You cannot answer the twelve questions honestly about a tool you have not met. This is the short reading list, grouped by when in the programme it becomes useful.',
     hubLabel: 'Knowledge Hub',
     hubNote:
-      'These articles live in the Knowledge Hub and open in a new tab. They are maintained there, once, so this programme and every other one that needs them are reading the same page.',
+      'These articles live in the Knowledge Hub, where they are kept current. They open in a new tab.',
     hubCta: 'Browse the whole hub',
     openLabel: 'Read',
     backLabel: 'Back to the three steps',
@@ -849,7 +849,7 @@ export const en: Dictionary = {
     tier1: {
       trainingLabel: 'Product training',
       trainingNote:
-        'Tracks follow the four capabilities the platform is organised around. The curriculum is being written; the tracks below are the shape it will take.',
+        'Tracks follow the four capabilities the platform is organised around.',
       inspirationLabel: 'Inspiration',
       inspirationNote:
         'The scenarios at this tier exist to answer "what would I even build first?" — each is a task most organisations already repeat by hand.',
@@ -857,7 +857,7 @@ export const en: Dictionary = {
     tier2: {
       referenceLabel: 'Reference assets',
       referenceNote:
-        'Three worked solutions, each shown as the state you are leaving, the thing you build, and what changes. They sit here rather than in the story because they are reference material for people about to build, not an argument for people deciding whether to.',
+        'Three worked solutions, each shown as the state you are leaving, the thing you build, and what changes. Reference material for people about to build something like them.',
     },
     tier3: {
       partnerLabel: 'Working with a partner',
