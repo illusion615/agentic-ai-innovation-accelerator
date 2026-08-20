@@ -20,8 +20,21 @@ export function otherLang(lang: Lang): Lang {
   return lang === 'en' ? 'zh' : 'en';
 }
 
-/** Prefix an app-relative path with the current locale. */
+/**
+ * The path the site is served from. On GitHub Pages this is a project subpath,
+ * not the origin root, so nothing may hard-code a leading `/`.
+ * Astro normalises `base` to always end in a slash; trimmed here so callers can
+ * concatenate a rooted path without doubling it.
+ */
+const BASE = import.meta.env.BASE_URL.replace(/\/$/, '');
+
+/** Prefix an app-absolute path with the deployment base. */
+export function withBase(path = '/'): string {
+  return `${BASE}${path.startsWith('/') ? path : `/${path}`}`;
+}
+
+/** Prefix an app-relative path with the current locale, under the base. */
 export function localePath(lang: Lang, path = '/'): string {
   const clean = path.startsWith('/') ? path : `/${path}`;
-  return `/${lang}${clean === '/' ? '/' : clean}`;
+  return withBase(`/${lang}${clean === '/' ? '/' : clean}`);
 }

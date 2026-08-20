@@ -1,5 +1,5 @@
 ---
-import { LANG_HTML, otherLang, type Lang } from '../i18n/config';
+import { LANG_HTML, localePath, otherLang, withBase, type Lang } from '../i18n/config';
 import { useTranslations } from '../i18n/content';
 import TopBar from '../components/TopBar.astro';
 import ProgressAxis from '../components/ProgressAxis.astro';
@@ -33,20 +33,20 @@ const alt = otherLang(lang);
     <title>{title ? `${title} · ${t.meta.title}` : t.meta.title}</title>
     <meta name="description" content={t.meta.description} />
     <meta name="theme-color" content="#16294A" />
-    <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
-    <link rel="alternate" hreflang={LANG_HTML[alt]} href={`/${alt}${path === '/' ? '/' : path}`} />
+    <link rel="icon" href={withBase('/favicon.svg')} type="image/svg+xml" />
+    <link rel="alternate" hreflang={LANG_HTML[alt]} href={localePath(alt, path)} />
     <link
       rel="preload"
       as="font"
       type="font/woff2"
-      href="/fonts/eb-garamond-400-600-latin.woff2"
+      href={withBase('/fonts/eb-garamond-400-600-latin.woff2')}
       crossorigin
     />
     <link
       rel="preload"
       as="font"
       type="font/woff2"
-      href="/fonts/inter-300-700-latin.woff2"
+      href={withBase('/fonts/inter-300-700-latin.woff2')}
       crossorigin
     />
     <script is:inline>

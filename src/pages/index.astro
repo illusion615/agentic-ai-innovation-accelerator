@@ -1,9 +1,10 @@
 ---
 // Root entry: pick a language, then hand off to the localized route.
 // Static-friendly (meta refresh + JS hint) so it also works on GitHub Pages.
-import { DEFAULT_LANG } from '../i18n/config';
+import { DEFAULT_LANG, localePath } from '../i18n/config';
 
-const target = `/${DEFAULT_LANG}/`;
+const target = localePath(DEFAULT_LANG);
+const zhTarget = localePath('zh');
 ---
 
 <!doctype html>
@@ -14,9 +15,9 @@ const target = `/${DEFAULT_LANG}/`;
     <title>Agentic AI Innovation Accelerator</title>
     <meta http-equiv="refresh" content={`0; url=${target}`} />
     <link rel="canonical" href={target} />
-    <script is:inline define:vars={{ target }}>
+    <script is:inline define:vars={{ target, zhTarget }}>
       const prefersZh = (navigator.language || '').toLowerCase().startsWith('zh');
-      window.location.replace(prefersZh ? '/zh/' : target);
+      window.location.replace(prefersZh ? zhTarget : target);
     </script>
   </head>
   <body>
