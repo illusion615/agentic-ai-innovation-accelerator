@@ -1,0 +1,37 @@
+---
+// Fixed full-viewport canvas that hosts the transmutation particle field.
+---
+
+<canvas id="transmutation" aria-hidden="true"></canvas>
+
+<script>
+  import { initTransmutation } from '../scripts/transmutation';
+
+  const canvas = document.getElementById('transmutation');
+  if (canvas instanceof HTMLCanvasElement) {
+    initTransmutation(canvas);
+  }
+</script>
+
+<style>
+  #transmutation {
+    position: fixed;
+    inset: 0;
+    /* Above section backgrounds — including the navy bands and the ghosted
+       illustrations — but below every readable element (see the layering block
+       in global.css). The field drifts across the artwork, never across type. */
+    z-index: 3;
+    width: 100%;
+    height: 100%;
+    pointer-events: none;
+    /* Scroll-driven: 2.4px out of focus in the chaotic phase, resolving toward
+       0.55px. Set from the scroll handler, not per frame. */
+    filter: blur(var(--field-blur, 2.4px));
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    #transmutation {
+      filter: blur(0.6px);
+    }
+  }
+</style>

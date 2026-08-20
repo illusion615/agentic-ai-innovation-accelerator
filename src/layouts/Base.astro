@@ -1,0 +1,210 @@
+---
+import { LANG_HTML, otherLang, type Lang } from '../i18n/config';
+import { useTranslations } from '../i18n/content';
+import TopBar from '../components/TopBar.astro';
+import ProgressAxis from '../components/ProgressAxis.astro';
+import Transmutation from '../components/Transmutation.astro';
+import '../styles/global.css';
+
+interface Props {
+  lang: Lang;
+  /** App-relative path, for the language toggle and the alternate link. */
+  path?: string;
+  /**
+   * The scroll axis labels chaos → certainty across the eleven-section
+   * argument. On the console it would be measuring the wrong thing, so it is
+   * opt-out. The particle field stays either way: the console sits at the
+   * resolved end of that axis, and the reader walked there.
+   */
+  axis?: boolean;
+  title?: string;
+}
+
+const { lang, path = '/', axis = true, title } = Astro.props;
+const t = useTranslations(lang);
+const alt = otherLang(lang);
+---
+
+<!doctype html>
+<html lang={LANG_HTML[lang]}>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>{title ? `${title} · ${t.meta.title}` : t.meta.title}</title>
+    <meta name="description" content={t.meta.description} />
+    <meta name="theme-color" content="#16294A" />
+    <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+    <link rel="alternate" hreflang={LANG_HTML[alt]} href={`/${alt}${path === '/' ? '/' : path}`} />
+    <link
+      rel="preload"
+      as="font"
+      type="font/woff2"
+      href="/fonts/eb-garamond-400-600-latin.woff2"
+      crossorigin
+    />
+    <link
+      rel="preload"
+      as="font"
+      type="font/woff2"
+      href="/fonts/inter-300-700-latin.woff2"
+      crossorigin
+    />
+    <script is:inline>
+      // Runs before the first paint. `/en/` and `/zh/` are separate documents,
+      // so a language toggle is a real navigation: without this the browser
+      // paints the new edition at the top and only then does the restore in
+      // src/scripts/lang-handoff.ts move it, which reads as the page flinching.
+      // Holding the content back for the one frame the restore needs costs
+      // nothing and removes the flinch entirely. The timeout is a failsafe: if
+      // the module never runs, the page must not stay hidden.
+      try {
+        var pending = sessionStorage.getItem('aiia:lang-handoff');
+        if (pending && Date.now() - JSON.parse(pending).t < 12000) {
+          document.documentElement.setAttribute('data-lang-restore', '');
+          setTimeout(function () {
+            document.documentElement.removeAttribute('data-lang-restore');
+          }, 900);
+        }
+      } catch (e) {
+        /* private mode, or a malformed record — just render normally */
+      }
+    </script>
+  </head>
+  <body>
+    <a href="#main" class="skip-link">{t.nav.skipToContent}</a>
+    <Transmutation />
+    <TopBar lang={lang} path={path} />
+    {axis && <ProgressAxis lang={lang} />}
+    <main id="main">
+      <slot />
+    </main>
+
+    <script>
+      import { initLangHandoff } from '../scripts/lang-handoff';
+
+      // Must run before the reveal observer below, so that content the reader
+      // was already looking at is marked arrived rather than animated in.
+      initLangHandoff();
+    </script>
+
+    <noscript>
+      <style>
+        [data-reveal] {
+          opacity: 1 !important;
+          transform: none !important;
+        }
+        [data-scene] .plate {
+          opacity: 1 !important;
+        }
+      </style>
+    </noscript>
+
+    <script>
+      // Progressive reveal. Purely additive — content is readable without it,
+      // and prefers-reduced-motion neutralises the transform in CSS.
+      const targets = document.querySelectorAll<HTMLElement>('[data-reveal]');
+      if (!('IntersectionObserver' in window)) {
+        targets.forEach((el) => el.setAttribute('data-revealed', ''));
+      } else {
+        const observe = (bottomMargin: string) =>
+          new IntersectionObserver(
+            (entries, self) => {
+              for (const entry of entries) {
+                if (!entry.isIntersecting) continue;
+                entry.target.setAttribute('data-revealed', '');
+                // A plate's parchment ground exists to carry copy. Arriving
+                // before the copy does, it is just a bright slab on the
+                // painting, and that empty-slab moment was the most slide-like
+                // thing left on the page. Walk up and open every ground this
+                // line belongs to.
+                for (let n = entry.target.parentElement; n; n = n.parentElement) {
+                  if (n.matches('.plate')) n.setAttribute('data-copy-in', '');
+                  if (n.tagName === 'SECTION') break;
+                }
+                self.unobserve(entry.target);
+              }
+            },
+            { rootMargin: `0px 0px ${bottomMargin} 0px`, threshold: 0.06 }
+          );
+
+        const prompt = observe('-14%');
+        // Sections that carry a painting hold their copy back until the reader
+        // has had the picture on its own. The section already opens with an
+        // overture of empty space (see global.css); this deepens the trigger on
+        // top of it, so the type arrives a good third of a screen after the
+        // image has finished resolving rather than racing it.
+        const patient = observe('-34%');
+
+        // Both observers above hold content back until it crosses a reading line
+        // some way up the viewport. That is right in the middle of a page and
+        // wrong at the end of one: the last ~14% of the document can never
+        // reach the line, because there is no scroll left to give. The closing
+        // footnote sat at opacity 0 permanently. This one asks a simpler
+        // question — is it plainly on screen? — and is the final word for
+        // anything the reading lines cannot serve.
+        const safety = new IntersectionObserver(
+          (entries, self) => {
+            for (const entry of entries) {
+              if (!entry.isIntersecting) continue;
+              entry.target.setAttribute('data-revealed', '');
+              for (let n = entry.target.parentElement; n; n = n.parentElement) {
+                if (n.matches('.plate')) n.setAttribute('data-copy-in', '');
+                if (n.tagName === 'SECTION') break;
+              }
+              self.unobserve(entry.target);
+            }
+          },
+          { threshold: 0.9 }
+        );
+
+        targets.forEach((el) => {
+          const section = el.closest('section');
+          const scored = section?.querySelector('.section-art') && !el.closest('.section-art');
+          (scored ? patient : prompt).observe(el);
+          safety.observe(el);
+        });
+
+        // A ground holding no revealing content would otherwise wait forever
+        // for a signal that is never sent.
+        document.querySelectorAll<HTMLElement>('.plate').forEach((g) => {
+          if (!g.querySelector('[data-reveal]')) g.setAttribute('data-copy-in', '');
+        });
+      }
+    </script>
+
+    <script>
+      import { initScenes } from '../scripts/scene';
+
+      initScenes();
+    </script>
+
+    <style>
+      .skip-link {
+        position: fixed;
+        top: 0.75rem;
+        left: 0.75rem;
+        z-index: 100;
+        transform: translateY(-160%);
+        background: var(--color-ink);
+        color: var(--color-parchment);
+        padding: 0.7rem 1.2rem;
+        border-radius: 2px;
+        font-size: var(--text-small);
+        text-decoration: none;
+        transition: transform var(--duration-quick) var(--ease-out-expo);
+      }
+
+      .skip-link:focus-visible {
+        transform: none;
+      }
+
+      /* No z-index here on purpose: it would create a stacking context and
+         trap children (e.g. illustration figures at z-index 4) below the
+         fixed transmutation canvas at z-index 3. */
+      #main {
+        position: relative;
+      }
+
+    </style>
+  </body>
+</html>

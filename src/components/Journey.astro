@@ -1,0 +1,374 @@
+---
+import SectionArt from './SectionArt.astro';
+import journeyImage from '../assets/images/journey-hall.webp';
+import { type Lang } from '../i18n/config';
+import { useTranslations } from '../i18n/content';
+
+interface Props {
+  lang: Lang;
+}
+
+const { lang } = Astro.props;
+const t = useTranslations(lang);
+const j = t.journey;
+---
+
+<section id="journey" class="journey">
+  <!-- The panorama runs dark-left to lit-right and its five bays line up with
+       the five stages, so behind the grid it reads as the room the journey
+       actually happens in. -->
+  <SectionArt src={journeyImage} alt={j.imageAlt} focus="center 40%" />
+
+  <div class="shell">
+    <header class="journey__head lead">
+      <p class="eyebrow" data-reveal>{j.eyebrow}</p>
+      <h2 class="journey__title display" data-reveal style="--beat:1">
+        <span>{j.titleLead}</span>{' '}<span class="journey__title-accent">{j.titleAccent}</span>
+      </h2>
+      <p class="journey__lede" data-reveal style="--beat:2">{j.lede}</p>
+    </header>
+
+    <div class="journey__stageboard plate">
+      <div class="journey__controls" data-reveal>
+      <span class="journey__controls-label">{j.roleFilterLabel}</span>
+      <div class="journey__roles" role="group" aria-label={j.roleFilterLabel}>
+        <button type="button" class="role" data-role-btn="all" aria-pressed="true">
+          {j.roleAll}
+        </button>
+        {
+          j.roles.map((role) => (
+            <button type="button" class="role" data-role-btn={role.key} aria-pressed="false">
+              {role.label}
+            </button>
+          ))
+        }
+      </div>
+    </div>
+
+      <ol class="stages" data-stages data-active-role="all">
+      {
+        j.stages.map((stage, i) => (
+          <li class="stage" data-reveal style={`--beat:${i + 1}`}>
+            <div class="stage__node" aria-hidden="true">
+              <span class="stage__dot" />
+            </div>
+            <p class="stage__index">{stage.index}</p>
+            <h3 class="stage__name">{stage.name}</h3>
+            <p class="stage__artifact">
+              <span class="stage__artifact-label">{j.artifactLabel}</span>
+              <span class="stage__artifact-value">{stage.artifact}</span>
+            </p>
+            <ul class="lanes">
+              {j.roles.map((role) => (
+                <li class="lane" data-lane={role.key}>
+                  <span class="lane__role">{role.label}</span>
+                  <span class="lane__task">{stage.lanes[role.key]}</span>
+                </li>
+              ))}
+            </ul>
+          </li>
+        ))
+      }
+      </ol>
+    </div>
+
+    <div class="engine plate">
+      <p class="eyebrow" data-reveal>{j.engineEyebrow}</p>
+      <div class="engine__grid">
+        {
+          j.engine.map((pillar, i) => (
+            <article class="pillar" data-reveal style={`--beat:${i + 1}`}>
+              <h3 class="pillar__title">{pillar.title}</h3>
+              <p class="pillar__body">{pillar.body}</p>
+            </article>
+          ))
+        }
+      </div>
+    </div>
+  </div>
+</section>
+
+<script>
+  const stages = document.querySelector<HTMLElement>('[data-stages]');
+  const buttons = document.querySelectorAll<HTMLButtonElement>('[data-role-btn]');
+
+  buttons.forEach((btn) => {
+    btn.addEventListener('click', () => {
+      const role = btn.dataset.roleBtn ?? 'all';
+      if (stages) stages.dataset.activeRole = role;
+      buttons.forEach((b) => b.setAttribute('aria-pressed', String(b === btn)));
+    });
+  });
+</script>
+
+<style>
+  .journey {
+    position: relative;
+    padding-block: var(--spacing-section);
+  }
+
+  .journey__head {
+    max-inline-size: 68ch;
+  }
+
+  .journey__title {
+    margin: clamp(1rem, 0.6rem + 1.4vw, 2rem) 0 0;
+    font-size: var(--text-h2);
+    color: var(--color-ink);
+    text-wrap: balance;
+    max-inline-size: 18ch;
+  }
+
+  :global(html[lang='zh']) .journey__title {
+    text-wrap: normal;
+    max-inline-size: 18em;
+  }
+
+  .journey__title-accent {
+    color: var(--color-gold);
+  }
+
+  .journey__lede {
+    margin: clamp(1rem, 0.7rem + 1vw, 1.8rem) 0 0;
+    max-inline-size: 56ch;
+    font-size: var(--text-lede);
+    line-height: 1.4;
+    color: color-mix(in srgb, var(--color-ink) 88%, var(--color-muted));
+  }
+
+  /* --- Role filter --- */
+  /* One plate holds the role filter and the five lanes: they are read as a
+     single instrument, and splitting them would put a seam through the middle
+     of it. */
+  .journey__stageboard {
+    margin-block-start: clamp(1.5rem, 1rem + 2vw, 2.5rem);
+  }
+
+  .journey__controls {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.9rem 1.6rem;
+    margin-block-start: clamp(2rem, 1.2rem + 2.5vw, 3.5rem);
+  }
+
+  .journey__controls-label {
+    font-size: var(--text-eyebrow);
+    letter-spacing: 0.26em;
+    text-transform: uppercase;
+    color: var(--color-muted);
+  }
+
+  .journey__roles {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.6rem;
+  }
+
+  .role {
+    font: inherit;
+    font-size: var(--text-small);
+    letter-spacing: 0.08em;
+    padding: 0.5rem 1.1rem;
+    background: transparent;
+    color: color-mix(in srgb, var(--color-ink) 75%, var(--color-muted));
+    border: 1px solid color-mix(in srgb, var(--color-muted) 55%, transparent);
+    cursor: pointer;
+    transition:
+      background-color var(--duration-quick) ease,
+      border-color var(--duration-quick) ease,
+      color var(--duration-quick) ease;
+  }
+
+  .role:hover {
+    border-color: var(--color-gold);
+    color: var(--color-ink);
+  }
+
+  .role[aria-pressed='true'] {
+    background: var(--color-ink);
+    border-color: var(--color-ink);
+    color: var(--color-parchment);
+  }
+
+  /* --- Stage track --- */
+  .stages {
+    list-style: none;
+    margin: clamp(2rem, 1.2rem + 2.5vw, 3.5rem) 0 0;
+    padding: 0;
+    display: grid;
+    gap: clamp(1.5rem, 0.8rem + 2vw, 2.5rem);
+  }
+
+  .stage {
+    position: relative;
+    padding-block-start: clamp(1.2rem, 0.8rem + 1.2vw, 1.8rem);
+    border-block-start: 2px solid color-mix(in srgb, var(--color-gold) 55%, transparent);
+    min-inline-size: 0;
+  }
+
+  .stage__node {
+    position: absolute;
+    inset-block-start: 0;
+    inset-inline-start: 0;
+    transform: translateY(-50%);
+  }
+
+  .stage__dot {
+    display: block;
+    inline-size: 0.6rem;
+    block-size: 0.6rem;
+    background: var(--color-gold);
+    transform: rotate(45deg);
+  }
+
+  .stage__index {
+    margin: 0;
+    font-family: var(--font-display);
+    font-size: var(--text-h3);
+    line-height: 1;
+    color: color-mix(in srgb, var(--color-gold) 75%, var(--color-parchment));
+  }
+
+  .stage__name {
+    margin: 0.4rem 0 0;
+    font-family: var(--font-body);
+    font-size: var(--text-small);
+    font-weight: 600;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--color-ink);
+  }
+
+  .stage__artifact {
+    margin: 0.5rem 0 0;
+    display: flex;
+    flex-direction: column;
+    gap: 0.15rem;
+  }
+
+  .stage__artifact-label {
+    font-size: var(--text-eyebrow);
+    letter-spacing: 0.24em;
+    text-transform: uppercase;
+    color: var(--color-muted);
+  }
+
+  .stage__artifact-value {
+    font-family: var(--font-display);
+    font-size: var(--text-body);
+    color: var(--color-ember);
+  }
+
+  .lanes {
+    list-style: none;
+    margin: clamp(1rem, 0.7rem + 0.9vw, 1.5rem) 0 0;
+    padding: 0;
+    display: grid;
+    gap: 0.75rem;
+  }
+
+  .lane {
+    display: grid;
+    gap: 0.1rem;
+    padding-inline-start: 0.75rem;
+    border-inline-start: 2px solid color-mix(in srgb, var(--color-muted) 40%, transparent);
+    transition:
+      opacity var(--duration-base) var(--ease-in-out-soft),
+      border-color var(--duration-base) var(--ease-in-out-soft),
+      transform var(--duration-base) var(--ease-in-out-soft);
+  }
+
+  .lane__role {
+    font-size: var(--text-eyebrow);
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: var(--color-muted);
+  }
+
+  .lane__task {
+    font-size: var(--text-small);
+    line-height: 1.35;
+    color: color-mix(in srgb, var(--color-ink) 88%, transparent);
+  }
+
+  /* Role highlighting — "if you are Customer IT, this is your row." */
+  [data-active-role='microsoft'] .lane:not([data-lane='microsoft']),
+  [data-active-role='it'] .lane:not([data-lane='it']),
+  [data-active-role='business'] .lane:not([data-lane='business']) {
+    opacity: 0.22;
+  }
+
+  [data-active-role='microsoft'] .lane[data-lane='microsoft'],
+  [data-active-role='it'] .lane[data-lane='it'],
+  [data-active-role='business'] .lane[data-lane='business'] {
+    border-inline-start-color: var(--color-gold);
+    transform: translateX(0.2rem);
+  }
+
+  [data-active-role='microsoft'] .lane[data-lane='microsoft'] .lane__role,
+  [data-active-role='it'] .lane[data-lane='it'] .lane__role,
+  [data-active-role='business'] .lane[data-lane='business'] .lane__role {
+    color: var(--color-gold);
+  }
+
+  [data-active-role='microsoft'] .lane[data-lane='microsoft'] .lane__task,
+  [data-active-role='it'] .lane[data-lane='it'] .lane__task,
+  [data-active-role='business'] .lane[data-lane='business'] .lane__task {
+    color: var(--color-ink);
+    font-weight: 500;
+  }
+
+  /* --- Convergence engine --- */
+  .engine {
+    margin-block-start: clamp(3rem, 2rem + 4vw, 6rem);
+    padding-block-start: clamp(1.5rem, 1rem + 2vw, 2.5rem);
+    border-block-start: 1px solid color-mix(in srgb, var(--color-gold) 55%, transparent);
+  }
+
+  .engine__grid {
+    display: grid;
+    gap: clamp(1.75rem, 1rem + 2.5vw, 3.5rem);
+    margin-block-start: clamp(1.5rem, 1rem + 1.5vw, 2.5rem);
+  }
+
+  .pillar__title {
+    margin: 0;
+    font-family: var(--font-body);
+    font-size: var(--text-small);
+    font-weight: 600;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: var(--color-gold);
+  }
+
+  .pillar__body {
+    margin: 0.75rem 0 0;
+    font-size: var(--text-small);
+    line-height: 1.5;
+    color: color-mix(in srgb, var(--color-ink) 90%, transparent);
+    max-inline-size: 46ch;
+  }
+
+  @media (min-width: 40rem) {
+    .stages {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+    .engine__grid {
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+    }
+  }
+
+  @media (min-width: 72rem) {
+    .stages {
+      grid-template-columns: repeat(5, minmax(0, 1fr));
+      gap: clamp(1rem, 0.4rem + 1.4vw, 2rem);
+    }
+
+    /* Keep the three lanes on a shared baseline across all five stages, so the
+       row reads as a swimlane rather than five ragged columns. */
+    .lane__task {
+      min-block-size: 2.7em;
+    }
+  }
+</style>

@@ -1,0 +1,518 @@
+[
+  {
+    "id": "maturity-understanding",
+    "dimension": "maturity",
+    "order": 1,
+    "en": {
+      "prompt": "How would your team describe an \"AI agent\" today?",
+      "help": "There is no wrong answer. It tells us where to pitch the first conversation.",
+      "gapTitle": "Shared vocabulary",
+      "gap": "Start with a shared vocabulary. A short session on what an agent is — and how it differs from a chatbot — stops a room agreeing on a word while meaning different things by it."
+    },
+    "zh": {
+      "prompt": "如果现在问你的团队，「AI agent」是什么？",
+      "help": "没有标准答案。它决定我们第一次对话该从哪儿讲起。",
+      "gapTitle": "共同语言",
+      "gap": "先把话说到一处去。用一场短会讲清 agent 是什么、和聊天机器人差在哪——否则一屋子人会对着同一个词点头，心里想的却是不同的东西。"
+    },
+    "options": [
+      {
+        "value": "heard",
+        "score": 0,
+        "en": "We have heard the word but could not explain how it differs from a chatbot",
+        "zh": "听过这个词，但说不清它和聊天机器人有什么区别"
+      },
+      {
+        "value": "rough",
+        "score": 1,
+        "en": "Roughly — we could name one or two things it might do",
+        "zh": "大概知道，能说出一两个它可能有用的地方"
+      },
+      {
+        "value": "clear",
+        "score": 2,
+        "en": "Clearly — we know it can use tools and carry out multi-step work",
+        "zh": "比较清楚，知道它能调用工具、完成多步骤的活儿"
+      },
+      {
+        "value": "internalised",
+        "score": 3,
+        "en": "Clearly, and we have already argued internally about how to run one safely",
+        "zh": "很清楚，而且内部已经讨论过怎么让它安全地跑起来"
+      }
+    ]
+  },
+  {
+    "id": "maturity-usage",
+    "dimension": "maturity",
+    "order": 2,
+    "en": {
+      "prompt": "How much do your colleagues actually use AI tools in a normal week?",
+      "help": "Actual use, not what the policy allows.",
+      "gapTitle": "Everyday familiarity",
+      "gap": "Everyday familiarity comes first. People who have never used AI on their own work cannot judge which of their tasks an agent should take over."
+    },
+    "zh": {
+      "prompt": "平常一周里，同事们实际用 AI 工具用到什么程度？",
+      "help": "问的是实际在用，不是制度上允不允许。",
+      "gapTitle": "日常手感",
+      "gap": "先有日常的手感。一个从没在自己工作上用过 AI 的人，判断不出哪一段活儿该交给 agent。"
+    },
+    "options": [
+      {
+        "value": "none",
+        "score": 0,
+        "en": "Almost nobody uses them",
+        "zh": "基本没人用"
+      },
+      {
+        "value": "few",
+        "score": 1,
+        "en": "A few people, on their own initiative",
+        "zh": "少数人自己在用"
+      },
+      {
+        "value": "many",
+        "score": 2,
+        "en": "Quite a few use them daily, but everyone in their own way",
+        "zh": "不少人天天用，但各用各的"
+      },
+      {
+        "value": "shared",
+        "score": 3,
+        "en": "Widely used, with shared internal examples of what works",
+        "zh": "普遍在用，而且内部有推荐的用法和现成例子"
+      }
+    ]
+  },
+  {
+    "id": "maturity-embedded",
+    "dimension": "maturity",
+    "order": 3,
+    "en": {
+      "prompt": "Has anyone here put AI inside an actual work process — not just chatted with it?",
+      "help": "Inside a process means it runs as part of how the work gets done, with nobody copying and pasting in the middle.",
+      "gapTitle": "The first real build",
+      "gap": "There is a large step between using AI and building with it. Plan for the first build to be a learning exercise on a low-stakes process, not a flagship."
+    },
+    "zh": {
+      "prompt": "有没有人把 AI 嵌进过一个真实的工作流程里——不只是拿来聊天？",
+      "help": "「嵌进流程」是指它成了这活儿运转的一部分，中间不需要人来回复制粘贴。",
+      "gapTitle": "第一次真正动手",
+      "gap": "从「用 AI」到「用 AI 建东西」中间有一大步。第一次动手请挑一个低风险的流程当练习，不要挑门面工程。"
+    },
+    "options": [
+      {
+        "value": "no",
+        "score": 0,
+        "en": "No",
+        "zh": "没有"
+      },
+      {
+        "value": "demo",
+        "score": 1,
+        "en": "We built a demo, but it never went live",
+        "zh": "做过 demo，但没上线"
+      },
+      {
+        "value": "one",
+        "score": 2,
+        "en": "One or two are running",
+        "zh": "有一两个在跑"
+      },
+      {
+        "value": "several",
+        "score": 3,
+        "en": "Several are running, and we reuse what we learned",
+        "zh": "有好几个在跑，而且经验被复用起来了"
+      }
+    ]
+  },
+  {
+    "id": "maturity-trust",
+    "dimension": "maturity",
+    "order": 4,
+    "en": {
+      "prompt": "When AI gets something wrong, what happens in your organisation today?",
+      "help": "Every organisation lands somewhere on this. It decides how much of the first agent can run unattended.",
+      "gapTitle": "Rules for when it errs",
+      "gap": "Agree what an agent may decide alone and what a person must confirm — before the first one ships, not after it makes a mistake in front of a customer."
+    },
+    "zh": {
+      "prompt": "AI 答错了的时候，你们组织现在是怎么处理的？",
+      "help": "每家公司都在这条线上的某个位置。它决定第一个 agent 能有多少事自己做主。",
+      "gapTitle": "出错时的规矩",
+      "gap": "在第一个 agent 上线之前，就把「什么它能自己定、什么必须人来确认」说清楚——而不是等它当着客户的面出错之后。"
+    },
+    "options": [
+      {
+        "value": "undiscussed",
+        "score": 0,
+        "en": "We have not really discussed it",
+        "zh": "还没真正讨论过"
+      },
+      {
+        "value": "avoid",
+        "score": 1,
+        "en": "It worries people enough that AI stays out of anything official",
+        "zh": "大家有顾虑，所以正式场合基本不用"
+      },
+      {
+        "value": "informal",
+        "score": 2,
+        "en": "There is an informal rule — a person checks the output",
+        "zh": "有个不成文的规矩：结果要有人过一眼"
+      },
+      {
+        "value": "defined",
+        "score": 3,
+        "en": "It is written down: what AI may decide alone, what a person must confirm",
+        "zh": "写下来了：哪些 AI 能自己定，哪些必须人来确认"
+      }
+    ]
+  },
+  {
+    "id": "resources-m365",
+    "dimension": "resources",
+    "order": 1,
+    "en": {
+      "prompt": "Where are you with Microsoft 365 Copilot?",
+      "help": "The gentlest on-ramp — AI where people already work.",
+      "gapTitle": "Microsoft 365 Copilot",
+      "gap": "M365 Copilot puts AI where people already work, so the habit forms before anyone has to build anything. It is the easiest first step if you have not taken one."
+    },
+    "zh": {
+      "prompt": "Microsoft 365 Copilot 现在是什么状态？",
+      "help": "最平缓的入口——AI 出现在人们本来就在用的地方。",
+      "gapTitle": "Microsoft 365 Copilot",
+      "gap": "M365 Copilot 把 AI 放在人们本来就在用的地方，让习惯先长出来，然后才谈建什么。如果还没迈第一步，这是最省力的一步。"
+    },
+    "options": [
+      {
+        "value": "none",
+        "score": 0,
+        "en": "We do not have it",
+        "zh": "还没有"
+      },
+      {
+        "value": "evaluating",
+        "score": 1,
+        "en": "Evaluating, or running a small pilot",
+        "zh": "在评估，或者小范围试点"
+      },
+      {
+        "value": "partial",
+        "score": 2,
+        "en": "Some teams are licensed",
+        "zh": "部分团队已经有许可"
+      },
+      {
+        "value": "broad",
+        "score": 3,
+        "en": "Broadly deployed",
+        "zh": "已经铺得比较广"
+      }
+    ]
+  },
+  {
+    "id": "resources-studio",
+    "dimension": "resources",
+    "order": 2,
+    "en": {
+      "prompt": "And Copilot Studio — the tool this programme builds in?",
+      "help": "This is the one prerequisite with no substitute.",
+      "gapTitle": "Copilot Studio licences",
+      "gap": "Copilot Studio licences and an environment are the one prerequisite with no workaround, and arranging them is usually the longest lead time in the whole programme. Start it now."
+    },
+    "zh": {
+      "prompt": "那 Copilot Studio 呢？——这个项目就是在它上面建东西的",
+      "help": "这是唯一一个没有替代品的前置条件。",
+      "gapTitle": "Copilot Studio 许可与环境",
+      "gap": "Copilot Studio 的许可和环境，是唯一绕不过去的前置条件；而且它通常是整个项目里等待时间最长的一件事。现在就开始办。"
+    },
+    "options": [
+      {
+        "value": "unknown",
+        "score": 0,
+        "en": "We do not have it, or have not heard of it",
+        "zh": "没有，或者没听说过"
+      },
+      {
+        "value": "aware",
+        "score": 1,
+        "en": "We know of it, but it is not switched on",
+        "zh": "知道，但还没开通"
+      },
+      {
+        "value": "tried",
+        "score": 2,
+        "en": "Switched on, and a few people have tried it",
+        "zh": "已开通，少数人试过"
+      },
+      {
+        "value": "built",
+        "score": 3,
+        "en": "Switched on, and someone here has already built something with it",
+        "zh": "已开通，而且已经有人用它做出过东西"
+      }
+    ]
+  },
+  {
+    "id": "resources-lowcode",
+    "dimension": "resources",
+    "order": 3,
+    "en": {
+      "prompt": "Have you used low-code tools like Power Apps or Power Automate?",
+      "help": "The skills carry over almost completely.",
+      "gapTitle": "Low-code grounding",
+      "gap": "Anyone who has built a Power Automate flow already has most of the skill this needs. If nobody has, budget more time for the first build than it appears to need."
+    },
+    "zh": {
+      "prompt": "Power Apps、Power Automate 这类低代码工具，你们用过吗？",
+      "help": "这里的技能几乎可以整套迁移过来。",
+      "gapTitle": "低代码底子",
+      "gap": "做过 Power Automate 流程的人，能力其实已经具备大半。如果一个都没有，请把第一次动手的时间预留得比看上去更长。"
+    },
+    "options": [
+      {
+        "value": "never",
+        "score": 0,
+        "en": "Never",
+        "zh": "没用过"
+      },
+      {
+        "value": "tried",
+        "score": 1,
+        "en": "A little, experimentally",
+        "zh": "试过一点点"
+      },
+      {
+        "value": "some",
+        "score": 2,
+        "en": "We have a few apps or flows in real use",
+        "zh": "有几个应用或流程在实际使用"
+      },
+      {
+        "value": "fluent",
+        "score": 3,
+        "en": "Used widely, with people who are genuinely fluent",
+        "zh": "用得比较多，也有几个真正的熟手"
+      }
+    ]
+  },
+  {
+    "id": "resources-knowledge",
+    "dimension": "resources",
+    "order": 4,
+    "en": {
+      "prompt": "The documents and data an agent would need — where do they live?",
+      "help": "An agent can only answer from what it can reach.",
+      "gapTitle": "Where the knowledge lives",
+      "gap": "An agent is only as good as what it can reach. Getting the first use case's documents into one place with sensible permissions is usually the highest-value week of preparation there is."
+    },
+    "zh": {
+      "prompt": "agent 会用到的那些文档和数据，现在放在哪里？",
+      "help": "agent 只能基于它够得着的东西来回答。",
+      "gapTitle": "知识归位",
+      "gap": "agent 的上限，就是它够得着的那些东西。把第一个用例要用的文档收进一个地方、把权限理顺，通常是准备期里回报最高的一周。"
+    },
+    "options": [
+      {
+        "value": "scattered",
+        "score": 0,
+        "en": "Scattered — personal drives, email, people's heads",
+        "zh": "很散——个人电脑、邮件，还有人的脑子里"
+      },
+      {
+        "value": "legacy",
+        "score": 1,
+        "en": "Mostly in older systems that would need development work to reach",
+        "zh": "多数在老系统里，要接得开发"
+      },
+      {
+        "value": "mixed",
+        "score": 2,
+        "en": "A mix — some in SharePoint or Teams, some elsewhere",
+        "zh": "混合的——一部分在 SharePoint 或 Teams，一部分在别处"
+      },
+      {
+        "value": "microsoft",
+        "score": 3,
+        "en": "Mostly in SharePoint, Teams or Dynamics, with permissions already sorted",
+        "zh": "主要在 SharePoint、Teams 或 Dynamics 里，权限也理过了"
+      }
+    ]
+  },
+  {
+    "id": "resources-admin",
+    "dimension": "resources",
+    "order": 5,
+    "en": {
+      "prompt": "If you needed a new licence or a place to build, could you get one?",
+      "help": "Not whether it is allowed — whether you know who to ask, and roughly how long it takes.",
+      "gapTitle": "Who can grant access",
+      "gap": "Find the person who can grant licences and environments, and ask them now. This is the single most common reason a first build stalls before it even starts."
+    },
+    "zh": {
+      "prompt": "如果需要一个新许可、或者一个能动手的环境，办得下来吗？",
+      "help": "不是问允不允许，是问你知不知道该找谁、大概要多久。",
+      "gapTitle": "谁能批许可",
+      "gap": "找到那个能批许可、能开环境的人，现在就去问。这是第一次动手还没开始就卡住的最常见原因，没有之一。"
+    },
+    "options": [
+      {
+        "value": "unknown",
+        "score": 0,
+        "en": "We would not know who to ask",
+        "zh": "不知道该找谁"
+      },
+      {
+        "value": "slow",
+        "score": 1,
+        "en": "There is a process, but it is a long one",
+        "zh": "有流程，但很长"
+      },
+      {
+        "value": "workable",
+        "score": 2,
+        "en": "We know who to ask, and it usually works out",
+        "zh": "知道找谁，一般也办得下来"
+      },
+      {
+        "value": "ready",
+        "score": 3,
+        "en": "Someone already manages this and can arrange it quickly",
+        "zh": "已经有人在管，能很快安排"
+      }
+    ]
+  },
+  {
+    "id": "goal-who",
+    "dimension": "goal",
+    "order": 1,
+    "en": {
+      "prompt": "Who do you most want to enable?",
+      "help": "The honest answer, not the most ambitious one."
+    },
+    "zh": {
+      "prompt": "这次你最想赋能谁？",
+      "help": "按真实想法答，不用挑听起来最有志向的那个。"
+    },
+    "options": [
+      {
+        "value": "unsure",
+        "score": 0,
+        "tier": 1,
+        "en": "Not sure yet — we want to see what is possible first",
+        "zh": "还没想好，想先看看能做到什么程度"
+      },
+      {
+        "value": "everyone",
+        "score": 1,
+        "tier": 1,
+        "en": "Every business employee, so they can build small things themselves",
+        "zh": "每一位业务员工，让他们能自己做点小东西"
+      },
+      {
+        "value": "team",
+        "score": 2,
+        "tier": 2,
+        "en": "A specialist team, who build things that many people then use",
+        "zh": "一个专业团队，由他们做出东西给很多人用"
+      },
+      {
+        "value": "it",
+        "score": 3,
+        "tier": 3,
+        "en": "The IT team, to establish governance and a centre of excellence",
+        "zh": "IT 团队，把治理和 CoE 建立起来"
+      }
+    ]
+  },
+  {
+    "id": "goal-outcome",
+    "dimension": "goal",
+    "order": 2,
+    "en": {
+      "prompt": "What would make this a success for you?",
+      "help": "One finished thing and a repeatable capability are both legitimate goals — they just need different plans."
+    },
+    "zh": {
+      "prompt": "什么样的结果，你会认为这件事成了？",
+      "help": "「做成一件事」和「长出一种能力」都是正当目标，只是需要不同的打法。"
+    },
+    "options": [
+      {
+        "value": "project",
+        "score": 0,
+        "tier": 1,
+        "en": "One specific thing built, and genuinely being used",
+        "zh": "有一件具体的事被做出来，而且真的在用"
+      },
+      {
+        "value": "several",
+        "score": 1,
+        "tier": 1,
+        "en": "A handful of quick wins across different teams",
+        "zh": "在几个团队里各拿下一些小胜"
+      },
+      {
+        "value": "capability",
+        "score": 2,
+        "tier": 2,
+        "en": "A group of people who can keep building without us",
+        "zh": "有一批人，之后不靠我们也能继续建"
+      },
+      {
+        "value": "standard",
+        "score": 3,
+        "tier": 3,
+        "en": "This becomes how the organisation works, with governance to match",
+        "zh": "它变成组织的标准做法，配套的治理也建起来"
+      }
+    ]
+  },
+  {
+    "id": "goal-scope",
+    "dimension": "goal",
+    "order": 3,
+    "en": {
+      "prompt": "What scope and timeframe do you have in mind?",
+      "help": "Scope is what most often disagrees with the ambition above — which is exactly what this question is for."
+    },
+    "zh": {
+      "prompt": "你心里想的范围和时间是多大？",
+      "help": "范围是最常和上面那个野心对不上的地方——而这正是这道题的用处。"
+    },
+    "options": [
+      {
+        "value": "team",
+        "score": 0,
+        "tier": 1,
+        "en": "One team, something visible within weeks",
+        "zh": "一个团队，几周内看到东西"
+      },
+      {
+        "value": "department",
+        "score": 1,
+        "tier": 1,
+        "en": "One department, over a quarter",
+        "zh": "一个部门，一个季度左右"
+      },
+      {
+        "value": "departments",
+        "score": 2,
+        "tier": 2,
+        "en": "Several departments, over two or three quarters",
+        "zh": "几个部门，两三个季度"
+      },
+      {
+        "value": "enterprise",
+        "score": 3,
+        "tier": 3,
+        "en": "The whole organisation, as a multi-year change",
+        "zh": "整个组织，跨年度的转型"
+      }
+    ]
+  }
+]

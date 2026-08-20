@@ -1,0 +1,271 @@
+---
+/**
+ * 11 — Get started.
+ *
+ * The close mirrors the hero: same split, same navy panel, same serif/gold
+ * split heading — but the illustration is now the bright end of the hall
+ * rather than the dim workshop. Read as a pair, the first and last screens
+ * are the whole argument: this is where you were, this is the bridge across.
+ *
+ * It also sits at the far end of the transmutation axis, so the particle
+ * lattice behind it is fully crystallised by the time a reader arrives.
+ */
+import { Image } from 'astro:assets';
+import startImage from '../assets/images/start-bridge.webp';
+import { localePath, type Lang } from '../i18n/config';
+import { useTranslations } from '../i18n/content';
+
+interface Props {
+  lang: Lang;
+}
+
+const { lang } = Astro.props;
+const s = useTranslations(lang).start;
+---
+
+<section id="start" class="start">
+  <div class="start__art">
+    <Image
+      src={startImage}
+      alt={s.imageAlt}
+      widths={[720, 1080, 1440, 1800]}
+      sizes="(min-width: 64rem) 52vw, 100vw"
+      format="webp"
+      quality={82}
+      loading="lazy"
+      class="start__img"
+    />
+  </div>
+
+  <div class="start__panel">
+    <div class="start__content">
+      <p class="eyebrow" data-reveal>{s.eyebrow}</p>
+
+      <h2 class="start__title display" data-reveal style="--beat:1">
+        <span>{s.titleLead}</span>
+        <span class="start__title-accent">{s.titleAccent}</span>
+      </h2>
+
+      <hr class="rule-gold start__rule" data-reveal style="--beat:2" />
+
+      <p class="start__lede" data-reveal style="--beat:3">{s.lede}</p>
+
+      <div class="start__invest" data-reveal style="--beat:4">
+        <p class="start__invest-label">{s.investLabel}</p>
+        <ul class="start__invest-list">
+          {s.invest.map((item) => <li>{item}</li>)}
+        </ul>
+      </div>
+
+      <!-- The one place the site stops being read and starts being used. -->
+      <a
+        class="start__cta-block"
+        href={localePath(lang, '/program/')}
+        data-reveal
+        style="--beat:5"
+      >
+        <span class="start__cta display">{s.cta}</span>
+        <span class="start__cta-note">{s.ctaNote}</span>
+      </a>
+
+      <p class="start__footnote" data-reveal style="--beat:6">{s.footnote}</p>
+    </div>
+  </div>
+</section>
+
+<style>
+  .start {
+    position: relative;
+    display: grid;
+    background: var(--color-ink-deep);
+    color: var(--color-parchment);
+    isolation: isolate;
+  }
+
+  .start__art {
+    position: absolute;
+    inset: 0;
+    z-index: 0;
+  }
+
+  .start__img {
+    inline-size: 100%;
+    block-size: 100%;
+    object-fit: cover;
+    object-position: center 40%;
+  }
+
+  .start__panel {
+    position: relative;
+    z-index: 1;
+    padding-block: var(--spacing-section);
+    /* Mobile: the art is a backdrop, so the copy needs a scrim to stay legible
+       at projector contrast. Desktop replaces this with a solid panel. */
+    background: linear-gradient(
+      100deg,
+      rgb(14 27 51 / 0.94) 0%,
+      rgb(14 27 51 / 0.88) 55%,
+      rgb(14 27 51 / 0.72) 100%
+    );
+  }
+
+  .start__content {
+    width: 100%;
+    max-width: 108rem;
+    margin-inline: auto;
+    padding-inline: var(--spacing-gutter);
+    container-type: inline-size;
+  }
+
+  .start__title {
+    margin: clamp(1rem, 0.6rem + 1.4vw, 1.75rem) 0 0;
+    font-size: clamp(2.6rem, 9.2cqi, 6rem);
+    color: var(--color-parchment);
+  }
+
+  .start__title span {
+    display: block;
+  }
+
+  .start__title-accent {
+    color: var(--color-gold);
+  }
+
+  .start__rule {
+    margin-block: clamp(1.25rem, 0.8rem + 1.5vw, 2rem);
+  }
+
+  .start__lede {
+    margin: 0;
+    max-inline-size: 40ch;
+    font-size: var(--text-lede);
+    line-height: 1.45;
+    color: color-mix(in srgb, var(--color-parchment) 86%, transparent);
+    text-wrap: pretty;
+  }
+
+  .start__invest {
+    margin-block-start: clamp(2rem, 1.2rem + 2.5vw, 3.25rem);
+  }
+
+  .start__invest-label {
+    margin: 0 0 0.75rem;
+    font-size: var(--text-micro);
+    font-weight: 600;
+    letter-spacing: 0.22em;
+    text-transform: uppercase;
+    color: color-mix(in srgb, var(--color-parchment) 62%, transparent);
+  }
+
+  .start__invest-list {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.6rem clamp(1.25rem, 0.6rem + 2vw, 2.5rem);
+    font-family: var(--font-display);
+    font-size: var(--text-h3);
+    color: var(--color-parchment);
+  }
+
+  .start__invest-list li {
+    position: relative;
+    padding-inline-start: 1.1rem;
+  }
+
+  .start__invest-list li::before {
+    content: '';
+    position: absolute;
+    inset-block-start: 0.62em;
+    inset-inline-start: 0;
+    inline-size: 0.5rem;
+    block-size: 2px;
+    background: var(--color-gold);
+  }
+
+  .start__cta-block {
+    display: block;
+    margin-block-start: clamp(2rem, 1.2rem + 2.5vw, 3.25rem);
+    padding: clamp(1.1rem, 0.7rem + 1.4vw, 1.9rem) clamp(1.25rem, 0.8rem + 1.6vw, 2.25rem);
+    background: var(--color-gold);
+    color: var(--color-ink-deep);
+    max-inline-size: 34rem;
+    text-decoration: none;
+    transition: background-color var(--duration-quick) ease;
+  }
+
+  .start__cta-block:hover {
+    background: var(--color-gold-bright);
+  }
+
+  .start__cta-block:focus-visible {
+    outline: 3px solid var(--color-parchment);
+    outline-offset: 3px;
+  }
+
+  .start__cta {
+    display: block;
+    margin: 0;
+    font-size: var(--text-h3);
+    line-height: 1.15;
+    text-wrap: balance;
+  }
+
+  .start__cta-note {
+    display: block;
+    margin: 0.5rem 0 0;
+    font-size: var(--text-small);
+    line-height: 1.5;
+    color: color-mix(in srgb, var(--color-ink-deep) 78%, transparent);
+  }
+
+  .start__footnote {
+    margin: clamp(2rem, 1.2rem + 2.5vw, 3.25rem) 0 0;
+    font-size: var(--text-micro);
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: color-mix(in srgb, var(--color-parchment) 55%, transparent);
+  }
+
+  /* --- Desktop: solid panel beside a clean illustration, mirroring the hero --- */
+  @media (min-width: 64rem) {
+    .start {
+      grid-template-columns: minmax(0, 1.05fr) minmax(0, 0.95fr);
+      align-items: stretch;
+      min-block-size: 100svh;
+    }
+
+    .start__art {
+      position: relative;
+      grid-column: 2;
+      grid-row: 1;
+    }
+
+    .start__panel {
+      grid-column: 1;
+      grid-row: 1;
+      display: flex;
+      align-items: center;
+      background: var(--color-ink-deep);
+    }
+
+    .start__content {
+      margin-inline: 0;
+      max-width: none;
+      padding-inline-start: max(var(--spacing-gutter), calc((100vw - 108rem) / 2 + var(--spacing-gutter)));
+      padding-inline-end: clamp(2rem, 1rem + 3vw, 5rem);
+    }
+
+    /* Feather the panel edge into the art so the seam is not a hard cut. */
+    .start__panel::after {
+      content: '';
+      position: absolute;
+      inset-block: 0;
+      inset-inline-end: -6rem;
+      inline-size: 6rem;
+      background: linear-gradient(90deg, var(--color-ink-deep) 0%, transparent 100%);
+      pointer-events: none;
+    }
+  }
+</style>

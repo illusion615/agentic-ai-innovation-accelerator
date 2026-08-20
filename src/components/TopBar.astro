@@ -1,0 +1,446 @@
+---
+import { LANG_LABEL, localePath, otherLang, type Lang } from '../i18n/config';
+import { useTranslations } from '../i18n/content';
+
+interface Props {
+  lang: Lang;
+  /**
+   * App-relative path of the page this bar is on, so the language toggle stays
+   * where the reader is instead of dropping them back at the story.
+   */
+  path?: string;
+}
+
+const { lang, path = '/' } = Astro.props;
+const t = useTranslations(lang);
+const alt = otherLang(lang);
+
+// The bar does a different job on each side of Get Started. On the story page
+// it is a reading aid, so it carries section anchors. Inside the programme the
+// reader is operating an instrument, not browsing an argument: section anchors
+// are noise there, and the one link that matters is the way back out.
+const inProgram = path.startsWith('/program');
+
+// Absolute rather than bare fragments: the same nav now appears on the console,
+// where `#challenge` would resolve against a page that has no such section.
+// From the story page these are still same-document navigations, so smooth
+// scrolling and the sticky-offset rule continue to apply.
+const story = localePath(lang);
+const sectionHref = (id: string) => `${story}#${id}`;
+---
+
+<header class="topbar" data-topbar>
+  <div class="shell topbar__inner">
+    <a class="topbar__brand" href={localePath(lang)}>
+      <span class="topbar__mark" aria-hidden="true"></span>
+      <span class="topbar__brandtext">{t.nav.brand}</span>
+    </a>
+
+    <nav class="topbar__nav" aria-label={t.nav.brand}>
+      {
+        inProgram ? (
+          <a class="topbar__back" href={localePath(lang)}>
+            <span aria-hidden="true">&#8592;</span> {t.nav.backToStory}
+          </a>
+        ) : (
+          t.nav.items.map((item) => (
+            <a class:list={[item.id === 'start' && 'topbar__nav-last']} href={sectionHref(item.id)}>
+              {item.label}
+            </a>
+          ))
+        )
+      }
+    </nav>
+
+    <div class="topbar__end">
+      {
+        !inProgram && (
+          <a class="topbar__program" href={localePath(lang, '/program/')}>
+            {t.program.navLabel}
+          </a>
+        )
+      }
+      <a
+        class="topbar__lang"
+        href={localePath(alt, path)}
+        hreflang={alt}
+        aria-label={t.meta.langToggleLabel}
+        data-lang-toggle
+      >
+        <span class="topbar__lang-current">{LANG_LABEL[lang]}</span>
+        <span class="topbar__lang-sep" aria-hidden="true">/</span>
+        <span class="topbar__lang-alt">{LANG_LABEL[alt]}</span>
+      </a>
+
+      <button
+        type="button"
+        class="topbar__menu"
+        aria-controls="topbar-sections"
+        aria-expanded="false"
+        aria-label={t.nav.menuLabel}
+        data-menu-toggle
+      >
+        <span class="topbar__menu-bars" aria-hidden="true"></span>
+      </button>
+    </div>
+  </div>
+
+  <nav id="topbar-sections" class="topbar__drawer" aria-label={t.nav.menuLabel} hidden>
+    <div class="shell topbar__drawer-inner">
+      {
+        t.nav.items.map((item) => (
+          <a class:list={[item.id === 'start' && 'topbar__nav-last']} href={sectionHref(item.id)}>
+            {item.label}
+          </a>
+        ))
+      }
+      <a class="topbar__program" href={localePath(lang, '/program/')}>{t.program.navLabel}</a>
+    </div>
+  </nav>
+</header>
+
+<script>
+  // Flip the bar from "over the dark hero" to "over parchment".
+  const bar = document.querySelector('[data-topbar]');
+  const hero = document.getElementById('hero');
+
+  if (bar && hero) {
+    const io = new IntersectionObserver(
+      ([entry]) => {
+        bar.toggleAttribute('data-light', !entry.isIntersecting);
+      },
+      { rootMargin: '-72px 0px 0px 0px', threshold: 0 }
+    );
+    io.observe(hero);
+  } else if (bar) {
+    // No dark hero to sit over — the console and its instruments are parchment
+    // from the first pixel, so the bar starts and stays in its light state.
+    bar.setAttribute('data-light', '');
+  }
+
+  // Small-screen section drawer. There are eleven sections and no room for a
+  // horizontal nav on a phone, so the same links move into a disclosure.
+  const toggle = document.querySelector<HTMLButtonElement>('[data-menu-toggle]');
+  const drawer = document.getElementById('topbar-sections');
+
+  if (toggle && drawer) {
+    const setOpen = (open: boolean) => {
+      toggle.setAttribute('aria-expanded', String(open));
+      drawer.hidden = !open;
+    };
+
+    toggle.addEventListener('click', () => {
+      setOpen(toggle.getAttribute('aria-expanded') !== 'true');
+    });
+
+    // Jumping to a section should dismiss the drawer, not leave it covering it.
+    drawer.addEventListener('click', (event) => {
+      if ((event.target as HTMLElement).closest('a')) setOpen(false);
+    });
+
+    document.addEventListener('keydown', (event) => {
+      if (event.key === 'Escape' && !drawer.hidden) {
+        setOpen(false);
+        toggle.focus();
+      }
+    });
+  }
+</script>
+
+<style>
+  .topbar {
+    position: fixed;
+    inset-block-start: 0;
+    inset-inline: 0;
+    z-index: 50;
+    transition:
+      background-color var(--duration-base) var(--ease-in-out-soft),
+      border-color var(--duration-base) var(--ease-in-out-soft),
+      color var(--duration-base) var(--ease-in-out-soft);
+    color: var(--color-parchment);
+    /* Transparent placeholder for the light state's gold hairline, so switching
+       between states does not shift the bar by a pixel. */
+    border-block-end: 1px solid transparent;
+    background: linear-gradient(
+      to bottom,
+      color-mix(in srgb, var(--color-ink-deep) 92%, transparent),
+      color-mix(in srgb, var(--color-ink-deep) 55%, transparent) 60%,
+      transparent
+    );
+    /* A background image is sized to the padding box but clipped to the border
+       box, so by default it *tiles* into that 1px border. The gradient's
+       transparent end would then be followed immediately by its opaque start,
+       drawing a hard dark rule across the bottom of an otherwise soft fade —
+       very visible over the bright windows of the hero painting. */
+    background-repeat: no-repeat;
+  }
+
+  .topbar[data-light] {
+    background-image: none;
+    background-color: color-mix(in srgb, var(--color-parchment) 95%, transparent);
+    backdrop-filter: blur(14px);
+    border-block-end-color: color-mix(in srgb, var(--color-gold) 40%, transparent);
+    color: var(--color-ink);
+  }
+
+  .topbar__inner {
+    display: flex;
+    align-items: center;
+    gap: clamp(0.75rem, 1.4vw, 1.75rem);
+    justify-content: space-between;
+    padding-block: clamp(0.85rem, 0.5rem + 0.9vw, 1.4rem);
+  }
+
+  .topbar__brand {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.7rem;
+    color: inherit;
+    text-decoration: none;
+    font-size: var(--text-micro);
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    font-weight: 500;
+  }
+
+  .topbar__mark {
+    width: 0.65rem;
+    height: 0.65rem;
+    background: var(--color-gold);
+    transform: rotate(45deg);
+    flex: none;
+  }
+
+  .topbar__brandtext {
+    display: none;
+    white-space: nowrap;
+  }
+
+  .topbar__nav {
+    display: none;
+    gap: clamp(0.7rem, 1.15vw, 1.6rem);
+    font-size: var(--text-micro);
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+  }
+
+  .topbar__nav a {
+    color: inherit;
+    text-decoration: none;
+    /* A two-word label breaking mid-item made the whole bar taller, which
+       shifts every section's scroll-margin offset with it. */
+    white-space: nowrap;
+    opacity: 0.72;
+    padding-block: 0.25rem;
+    border-block-end: 1px solid transparent;
+    transition:
+      opacity var(--duration-quick) ease,
+      border-color var(--duration-quick) ease;
+  }
+
+  .topbar__nav a:hover {
+    opacity: 1;
+    border-block-end-color: var(--color-gold);
+  }
+
+  /* Inside the programme the single nav slot is the way back to the story. */
+  .topbar__back {
+    opacity: 1 !important;
+  }
+
+  /* Grouped with the language toggle rather than with the section anchors: the
+     console is an action, not another place in the argument. It is also the
+     seventh item, and as a nav link it pushed the bar into two lines. */
+  .topbar__program {
+    display: none;
+    font-size: var(--text-micro);
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+    text-decoration: none;
+    color: var(--color-gold);
+    font-weight: 600;
+    padding: 0.45rem 0.9rem;
+    border: 1px solid color-mix(in srgb, var(--color-gold) 55%, transparent);
+    white-space: nowrap;
+    transition:
+      background-color var(--duration-quick) ease,
+      color var(--duration-quick) ease;
+  }
+
+  .topbar__program:hover {
+    background: var(--color-gold);
+    color: var(--color-ink-deep);
+  }
+
+  /* Wherever the console link is present, the section anchor that points at the
+     same idea steps aside for it — the button goes to the actual destination,
+     and in English the two carry the same words. The drawer always shows the
+     console link, so the anchor always yields there. */
+  .topbar__drawer .topbar__nav-last {
+    display: none;
+  }
+
+  /* Additive only: below this the bar is exactly what it was before the console
+     existed, so no width loses anything it had. Above it there is room for the
+     console action. */
+  @media (min-width: 84rem) {
+    .topbar__program {
+      display: inline-flex;
+    }
+
+    .topbar__nav .topbar__nav-last {
+      display: none;
+    }
+  }
+
+  /* In the drawer it is a link like the others, but still the gold one. */
+  .topbar__drawer .topbar__program {
+    display: block;
+    border: 0;
+    padding: 0;
+  }
+
+  .topbar__drawer .topbar__program:hover {
+    background: none;
+    color: var(--color-gold);
+  }
+
+  .topbar__lang {
+    display: inline-flex;
+    align-items: baseline;
+    gap: 0.45rem;
+    color: inherit;
+    text-decoration: none;
+    font-size: var(--text-micro);
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    border: 1px solid color-mix(in srgb, currentColor 35%, transparent);
+    padding: 0.4rem 0.85rem;
+    transition: border-color var(--duration-quick) ease;
+  }
+
+  .topbar__lang:hover {
+    border-color: var(--color-gold);
+  }
+
+  .topbar__lang-current {
+    color: var(--color-gold);
+    font-weight: 600;
+  }
+
+  .topbar__lang-sep {
+    opacity: 0.4;
+  }
+
+  .topbar__lang-alt {
+    opacity: 0.75;
+  }
+
+  .topbar__end {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.6rem;
+    flex: 0 0 auto;
+  }
+
+  .topbar__menu {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    inline-size: 2.6rem;
+    block-size: 2.6rem;
+    padding: 0;
+    background: none;
+    color: inherit;
+    border: 1px solid color-mix(in srgb, currentColor 35%, transparent);
+    cursor: pointer;
+    transition: border-color var(--duration-quick) ease;
+  }
+
+  .topbar__menu:hover {
+    border-color: var(--color-gold);
+  }
+
+  .topbar__menu-bars,
+  .topbar__menu-bars::before,
+  .topbar__menu-bars::after {
+    display: block;
+    inline-size: 1.1rem;
+    block-size: 1px;
+    background: currentColor;
+  }
+
+  .topbar__menu-bars {
+    position: relative;
+  }
+
+  .topbar__menu-bars::before,
+  .topbar__menu-bars::after {
+    content: '';
+    position: absolute;
+    inset-inline-start: 0;
+  }
+
+  .topbar__menu-bars::before {
+    inset-block-start: -0.35rem;
+  }
+
+  .topbar__menu-bars::after {
+    inset-block-start: 0.35rem;
+  }
+
+  .topbar__menu[aria-expanded='true'] {
+    border-color: var(--color-gold);
+  }
+
+  .topbar__drawer {
+    border-block-start: 1px solid color-mix(in srgb, var(--color-gold) 40%, transparent);
+    background: color-mix(in srgb, var(--color-parchment) 97%, transparent);
+    backdrop-filter: blur(14px);
+    color: var(--color-ink);
+    max-block-size: calc(100dvh - 5rem);
+    overflow-y: auto;
+  }
+
+  .topbar__drawer-inner {
+    display: grid;
+    padding-block: 0.5rem;
+  }
+
+  .topbar__drawer a {
+    padding-block: 0.85rem;
+    color: inherit;
+    text-decoration: none;
+    font-size: var(--text-small);
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+    border-block-end: 1px solid color-mix(in srgb, var(--color-ink) 10%, transparent);
+  }
+
+  .topbar__drawer a:last-child {
+    border-block-end: 0;
+  }
+
+  @media (min-width: 30rem) {
+    .topbar__brandtext {
+      display: inline;
+    }
+  }
+
+  /* 76rem, not 60rem. The English section labels are long enough that between
+     960px and ~1210px the nav pushed the language toggle clean off the right
+     edge — on a site whose headline requirement is one-click EN/ZH, at exactly
+     the widths a laptop uses. Measured fit is 1216px; the drawer covers below
+     that, where it was already the fallback. */
+  @media (min-width: 76rem) {
+    .topbar__nav {
+      display: flex;
+    }
+
+    /* The full nav is visible, so the drawer and its toggle are redundant. */
+    .topbar__menu,
+    .topbar__drawer {
+      display: none;
+    }
+  }
+</style>

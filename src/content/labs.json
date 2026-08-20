@@ -1,0 +1,194 @@
+[
+  {
+    "id": "agent-basics",
+    "order": 1,
+    "minutes": 30,
+    "requires": [],
+    "en": {
+      "name": "Build and test your first agent",
+      "teaches": "Creating an agent, writing instructions that hold, and using the test pane to see why it answered the way it did.",
+      "build": "A working agent that answers from its instructions alone, and a habit of reading the test pane rather than guessing."
+    },
+    "zh": {
+      "name": "建出并测试你的第一个 agent",
+      "teaches": "创建 agent、把说明写得站得住、以及用测试面板看清楚它为什么这么答。",
+      "build": "一个只靠说明就能作答的 agent，以及「看测试面板而不是靠猜」的习惯。"
+    }
+  },
+  {
+    "id": "knowledge-grounding",
+    "order": 2,
+    "minutes": 45,
+    "requires": ["agent-basics"],
+    "en": {
+      "name": "Ground it in your own documents",
+      "teaches": "Adding knowledge sources, checking what was actually retrieved, and making the agent cite rather than assert.",
+      "build": "An agent that answers only from documents you chose, shows its source, and says so when it does not know."
+    },
+    "zh": {
+      "name": "让它依据你自己的文档作答",
+      "teaches": "添加知识来源、检查它实际检索到了什么、以及让它给出处而不是张口就来。",
+      "build": "一个只依据你选定的文档作答、并给出出处、不知道就说不知道的 agent。"
+    }
+  },
+  {
+    "id": "topics-flow",
+    "order": 3,
+    "minutes": 40,
+    "requires": ["agent-basics"],
+    "en": {
+      "name": "Pin the paths that must be deterministic",
+      "teaches": "Topics and trigger phrases, and where a scripted path beats letting the model decide.",
+      "build": "One conversation that always goes the same way — the one your compliance people would ask about."
+    },
+    "zh": {
+      "name": "把必须确定的路径钉死",
+      "teaches": "Topics 与触发短语，以及什么地方「写死的流程」优于「让模型自己决定」。",
+      "build": "一段永远走同一条路的对话——就是合规同事一定会问的那一段。"
+    }
+  },
+  {
+    "id": "orchestration",
+    "order": 4,
+    "minutes": 45,
+    "requires": ["agent-basics", "knowledge-grounding"],
+    "en": {
+      "name": "Let the model choose the tool",
+      "teaches": "Generative orchestration: describing tools well enough that the agent picks the right one, and seeing what it picked.",
+      "build": "An agent with more than one thing it could do, choosing correctly — and a feel for when it will not."
+    },
+    "zh": {
+      "name": "让模型自己选工具",
+      "teaches": "生成式编排：把工具描述写到 agent 能选对，并且看得见它选了哪个。",
+      "build": "一个有多种可能动作的 agent，能选对——以及对「它什么时候会选错」的手感。"
+    }
+  },
+  {
+    "id": "actions-connectors",
+    "order": 5,
+    "minutes": 50,
+    "requires": ["agent-basics"],
+    "en": {
+      "name": "Reach a real system",
+      "teaches": "Connectors and custom actions: passing parameters in, getting a result back, and handling the call that fails.",
+      "build": "An agent that reads or writes something outside itself, and does not lie when the call errors."
+    },
+    "zh": {
+      "name": "连到一个真实系统",
+      "teaches": "连接器与自定义动作：把参数传进去、把结果拿回来、以及调用失败时怎么办。",
+      "build": "一个能读写外部系统的 agent，并且在调用出错时不会编。"
+    }
+  },
+  {
+    "id": "power-automate",
+    "order": 6,
+    "minutes": 45,
+    "requires": ["actions-connectors"],
+    "en": {
+      "name": "Put the deterministic steps in a flow",
+      "teaches": "Calling Power Automate from an agent, and drawing the line between what the model decides and what the flow guarantees.",
+      "build": "A flow the agent calls, doing the part that must happen the same way every time."
+    },
+    "zh": {
+      "name": "把确定性步骤放进流",
+      "teaches": "从 agent 调用 Power Automate，以及划清「模型决定什么」和「流保证什么」的界线。",
+      "build": "一条被 agent 调用的流，负责那些每次都必须一模一样的步骤。"
+    }
+  },
+  {
+    "id": "doc-extraction",
+    "order": 7,
+    "minutes": 50,
+    "requires": ["power-automate"],
+    "en": {
+      "name": "Get structured fields out of a document",
+      "teaches": "Reading fields off invoices, forms or contracts, and deciding the confidence line below which a human looks.",
+      "build": "A document in, structured values out, and an exception path for the ones that are not clear enough."
+    },
+    "zh": {
+      "name": "从文档里抽出结构化字段",
+      "teaches": "从发票、表单或合同里读取字段，并定出「低于多少置信度就转人看」的那条线。",
+      "build": "文档进、结构化值出，外加一条给「看不清楚的那些」走的异常路径。"
+    }
+  },
+  {
+    "id": "human-approval",
+    "order": 8,
+    "minutes": 35,
+    "requires": ["power-automate"],
+    "en": {
+      "name": "Put a person in the loop",
+      "teaches": "Approval gates: what the agent may do alone, what needs confirming, and what the record of that decision looks like.",
+      "build": "A step that waits for a human, with the approval captured where an auditor could find it."
+    },
+    "zh": {
+      "name": "把人放回环里",
+      "teaches": "审批闸口：哪些 agent 可以自己做、哪些必须有人确认、以及这个决定留下什么记录。",
+      "build": "一个会等人的步骤，且审批记录留在审计的人找得到的地方。"
+    }
+  },
+  {
+    "id": "dataverse",
+    "order": 9,
+    "minutes": 45,
+    "requires": ["actions-connectors"],
+    "en": {
+      "name": "Give it somewhere to remember",
+      "teaches": "Storing and retrieving structured records in Dataverse, and why a spreadsheet stops working at the second user.",
+      "build": "A table the agent reads and writes, with the permissions that decide who sees which rows."
+    },
+    "zh": {
+      "name": "给它一个能记住东西的地方",
+      "teaches": "在 Dataverse 里存取结构化记录，以及为什么表格到第二个用户就撑不住了。",
+      "build": "一张 agent 读写的表，以及决定「谁能看到哪几行」的权限设置。"
+    }
+  },
+  {
+    "id": "channels-publish",
+    "order": 10,
+    "minutes": 30,
+    "requires": ["agent-basics"],
+    "en": {
+      "name": "Publish it where people already are",
+      "teaches": "Publishing to Teams or a website, and the sharing and consent questions that appear the moment you do.",
+      "build": "An agent a colleague can open without being told how — the point at which it stops being yours."
+    },
+    "zh": {
+      "name": "把它发布到人本来就在的地方",
+      "teaches": "发布到 Teams 或网站，以及发布那一刻立刻冒出来的共享与授权问题。",
+      "build": "一个同事不用教就能打开的 agent——从这一刻起它不再只是你的。"
+    }
+  },
+  {
+    "id": "governance",
+    "order": 11,
+    "minutes": 40,
+    "requires": [],
+    "en": {
+      "name": "Keep it inside the guardrails",
+      "teaches": "Environments, DLP policy and roles: where an agent is allowed to live and which connectors it may touch.",
+      "build": "A clear answer to \"where does this run, and who decided it could\" — before someone from security asks."
+    },
+    "zh": {
+      "name": "让它待在护栏里",
+      "teaches": "环境、DLP 策略与角色：agent 允许待在哪、能碰哪些连接器。",
+      "build": "对「这东西跑在哪、谁批准的」有个明确答案——赶在安全同事来问之前。"
+    }
+  },
+  {
+    "id": "measurement",
+    "order": 12,
+    "minutes": 35,
+    "requires": ["agent-basics"],
+    "en": {
+      "name": "Find out whether it is working",
+      "teaches": "Session analytics and evaluation: what to measure against the baseline you took before you started.",
+      "build": "A number you would be willing to show at the gate, and the sessions behind it."
+    },
+    "zh": {
+      "name": "搞清楚它到底有没有用",
+      "teaches": "会话分析与评估：对着「开工前记录的基线」该看哪些数。",
+      "build": "一个你敢拿到闸门上给人看的数字，以及它背后的会话记录。"
+    }
+  }
+]

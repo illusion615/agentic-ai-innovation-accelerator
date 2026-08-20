@@ -1,0 +1,945 @@
+---
+/**
+ * STAGE 00 — the entry gate.
+ *
+ * Twelve questions, four dimensions, and a two-dimensional result.
+ *
+ * The single most important decision here is that this does *not* return one
+ * number. Returning "you are Tier 2" would waste the exercise, because the
+ * situation it most often finds is an organisation whose capability is well
+ * ahead of its readiness — they can build things, they just cannot ship or
+ * sustain them. That gap is the mechanism behind the 6% the story opens with,
+ * and naming it is the entire value of running this in front of a customer.
+ *
+ * It renders every question into the document and reveals one at a time. In a
+ * meeting room the whole room reads the same question at once, which is the
+ * point; and with scripting unavailable the page degrades into a plain,
+ * readable list rather than an empty shell.
+ */
+import { getCollection } from 'astro:content';
+import Base from '../../../layouts/Base.astro';
+import SectionHead from '../../../components/SectionHead.astro';
+import { LANGS, isLang, localePath, type Lang } from '../../../i18n/config';
+import { useTranslations } from '../../../i18n/content';
+import { DIMENSIONS, SCORED_DIMENSIONS } from '../../../lib/assessment';
+
+export function getStaticPaths() {
+  return LANGS.map((lang) => ({ params: { lang } }));
+}
+
+const { lang: raw } = Astro.params;
+const lang: Lang = isLang(raw) ? raw : 'en';
+const t = useTranslations(lang);
+const r = t.readiness;
+const res = r.result;
+
+const entries = (await getCollection('questions')).sort((a, b) => {
+  const byDim = DIMENSIONS.indexOf(a.data.dimension) - DIMENSIONS.indexOf(b.data.dimension);
+  return byDim !== 0 ? byDim : a.data.order - b.data.order;
+});
+
+const questions = entries.map((q) => ({
+  id: q.id,
+  dimension: q.data.dimension,
+  text: q.data[lang],
+  options: q.data.options.map((o) => ({
+    value: o.value,
+    score: o.score,
+    tier: o.tier,
+    label: o[lang],
+  })),
+}));
+
+const bootstrap = {
+  questions: questions.map((q) => ({
+    id: q.id,
+    data: {
+      dimension: q.dimension,
+      options: q.options.map((o) => ({ score: o.score, tier: o.tier })),
+    },
+  })),
+  // What to do about each shortfall travels with the question that found it.
+  gapById: Object.fromEntries(
+    entries
+      .filter((q) => q.data[lang].gap)
+      .map((q) => [q.id, { title: q.data[lang].gapTitle, body: q.data[lang].gap }])
+  ),
+  copy: {
+    progress: r.progressLabel,
+    next: r.nextLabel,
+    seeResult: r.seeResultLabel,
+    copied: res.copiedLabel,
+    copyLink: res.copyLinkLabel,
+    tierNames: res.tierNames,
+    verdicts: res.verdicts,
+    entries: res.entries,
+    remedies: res.remedies,
+    dimensionNames: Object.fromEntries(DIMENSIONS.map((d) => [d, r.dimensions[d].name])),
+    goalLabel: res.goalLabel,
+    motions: Object.fromEntries(
+      t.tiers.items.map((x) => [x.key, t.paths.items[x.key].motion])
+    ),
+    pathHref: Object.fromEntries(
+      t.tiers.items.map((x) => [x.key, localePath(lang, `/program/path/${x.key}/`)])
+    ),
+    noGaps: res.noGapsLabel,
+  },
+  consoleHref: localePath(lang, '/program/'),
+};
+---
+
+<Base lang={lang} path="/program/readiness/" axis={false} title={r.title}>
+  <section id="readiness" class="section readiness" data-readiness>
+    <div class="shell">
+      <div class="readiness__head" data-head>
+        <SectionHead as="h1" eyebrow={r.eyebrow} title={r.title} lede={r.lede} measure="wide" />
+      </div>
+
+      <!-- ---------- intro ---------- -->
+      <div class="intro" data-panel="intro">
+        <p class="intro__note">{r.timeNote}</p>
+        <ul class="intro__dims">
+          {
+            DIMENSIONS.map((d) => (
+              <li class="intro__dim">
+                <p class="intro__dim-name">{r.dimensions[d].name}</p>
+                <p class="intro__dim-blurb">{r.dimensions[d].blurb}</p>
+              </li>
+            ))
+          }
+        </ul>
+        <button type="button" class="btn btn--gold" data-begin>{r.startCta}</button>
+      </div>
+
+      <!-- ---------- questions ---------- -->
+      <div class="quiz" data-panel="quiz" hidden>
+        <div class="quiz__meter">
+          <p class="quiz__dim meta-label" data-quiz-dim></p>
+          <p class="quiz__count" data-quiz-count></p>
+          <div class="quiz__bar"><span class="quiz__bar-fill" data-quiz-bar></span></div>
+        </div>
+
+        <ol class="quiz__list">
+          {
+            questions.map((q, i) => (
+              <li class="q" data-q={q.id} data-index={i} hidden>
+                <fieldset class="q__set">
+                  <legend class="q__prompt display">{q.text.prompt}</legend>
+                  <p class="q__help">{q.text.help}</p>
+                  <div class="q__options">
+                    {q.options.map((o, oi) => (
+                      <label class="opt">
+                        <input
+                          type="radio"
+                          name={q.id}
+                          value={o.score}
+                          data-opt
+                          data-qid={q.id}
+                        />
+                        <span class="opt__key" aria-hidden="true">
+                          {oi + 1}
+                        </span>
+                        <span class="opt__label">{o.label}</span>
+                      </label>
+                    ))}
+                  </div>
+                </fieldset>
+              </li>
+            ))
+          }
+        </ol>
+
+        <div class="quiz__nav">
+          <button type="button" class="btn btn--quiet" data-back>{r.backLabel}</button>
+          <button type="button" class="btn btn--gold" data-next disabled>{r.nextLabel}</button>
+        </div>
+      </div>
+
+      <!-- ---------- result ---------- -->
+      <div class="result" data-panel="result" hidden>
+        <p class="eyebrow">{res.eyebrow}</p>
+        <h2 class="result__title display">{res.title}</h2>
+
+        <div class="result__top">
+          <!-- Capability × readiness. The diagonal is alignment; below it is
+               the gap the story's 6% is made of. -->
+          <figure class="plot">
+            <span class="plot__axis plot__axis--y">{res.resourcesLabel} &#8593;</span>
+            <svg viewBox="0 0 100 100" role="img" aria-labelledby="plot-title" data-plot>
+              <title id="plot-title">{`${res.maturityLabel} × ${res.resourcesLabel}`}</title>
+              <line class="plot__diag" x1="0" y1="100" x2="100" y2="0"></line>
+              <g class="plot__grid">
+                <line x1="40" y1="0" x2="40" y2="100"></line>
+                <line x1="70" y1="0" x2="70" y2="100"></line>
+                <line x1="0" y1="60" x2="100" y2="60"></line>
+                <line x1="0" y1="30" x2="100" y2="30"></line>
+              </g>
+              <rect class="plot__frame" x="0" y="0" width="100" height="100"></rect>
+              <path class="plot__point" d="M0,-4 L4,0 L0,4 L-4,0 Z" data-plot-point></path>
+            </svg>
+            <figcaption class="plot__axis plot__axis--x">{res.maturityLabel} &#8594;</figcaption>
+          </figure>
+
+          <div class="verdict">
+            <dl class="verdict__reading">
+              <div>
+                <dt>{res.goalLabel}</dt>
+                <dd data-ambition></dd>
+              </div>
+              <div>
+                <dt>{res.supportLabel}</dt>
+                <dd data-supported></dd>
+              </div>
+            </dl>
+            <p class="meta-label verdict__start-label">{res.startTierLabel}</p>
+            <p class="verdict__tier display" data-tier></p>
+            <p class="verdict__motion">
+              <span class="meta-label">{res.motionLabel}</span>
+              <span class="verdict__motion-value" data-motion></span>
+            </p>
+            <h3 class="verdict__title" data-verdict-title></h3>
+            <p class="verdict__body" data-verdict-body></p>
+            <hr class="rule-gold" />
+            <h3 class="verdict__title" data-entry-title></h3>
+            <p class="verdict__body" data-entry-body></p>
+          </div>
+        </div>
+
+        <div class="result__grid">
+          <div>
+            <p class="meta-label">{res.dimensionsLabel}</p>
+            <ul class="dims" data-dims>
+              {
+                SCORED_DIMENSIONS.map((d) => (
+                  <li class="dim" data-dim={d}>
+                    <p class="dim__name">{r.dimensions[d].name}</p>
+                    <div class="dim__bar">
+                      <span class="dim__fill" data-dim-fill></span>
+                    </div>
+                    <p class="dim__value" data-dim-value></p>
+                  </li>
+                ))
+              }
+            </ul>
+          </div>
+
+          <div>
+            <p class="meta-label">{res.gapsLabel}</p>
+            <ul class="gaps" data-gaps></ul>
+          </div>
+        </div>
+
+        <div class="result__actions">
+          <a class="btn btn--gold" href={localePath(lang, '/program/')} data-path-link>
+            {res.openPathLabel}
+          </a>
+          <a class="btn btn--quiet" href={localePath(lang, '/program/')}>{res.consoleLabel}</a>
+          <button type="button" class="btn btn--quiet" data-copy>{res.copyLinkLabel}</button>
+          <button type="button" class="btn btn--quiet" data-print>{res.printLabel}</button>
+          <button type="button" class="btn btn--quiet" data-retake>{res.retakeLabel}</button>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <script type="application/json" data-readiness-bootstrap set:html={JSON.stringify(bootstrap)} />
+</Base>
+
+<script>
+  import {
+    diagnose,
+    entryPoint,
+    encodeAnswers,
+    decodeAnswers,
+    SCORED_DIMENSIONS,
+    type Answers,
+    type QuestionLike,
+  } from '../../../lib/assessment';
+  import { LocalSessionStore, openActiveSession } from '../../../lib/session';
+
+  const boot = document.querySelector('[data-readiness-bootstrap]');
+  const rootEl = document.querySelector<HTMLElement>('[data-readiness]');
+
+  if (boot && rootEl) {
+    const cfg = JSON.parse(boot.textContent ?? '{}');
+    const qs: QuestionLike[] = cfg.questions;
+    const copy = cfg.copy;
+
+    const store = new LocalSessionStore();
+    const session = await openActiveSession(store);
+
+    const panels = {
+      intro: document.querySelector<HTMLElement>('[data-panel="intro"]')!,
+      quiz: document.querySelector<HTMLElement>('[data-panel="quiz"]')!,
+      result: document.querySelector<HTMLElement>('[data-panel="result"]')!,
+    };
+    const cards = Array.from(document.querySelectorAll<HTMLElement>('.q'));
+
+    let answers: Answers = { ...(session.readiness?.answers ?? {}) };
+    let index = 0;
+
+    const head = document.querySelector<HTMLElement>('[data-head]');
+
+    function show(name: keyof typeof panels) {
+      for (const [key, el] of Object.entries(panels)) el.hidden = key !== name;
+      // The page title and lede exist to introduce the instrument. While it is
+      // being used they are scaffolding competing with the thing the room is
+      // supposed to be reading, so they step aside.
+      if (head) head.hidden = name !== 'intro';
+    }
+
+    /* ---------------- questions ---------------- */
+
+    const dimEl = document.querySelector<HTMLElement>('[data-quiz-dim]')!;
+    const countEl = document.querySelector<HTMLElement>('[data-quiz-count]')!;
+    const barEl = document.querySelector<HTMLElement>('[data-quiz-bar]')!;
+    const nextBtn = document.querySelector<HTMLButtonElement>('[data-next]')!;
+    const backBtn = document.querySelector<HTMLButtonElement>('[data-back]')!;
+
+    function renderQuestion() {
+      cards.forEach((c, i) => (c.hidden = i !== index));
+      const q = qs[index];
+      dimEl.textContent = copy.dimensionNames[q.data.dimension] ?? '';
+      countEl.textContent = copy.progress
+        .replace('{n}', String(index + 1))
+        .replace('{total}', String(qs.length));
+      barEl.style.setProperty('--fill', String((index + 1) / qs.length));
+      backBtn.disabled = index === 0;
+      nextBtn.disabled = answers[q.id] === undefined;
+      nextBtn.textContent = index === qs.length - 1 ? copy.seeResult : copy.next;
+
+      // Restore a previous answer when stepping back.
+      const chosen = answers[q.id];
+      cards[index].querySelectorAll<HTMLInputElement>('[data-opt]').forEach((input) => {
+        input.checked = chosen !== undefined && Number(input.value) === chosen;
+      });
+
+      // Move focus to the question so a keyboard user is not stranded at the
+      // bottom of the page after each step.
+      cards[index].querySelector('legend')?.setAttribute('tabindex', '-1');
+      (cards[index].querySelector('legend') as HTMLElement | null)?.focus();
+    }
+
+    rootEl.addEventListener('change', (e) => {
+      const input = e.target as HTMLInputElement;
+      if (!input.matches('[data-opt]')) return;
+      answers[input.dataset.qid!] = Number(input.value);
+      nextBtn.disabled = false;
+      void persist();
+    });
+
+    async function persist() {
+      session.readiness = { answers };
+      await store.save(session);
+    }
+
+    nextBtn.addEventListener('click', () => {
+      if (index < qs.length - 1) {
+        index += 1;
+        renderQuestion();
+      } else {
+        void persist().then(showResult);
+      }
+    });
+
+    backBtn.addEventListener('click', () => {
+      if (index > 0) {
+        index -= 1;
+        renderQuestion();
+      }
+    });
+
+    // Number keys pick an option — a facilitator driving from the keyboard
+    // while facing a room should not have to hunt for a radio button.
+    rootEl.addEventListener('keydown', (e) => {
+      if (panels.quiz.hidden) return;
+      const n = Number((e as KeyboardEvent).key);
+      if (n >= 1 && n <= 4) {
+        const opts = cards[index].querySelectorAll<HTMLInputElement>('[data-opt]');
+        const target = opts[n - 1];
+        if (target) {
+          target.checked = true;
+          target.dispatchEvent(new Event('change', { bubbles: true }));
+        }
+      }
+    });
+
+    document.querySelector('[data-begin]')?.addEventListener('click', () => {
+      show('quiz');
+      renderQuestion();
+    });
+
+    document.querySelector('[data-retake]')?.addEventListener('click', () => {
+      index = 0;
+      show('quiz');
+      renderQuestion();
+    });
+
+    document.querySelector('[data-print]')?.addEventListener('click', () => window.print());
+
+    /* ---------------- result ---------------- */
+
+    function showResult() {
+      const d = diagnose(qs, answers);
+      const step = entryPoint(d);
+
+      // Plot: maturity on x, resources on y, SVG y inverted. Distance from the
+      // diagonal is the imbalance — fluent with no licences sits bottom-right,
+      // licensed with no fluency sits top-left, and the fix differs.
+      const point = document.querySelector<SVGPathElement>('[data-plot-point]')!;
+      const x = d.dimensions.maturity.score * 100;
+      const y = 100 - d.dimensions.resources.score * 100;
+      point.setAttribute('transform', `translate(${x.toFixed(1)}, ${y.toFixed(1)})`);
+
+      const tierKey = `tier-${d.startTier}`;
+      document.querySelector('[data-ambition]')!.textContent =
+        copy.tierNames[d.ambitionTier - 1] ?? '';
+      document.querySelector('[data-supported]')!.textContent =
+        copy.tierNames[d.supportedTier - 1] ?? '';
+      document.querySelector('[data-tier]')!.textContent = copy.tierNames[d.startTier - 1] ?? '';
+      document.querySelector('[data-motion]')!.textContent = copy.motions[tierKey] ?? '';
+      const pathLink = document.querySelector<HTMLAnchorElement>('[data-path-link]');
+      if (pathLink) pathLink.href = copy.pathHref[tierKey];
+      document.querySelector('[data-verdict-title]')!.textContent = copy.verdicts[d.verdict].title;
+      document.querySelector('[data-verdict-body]')!.textContent = copy.verdicts[d.verdict].body;
+      document.querySelector('[data-entry-title]')!.textContent = copy.entries[step].title;
+      document.querySelector('[data-entry-body]')!.textContent = copy.entries[step].body;
+
+      for (const dim of SCORED_DIMENSIONS) {
+        const li = document.querySelector<HTMLElement>(`[data-dim="${dim}"]`);
+        if (!li) continue;
+        const score = d.dimensions[dim].score;
+        li.querySelector<HTMLElement>('[data-dim-fill]')!.style.setProperty(
+          '--fill',
+          String(score)
+        );
+        li.querySelector<HTMLElement>('[data-dim-value]')!.textContent = `${Math.round(score * 100)}%`;
+        li.dataset.band = d.dimensions[dim].band;
+      }
+
+      // Shortfalls are per question, so each one names the specific thing to
+      // line up rather than a dimension-wide platitude.
+      const gapsEl = document.querySelector<HTMLElement>('[data-gaps]')!;
+      gapsEl.innerHTML = '';
+      if (!d.shortfalls.length) {
+        const li = document.createElement('li');
+        li.className = 'gap gap--none';
+        li.textContent = copy.noGaps;
+        gapsEl.append(li);
+      } else {
+        // An organisation at the floor has nine shortfalls. All nine are true
+        // and all nine on screen are unusable, so the page shows the five
+        // weakest — the diagnosis keeps the rest for the exported record.
+        for (const id of d.shortfalls.slice(0, 5)) {
+          const entry = cfg.gapById[id];
+          if (!entry) continue;
+          const li = document.createElement('li');
+          li.className = 'gap';
+          const h = document.createElement('p');
+          h.className = 'gap__name';
+          h.textContent = entry.title;
+          const p = document.createElement('p');
+          p.className = 'gap__body';
+          p.textContent = entry.body;
+          li.append(h, p);
+          gapsEl.append(li);
+        }
+      }
+
+      show('result');
+      panels.result.scrollIntoView({ block: 'start' });
+    }
+
+    document.querySelector('[data-copy]')?.addEventListener('click', async (e) => {
+      const btn = e.currentTarget as HTMLButtonElement;
+      const url = `${location.origin}${cfg.consoleHref}?r=${encodeAnswers(qs, answers)}`;
+      try {
+        await navigator.clipboard.writeText(url);
+      } catch {
+        // Clipboard is blocked in some embedded browsers; showing the URL is
+        // better than failing silently in front of a customer.
+        prompt(copy.copyLink, url);
+      }
+      btn.textContent = copy.copied;
+      setTimeout(() => (btn.textContent = copy.copyLink), 2000);
+    });
+
+    /* ---------------- entry conditions ---------------- */
+
+    // Resume where they were, or open a shared link straight to its result.
+    const shared = new URLSearchParams(location.search).get('r');
+    const fromLink = shared ? decodeAnswers(qs, shared) : null;
+    if (fromLink) {
+      answers = fromLink;
+      await persist();
+      showResult();
+    } else if (diagnose(qs, answers).complete) {
+      showResult();
+    }
+  }
+</script>
+
+<style>
+  /* ---------- intro ---------- */
+  .intro {
+    margin-block-start: clamp(1.75rem, 1.2rem + 2vw, 2.75rem);
+  }
+
+  .intro__note {
+    margin: 0;
+    font-size: var(--text-small);
+    color: var(--color-muted);
+  }
+
+  .intro__dims {
+    list-style: none;
+    margin: clamp(1.5rem, 1rem + 2vw, 2.5rem) 0;
+    padding: 0;
+    display: grid;
+    gap: clamp(1.2rem, 0.8rem + 1.6vw, 2rem);
+  }
+
+  .intro__dim {
+    padding-block-start: 0.8rem;
+    border-block-start: 2px solid color-mix(in srgb, var(--color-gold) 55%, transparent);
+  }
+
+  .intro__dim-name {
+    margin: 0;
+    font-family: var(--font-body);
+    font-size: var(--text-small);
+    font-weight: 600;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--color-ink);
+  }
+
+  .intro__dim-blurb {
+    margin: 0.4rem 0 0;
+    font-size: var(--text-small);
+    color: color-mix(in srgb, var(--color-ink) 78%, var(--color-muted));
+  }
+
+  /* ---------- quiz ---------- */
+  .quiz {
+    margin-block-start: clamp(1rem, 0.7rem + 1vw, 1.75rem);
+  }
+
+  .quiz__meter {
+    display: grid;
+    grid-template-columns: 1fr auto;
+    gap: 0.4rem 1rem;
+    align-items: baseline;
+  }
+
+  .quiz__dim,
+  .quiz__count {
+    margin: 0;
+  }
+
+  .quiz__count {
+    font-size: var(--text-micro);
+    color: var(--color-muted);
+  }
+
+  .quiz__bar {
+    grid-column: 1 / -1;
+    block-size: 3px;
+    background: color-mix(in srgb, var(--color-muted) 28%, transparent);
+    overflow: hidden;
+  }
+
+  .quiz__bar-fill {
+    display: block;
+    block-size: 100%;
+    inline-size: 100%;
+    background: var(--color-gold);
+    transform: scaleX(var(--fill, 0));
+    transform-origin: left center;
+    transition: transform var(--duration-base) var(--ease-out-expo);
+  }
+
+  .quiz__list {
+    list-style: none;
+    margin: clamp(1.5rem, 1rem + 2vw, 2.5rem) 0 0;
+    padding: 0;
+  }
+
+  .q__set {
+    border: 0;
+    margin: 0;
+    padding: 0;
+    min-inline-size: 0;
+  }
+
+  /* Sized to be the dominant element on a projected screen: clearly above the
+     option text, but short of the section-heading scale, which would push a
+     long question past a full screen on its own. */
+  .q__prompt {
+    padding: 0;
+    font-size: clamp(1.6rem, 1.05rem + 1.7vw, 2.7rem);
+    line-height: 1.2;
+    color: var(--color-ink);
+    max-inline-size: 26ch;
+    text-wrap: balance;
+  }
+
+  .q__prompt:focus-visible {
+    outline: 2px solid var(--color-gold);
+    outline-offset: 6px;
+  }
+
+  :global(html[lang='zh']) .q__prompt {
+    max-inline-size: 20em;
+    text-wrap: normal;
+  }
+
+  .q__help {
+    margin: 0.8rem 0 0;
+    font-size: var(--text-body);
+    font-style: italic;
+    color: var(--color-muted);
+    max-inline-size: 56ch;
+  }
+
+  .q__options {
+    margin-block-start: clamp(1.2rem, 0.9rem + 1.2vw, 1.8rem);
+    display: grid;
+    gap: 0.6rem;
+  }
+
+  .opt {
+    display: grid;
+    grid-template-columns: auto 1fr;
+    gap: 0.9rem;
+    align-items: start;
+    padding: 0.9rem 1.1rem;
+    border: 1px solid color-mix(in srgb, var(--color-ink) 14%, transparent);
+    background: color-mix(in srgb, #fff 62%, transparent);
+    cursor: pointer;
+    transition:
+      border-color var(--duration-quick) ease,
+      background-color var(--duration-quick) ease;
+  }
+
+  .opt:hover {
+    border-color: color-mix(in srgb, var(--color-gold) 60%, transparent);
+  }
+
+  .opt input {
+    position: absolute;
+    opacity: 0;
+    pointer-events: none;
+  }
+
+  .opt__key {
+    display: grid;
+    place-items: center;
+    inline-size: 1.6rem;
+    block-size: 1.6rem;
+    font-family: var(--font-display);
+    font-size: var(--text-small);
+    color: var(--color-muted);
+    border: 1px solid color-mix(in srgb, var(--color-ink) 18%, transparent);
+  }
+
+  .opt__label {
+    font-size: var(--text-body);
+    line-height: 1.35;
+    color: var(--color-ink);
+  }
+
+  .opt:has(input:checked) {
+    border-color: var(--color-gold);
+    background: color-mix(in srgb, var(--color-gold) 12%, #fff 70%);
+  }
+
+  .opt:has(input:checked) .opt__key {
+    background: var(--color-gold);
+    border-color: var(--color-gold);
+    color: var(--color-ink-deep);
+  }
+
+  .opt:has(input:focus-visible) {
+    outline: 2px solid var(--color-gold);
+    outline-offset: 3px;
+  }
+
+  .quiz__nav {
+    margin-block-start: clamp(1.5rem, 1rem + 2vw, 2.5rem);
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.75rem;
+  }
+
+  /* ---------- result ---------- */
+  .result {
+    margin-block-start: clamp(1.75rem, 1.2rem + 2vw, 2.75rem);
+    scroll-margin-block-start: 6.5rem;
+  }
+
+  .result__title {
+    margin: 0.6rem 0 0;
+    font-size: var(--text-h2);
+    color: var(--color-ink);
+  }
+
+  .result__top {
+    margin-block-start: clamp(1.5rem, 1rem + 2vw, 2.5rem);
+    display: grid;
+    gap: clamp(1.5rem, 1rem + 2.4vw, 3rem);
+    align-items: center;
+  }
+
+  /* Two axes need two orientations. Side by side under the chart they read as
+     if both belonged to x, which inverts the whole point of plotting readiness
+     against capability. */
+  /* Both labels stay horizontal, distinguished by their arrows and their
+     position rather than by rotation. Rotating the y label turned the Chinese
+     characters on their side, and `writing-mode` fixes for CJK and Latin pull
+     in opposite directions — an arrow costs nothing and works in every script.
+     */
+  .plot {
+    margin: 0;
+    max-inline-size: 24rem;
+    display: grid;
+    gap: 0.45rem;
+  }
+
+  .plot svg {
+    inline-size: 100%;
+    block-size: auto;
+    overflow: visible;
+  }
+
+  .plot__frame {
+    fill: color-mix(in srgb, #fff 55%, transparent);
+    stroke: color-mix(in srgb, var(--color-ink) 22%, transparent);
+    stroke-width: 0.6;
+  }
+
+  .plot__grid line {
+    stroke: color-mix(in srgb, var(--color-ink) 12%, transparent);
+    stroke-width: 0.5;
+  }
+
+  .plot__diag {
+    stroke: color-mix(in srgb, var(--color-gold) 70%, transparent);
+    stroke-width: 0.8;
+    stroke-dasharray: 2 2;
+  }
+
+  .plot__point {
+    fill: var(--color-gold);
+    stroke: var(--color-ink-deep);
+    stroke-width: 0.8;
+    transition: transform var(--duration-slow) var(--ease-out-expo);
+  }
+
+  .plot__axis {
+    font-size: var(--text-micro);
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--color-muted);
+    white-space: nowrap;
+  }
+
+  .plot__axis--y {
+    order: -1;
+  }
+
+  .plot__axis--x {
+    justify-self: end;
+  }
+
+  .verdict__reading {
+    margin: 0;
+    display: grid;
+    gap: 0.6rem 2rem;
+  }
+
+  .verdict__reading dt {
+    font-size: var(--text-eyebrow);
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: var(--color-muted);
+  }
+
+  .verdict__reading dd {
+    margin: 0.15rem 0 0;
+    font-family: var(--font-display);
+    font-size: var(--text-body);
+    color: var(--color-ink);
+  }
+
+  .verdict__start-label {
+    margin-block-start: clamp(1rem, 0.8rem + 0.7vw, 1.5rem);
+  }
+
+  .verdict__tier {
+    margin: 0.3rem 0 0;
+    font-size: var(--text-h3);
+    color: var(--color-gold);
+  }
+
+  .verdict__motion {
+    margin: 0.6rem 0 0;
+    display: flex;
+    flex-wrap: wrap;
+    align-items: baseline;
+    gap: 0.4rem 0.8rem;
+  }
+
+  .verdict__motion-value {
+    font-family: var(--font-display);
+    font-size: var(--text-body);
+    color: var(--color-ink);
+  }
+
+  .verdict__title {
+    margin: clamp(1rem, 0.8rem + 0.7vw, 1.5rem) 0 0;
+    font-family: var(--font-body);
+    font-size: var(--text-body);
+    font-weight: 600;
+    color: var(--color-ink);
+  }
+
+  .verdict__body {
+    margin: 0.4rem 0 0;
+    font-size: var(--text-small);
+    line-height: 1.5;
+    color: color-mix(in srgb, var(--color-ink) 82%, var(--color-muted));
+    max-inline-size: 58ch;
+  }
+
+  .verdict :global(.rule-gold) {
+    margin-block: clamp(1.1rem, 0.9rem + 0.8vw, 1.6rem) 0;
+  }
+
+  .result__grid {
+    margin-block-start: clamp(2rem, 1.4rem + 2.4vw, 3.25rem);
+    display: grid;
+    gap: clamp(1.5rem, 1rem + 2.4vw, 3rem);
+  }
+
+  .dims,
+  .gaps {
+    list-style: none;
+    margin: 0.8rem 0 0;
+    padding: 0;
+    display: grid;
+    gap: 0.9rem;
+  }
+
+  .dim {
+    display: grid;
+    grid-template-columns: 1fr auto;
+    gap: 0.3rem 0.8rem;
+    align-items: baseline;
+  }
+
+  .dim__name,
+  .dim__value {
+    margin: 0;
+    font-size: var(--text-small);
+    color: var(--color-ink);
+  }
+
+  .dim__value {
+    font-variant-numeric: tabular-nums;
+    color: var(--color-muted);
+  }
+
+  .dim__bar {
+    grid-column: 1 / -1;
+    block-size: 5px;
+    background: color-mix(in srgb, var(--color-muted) 26%, transparent);
+    overflow: hidden;
+  }
+
+  .dim__fill {
+    display: block;
+    block-size: 100%;
+    inline-size: 100%;
+    background: var(--color-ink);
+    transform: scaleX(var(--fill, 0));
+    transform-origin: left center;
+    transition: transform var(--duration-slow) var(--ease-out-expo);
+  }
+
+  .dim[data-band='low'] .dim__fill {
+    background: var(--color-ember);
+  }
+
+  .dim[data-band='high'] .dim__fill {
+    background: var(--color-gold);
+  }
+
+  .gap {
+    padding-inline-start: 0.9rem;
+    border-inline-start: 3px solid var(--color-ember);
+  }
+
+  .gap--none {
+    border-inline-start-color: var(--color-gold);
+    font-size: var(--text-small);
+    color: var(--color-muted);
+  }
+
+  .gap__name {
+    margin: 0;
+    font-size: var(--text-small);
+    font-weight: 600;
+    color: var(--color-ink);
+  }
+
+  .gap__body {
+    margin: 0.25rem 0 0;
+    font-size: var(--text-small);
+    line-height: 1.45;
+    color: color-mix(in srgb, var(--color-ink) 78%, var(--color-muted));
+    max-inline-size: 54ch;
+  }
+
+  .result__actions {
+    margin-block-start: clamp(2rem, 1.4rem + 2.4vw, 3.25rem);
+    padding-block-start: clamp(1.2rem, 0.9rem + 1.2vw, 1.8rem);
+    border-block-start: 1px solid color-mix(in srgb, var(--color-gold) 45%, transparent);
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.75rem;
+  }
+
+  @media (min-width: 46rem) {
+    .intro__dims {
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+    }
+
+    .verdict__reading {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+  }
+
+  @media (min-width: 68rem) {
+    .q__options {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+
+    .result__top {
+      grid-template-columns: auto minmax(0, 1fr);
+    }
+
+    .result__grid {
+      grid-template-columns: minmax(0, 1fr) minmax(0, 1.1fr);
+    }
+  }
+
+  /* The readiness brief is meant to leave the room on paper. */
+  @media print {
+    .result__actions,
+    .quiz,
+    .intro {
+      display: none !important;
+    }
+  }
+</style>

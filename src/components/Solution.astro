@@ -1,0 +1,106 @@
+---
+/**
+ * 03 — Solution: platform plus method.
+ *
+ * The deck states four capabilities on one row. Each carries an outcome
+ * (Productivity) and the surface that delivers it (via Apps). The surface line
+ * is set in gold small caps directly beneath the outcome so the pairing reads
+ * at a glance from the back of a room.
+ */
+import SectionArt from './SectionArt.astro';
+import solutionImage from '../assets/images/solution-platform.webp';
+import SectionHead from './SectionHead.astro';
+import { type Lang } from '../i18n/config';
+import { useTranslations } from '../i18n/content';
+
+interface Props {
+  lang: Lang;
+}
+
+const { lang } = Astro.props;
+const s = useTranslations(lang).solution;
+---
+
+<section id="solution" class="section solution">
+  <SectionArt src={solutionImage} alt={s.imageAlt} focus="center 45%" />
+
+  <div class="shell">
+    <div class="lead">
+      <SectionHead eyebrow={s.eyebrow} title={s.titleLead} accent={s.titleAccent} lede={s.lede} />
+    </div>
+
+    <ul class="capabilities plate">
+      {
+        s.capabilities.map((cap, i) => (
+          <li class="capability" data-reveal style={`--beat:${i}`}>
+            <span class="capability__index" aria-hidden="true">
+              {String(i + 1).padStart(2, '0')}
+            </span>
+            <h3 class="capability__title display">{cap.title}</h3>
+            <p class="capability__via">{cap.via}</p>
+            <p class="capability__body">{cap.body}</p>
+          </li>
+        ))
+      }
+    </ul>
+  </div>
+</section>
+
+<style>
+  .capabilities {
+    list-style: none;
+    margin: clamp(1.5rem, 1rem + 2vw, 2.5rem) 0 0;
+    display: grid;
+    gap: clamp(2rem, 1rem + 3vw, 3.5rem);
+  }
+
+  @media (min-width: 46rem) {
+    .capabilities {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+  }
+
+  @media (min-width: 76rem) {
+    .capabilities {
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+    }
+  }
+
+  .capability {
+    display: grid;
+    gap: 0.35rem;
+    align-content: start;
+    padding-block-start: 1.1rem;
+    border-block-start: 1px solid color-mix(in srgb, var(--color-gold) 55%, transparent);
+  }
+
+  .capability__index {
+    font-family: var(--font-display);
+    font-size: var(--text-small);
+    color: var(--color-gold);
+    letter-spacing: 0.1em;
+  }
+
+  .capability__title {
+    margin: 0.2rem 0 0;
+    font-size: var(--text-h3);
+    color: var(--color-ink);
+  }
+
+  .capability__via {
+    margin: 0;
+    font-size: var(--text-micro);
+    font-weight: 600;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: var(--color-gold);
+  }
+
+  .capability__body {
+    margin: 0.5rem 0 0;
+    font-size: var(--text-small);
+    line-height: 1.6;
+    color: color-mix(in srgb, var(--color-ink) 80%, transparent);
+    text-wrap: pretty;
+  }
+</style>

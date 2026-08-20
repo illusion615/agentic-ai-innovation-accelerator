@@ -1,0 +1,397 @@
+---
+/**
+ * 10 — Solution assets: three Before → Solution → After comparisons.
+ *
+ * Each asset is its own page in the deck. Stacked on the web the three
+ * near-identical grids ran to almost four projector screens and blurred
+ * together, so they are tabbed instead: one asset on screen at a time. That
+ * also matches how the section gets used — a presenter picks the asset that
+ * matches the customer in the room rather than scrolling past two irrelevant
+ * ones. Within an asset, the middle (solution) column is raised on a navy panel
+ * so the eye lands there first, and the before column is desaturated the same
+ * way the misconception column is in section 06 — one visual grammar for "this
+ * is the state we are leaving".
+ */
+import { Image } from 'astro:assets';
+import SectionHead from './SectionHead.astro';
+import { type Lang } from '../i18n/config';
+import { useTranslations } from '../i18n/content';
+
+import bppBefore from '../assets/images/asset-bpp-before.webp';
+import bppSolution from '../assets/images/asset-bpp-solution.webp';
+import bppAfter from '../assets/images/asset-bpp-after.webp';
+import docBefore from '../assets/images/asset-doc-before.webp';
+import docSolution from '../assets/images/asset-doc-solution.webp';
+import docAfter from '../assets/images/asset-doc-after.webp';
+import crmBefore from '../assets/images/asset-crm-before.webp';
+import crmSolution from '../assets/images/asset-crm-solution.webp';
+import crmAfter from '../assets/images/asset-crm-after.webp';
+
+interface Props {
+  lang: Lang;
+  /**
+   * Whether to render its own heading. False when the component is embedded in
+   * a page that already frames it — the Tier 2 delivery path, where these are
+   * reference material rather than a section of the argument.
+   */
+  framed?: boolean;
+}
+
+const { lang, framed = true } = Astro.props;
+const a = useTranslations(lang).assets;
+
+const art: Record<string, Record<'before' | 'solution' | 'after', ImageMetadata>> = {
+  bpp: { before: bppBefore, solution: bppSolution, after: bppAfter },
+  doc: { before: docBefore, solution: docSolution, after: docAfter },
+  crm: { before: crmBefore, solution: crmSolution, after: crmAfter },
+};
+
+const phases = ['before', 'solution', 'after'] as const;
+---
+
+<section id="assets" class="section assets">
+  <div class="shell">
+    <div class:list={['assets__top', !framed && 'assets__top--bare']}>
+      {
+        framed && (
+          <SectionHead eyebrow={a.eyebrow} title={a.titleLead} accent={a.titleAccent} lede={a.lede} />
+        )
+      }
+
+      <div class="assets__tabs" role="tablist" aria-label={a.selectLabel} data-asset-tabs>
+      {
+        a.items.map((asset, ai) => (
+          <button
+            type="button"
+            role="tab"
+            id={`asset-tab-${asset.key}`}
+            class="assets__tab"
+            data-asset-tab={asset.key}
+            aria-controls={`asset-panel-${asset.key}`}
+            aria-selected={ai === 0 ? 'true' : 'false'}
+            tabindex={ai === 0 ? 0 : -1}
+          >
+            <span class="assets__tab-index display" aria-hidden="true">
+              {String(ai + 1).padStart(2, '0')}
+            </span>
+            <span class="assets__tab-name">{asset.name}</span>
+          </button>
+        ))
+      }
+      </div>
+    </div>
+
+    <div class="assets__list">
+      {
+        a.items.map((asset, ai) => (
+          <article
+            class="asset"
+            id={`asset-panel-${asset.key}`}
+            role="tabpanel"
+            aria-labelledby={`asset-tab-${asset.key}`}
+            data-asset-panel={asset.key}
+            hidden={ai !== 0}
+          >
+            <p class="asset__lede">{asset.lede}</p>
+
+            <div class="phases">
+              {phases.map((phase) => (
+                <section class={`phase phase--${phase}`}>
+                  <p class="phase__label">{a.columnLabels[phase]}</p>
+                  <figure class="phase__figure">
+                    <Image
+                      src={art[asset.key][phase]}
+                      alt={asset[phase].imageAlt}
+                      widths={[400, 620, 860]}
+                      sizes="(min-width: 68rem) 30vw, 90vw"
+                      format="webp"
+                      quality={78}
+                      loading="lazy"
+                    />
+                  </figure>
+                  <h4 class="phase__caption display">{asset[phase].caption}</h4>
+                  <ul class="phase__points">
+                    {asset[phase].points.map((point) => (
+                      <li>{point}</li>
+                    ))}
+                  </ul>
+                </section>
+              ))}
+            </div>
+
+            <p class="asset__closing">{asset.closing}</p>
+          </article>
+        ))
+      }
+    </div>
+  </div>
+</section>
+
+<script>
+  const group = document.querySelector<HTMLElement>('[data-asset-tabs]');
+
+  if (group) {
+    const tabs = [...group.querySelectorAll<HTMLButtonElement>('[data-asset-tab]')];
+
+    const select = (key: string, focus = false) => {
+      for (const tab of tabs) {
+        const on = tab.dataset.assetTab === key;
+        tab.setAttribute('aria-selected', String(on));
+        tab.tabIndex = on ? 0 : -1;
+        if (on && focus) tab.focus();
+      }
+      for (const panel of document.querySelectorAll<HTMLElement>('[data-asset-panel]')) {
+        panel.hidden = panel.dataset.assetPanel !== key;
+      }
+    };
+
+    group.addEventListener('click', (event) => {
+      const tab = (event.target as HTMLElement).closest<HTMLButtonElement>('[data-asset-tab]');
+      if (tab?.dataset.assetTab) select(tab.dataset.assetTab);
+    });
+
+    // Roving tabindex: a tablist should answer to arrow keys, not Tab.
+    group.addEventListener('keydown', (event) => {
+      const step = event.key === 'ArrowRight' ? 1 : event.key === 'ArrowLeft' ? -1 : 0;
+      if (!step) return;
+      event.preventDefault();
+      const current = tabs.findIndex((tab) => tab.getAttribute('aria-selected') === 'true');
+      const next = tabs[(current + step + tabs.length) % tabs.length];
+      if (next?.dataset.assetTab) select(next.dataset.assetTab, true);
+    });
+  }
+</script>
+
+<style>
+  .assets__top {
+    display: grid;
+    gap: clamp(1.75rem, 1rem + 2.4vw, 2.75rem);
+    align-items: start;
+  }
+
+  /* Embedded: the host page owns the framing, so the tab list is the whole
+     header and must not keep the two-column grid it shares with a heading. */
+  .assets__top--bare {
+    display: block;
+  }
+
+  .assets__tabs {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0;
+    border-block-start: 2px solid var(--color-gold);
+  }
+
+  .assets__tab {
+    flex: 1 1 16rem;
+    display: flex;
+    align-items: baseline;
+    gap: 0.75rem;
+    padding: clamp(0.9rem, 0.6rem + 1vw, 1.4rem) clamp(0.9rem, 0.5rem + 1.2vw, 1.5rem);
+    background: none;
+    border: 0;
+    border-inline-start: 1px solid color-mix(in srgb, var(--color-ink) 12%, transparent);
+    text-align: start;
+    cursor: pointer;
+    color: var(--color-muted);
+    transition:
+      color var(--duration-quick) var(--ease-out),
+      background var(--duration-quick) var(--ease-out);
+  }
+
+  .assets__tab:first-child {
+    border-inline-start: 0;
+  }
+
+  .assets__tab:hover {
+    color: var(--color-ink);
+  }
+
+  .assets__tab[aria-selected='true'] {
+    background: color-mix(in srgb, var(--color-gold) 12%, transparent);
+    color: var(--color-ink);
+  }
+
+  .assets__tab-index {
+    font-size: clamp(1.5rem, 1rem + 1.6vw, 2.4rem);
+    line-height: 0.9;
+    color: color-mix(in srgb, var(--color-gold) 55%, transparent);
+    transition: color var(--duration-quick) var(--ease-out);
+  }
+
+  .assets__tab[aria-selected='true'] .assets__tab-index {
+    color: var(--color-gold);
+  }
+
+  .assets__tab-name {
+    font-family: var(--font-display);
+    font-size: var(--text-h3);
+    line-height: 1.15;
+    text-wrap: balance;
+  }
+
+  .assets__list {
+    margin-block-start: clamp(1.75rem, 1rem + 2.4vw, 2.75rem);
+  }
+
+  /* Wide: the heading and the asset picker sit side by side so the actual
+     Before/Solution/After comparison starts near the top of the screen instead
+     of a screen and a half down. */
+  @media (min-width: 68rem) {
+    .assets__top:not(.assets__top--bare) {
+      grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+      column-gap: clamp(2rem, 0.5rem + 3.5vw, 4.5rem);
+    }
+
+    /* Without a heading beside it there is full width to spend, so the picker
+       goes back to a horizontal row of tabs. */
+    .assets__top:not(.assets__top--bare) .assets__tabs {
+      flex-direction: column;
+    }
+
+    .assets__top:not(.assets__top--bare) .assets__tab {
+      flex: 0 0 auto;
+      border-inline-start: 0;
+      border-block-end: 1px solid color-mix(in srgb, var(--color-ink) 12%, transparent);
+    }
+
+    .assets__top:not(.assets__top--bare) .assets__tab:last-child {
+      border-block-end: 0;
+    }
+  }
+
+  .asset__lede {
+    margin: 0;
+    font-size: var(--text-body);
+    line-height: 1.6;
+    color: color-mix(in srgb, var(--color-ink) 78%, transparent);
+    max-inline-size: 74ch;
+    text-wrap: pretty;
+  }
+
+  /* --- Before | Solution | After --- */
+  .phases {
+    display: grid;
+    gap: clamp(1.25rem, 0.6rem + 2vw, 2rem);
+    margin-block-start: clamp(1.75rem, 1rem + 2.5vw, 2.75rem);
+  }
+
+  @media (min-width: 68rem) {
+    .phases {
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      align-items: stretch;
+    }
+  }
+
+  .phase {
+    display: grid;
+    grid-template-rows: auto auto auto 1fr;
+    align-content: start;
+    padding: clamp(1rem, 0.6rem + 1.4vw, 1.6rem);
+    background: #fff;
+    border: 1px solid color-mix(in srgb, var(--color-ink) 10%, transparent);
+  }
+
+  /* The solution column is the answer, so it is the one that is lit. */
+  .phase--solution {
+    background: var(--color-ink-deep);
+    border-color: var(--color-ink-deep);
+  }
+
+  .phase__label {
+    margin: 0 0 0.75rem;
+    font-size: var(--text-micro);
+    font-weight: 600;
+    letter-spacing: 0.22em;
+    text-transform: uppercase;
+    color: var(--color-muted);
+  }
+
+  .phase--before .phase__label {
+    color: var(--color-ember);
+  }
+
+  .phase--solution .phase__label {
+    color: var(--color-gold-bright);
+  }
+
+  .phase--after .phase__label {
+    color: var(--color-gold);
+  }
+
+  .phase__figure {
+    margin: 0;
+    overflow: hidden;
+    aspect-ratio: 16 / 9;
+  }
+
+  .phase__figure :global(img) {
+    display: block;
+    inline-size: 100%;
+    block-size: 100%;
+    object-fit: cover;
+  }
+
+  .phase--before .phase__figure :global(img) {
+    filter: saturate(0.32) contrast(1.03);
+  }
+
+  .phase__caption {
+    margin: 0.9rem 0 0;
+    font-size: var(--text-h3);
+    color: var(--color-ink);
+    text-wrap: balance;
+  }
+
+  .phase--solution .phase__caption {
+    color: var(--color-parchment);
+  }
+
+  .phase__points {
+    margin: 0.85rem 0 0;
+    padding: 0;
+    list-style: none;
+    display: grid;
+    gap: 0.6rem;
+    align-content: start;
+  }
+
+  .phase__points li {
+    position: relative;
+    padding-inline-start: 1.1rem;
+    font-size: var(--text-small);
+    line-height: 1.5;
+    color: color-mix(in srgb, var(--color-ink) 80%, transparent);
+    text-wrap: pretty;
+  }
+
+  .phase__points li::before {
+    content: '';
+    position: absolute;
+    inset-block-start: 0.62em;
+    inset-inline-start: 0;
+    inline-size: 0.4rem;
+    block-size: 1px;
+    background: var(--color-gold);
+  }
+
+  .phase--before .phase__points li::before {
+    background: var(--color-ember);
+  }
+
+  .phase--solution .phase__points li {
+    color: color-mix(in srgb, var(--color-parchment) 80%, transparent);
+  }
+
+  .asset__closing {
+    margin: clamp(1.25rem, 0.8rem + 1.4vw, 2rem) 0 0;
+    padding-block-start: 1rem;
+    border-block-start: 1px solid color-mix(in srgb, var(--color-gold) 50%, transparent);
+    font-family: var(--font-display);
+    font-size: var(--text-lede);
+    line-height: 1.4;
+    color: var(--color-ink);
+    max-inline-size: 62ch;
+    text-wrap: pretty;
+  }
+</style>

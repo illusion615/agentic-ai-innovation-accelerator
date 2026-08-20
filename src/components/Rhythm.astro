@@ -1,0 +1,279 @@
+---
+/**
+ * 08 — The operating rhythm: five gates over eight weeks, plus three
+ * recurring beats that outlive the engagement.
+ *
+ * The gate row is a genuine timeline — a gold rail runs behind the cards with a
+ * node per gate — because "week 0 → week 8" is the one place in the deck where
+ * sequence *is* the message. Below the rail, the cadence trio is deliberately
+ * styled differently (no numbers, coloured spine) so it reads as "and then it
+ * keeps going", not as a sixth gate.
+ */
+import { Image } from 'astro:assets';
+import SectionHead from './SectionHead.astro';
+import { type Lang } from '../i18n/config';
+import { useTranslations } from '../i18n/content';
+
+import w0 from '../assets/images/rhythm-w0.webp';
+import w2 from '../assets/images/rhythm-w2.webp';
+import w4 from '../assets/images/rhythm-w4.webp';
+import w6 from '../assets/images/rhythm-w6.webp';
+import w8 from '../assets/images/rhythm-w8.webp';
+import weekly from '../assets/images/rhythm-weekly.webp';
+import badge from '../assets/images/rhythm-badge.webp';
+import quarterly from '../assets/images/rhythm-quarterly.webp';
+
+interface Props {
+  lang: Lang;
+}
+
+const { lang } = Astro.props;
+const r = useTranslations(lang).rhythm;
+
+const gateArt: Record<string, ImageMetadata> = { w0, w2, w4, w6, w8 };
+const cadenceArt: Record<string, ImageMetadata> = { weekly, badge, quarterly };
+---
+
+<section id="rhythm" class="section rhythm">
+  <div class="shell">
+    <SectionHead eyebrow={r.eyebrow} title={r.title} lede={r.lede} />
+
+    <p class="meta-label rhythm__label" data-reveal>{r.gatesLabel}</p>
+
+    <ol class="gates">
+      {
+        r.gates.map((gate, i) => (
+          <li class="gate" data-reveal style={`--beat:${i}`}>
+            <figure class="gate__figure">
+              <Image
+                src={gateArt[gate.key]}
+                alt={gate.imageAlt}
+                widths={[300, 460, 640]}
+                sizes="(min-width: 68rem) 17vw, (min-width: 46rem) 44vw, 88vw"
+                format="webp"
+                quality={78}
+                loading="lazy"
+              />
+            </figure>
+            <div class="gate__rail" aria-hidden="true">
+              <span class="gate__node" />
+            </div>
+            <p class="gate__when">{gate.when}</p>
+            <h3 class="gate__name display">{gate.name}</h3>
+            <p class="gate__body">{gate.body}</p>
+          </li>
+        ))
+      }
+    </ol>
+
+    <p class="meta-label rhythm__label rhythm__label--cadence" data-reveal>{r.cadenceLabel}</p>
+
+    <ul class="cadences">
+      {
+        r.cadence.map((c, i) => (
+          <li class="card cadence" data-cadence={c.key} data-reveal style={`--beat:${i}`}>
+            <figure class="cadence__figure">
+              <Image
+                src={cadenceArt[c.key]}
+                alt={c.imageAlt}
+                widths={[220, 360, 500]}
+                sizes="(min-width: 62rem) 11rem, 30vw"
+                format="webp"
+                quality={78}
+                loading="lazy"
+              />
+            </figure>
+            <div class="cadence__body">
+              <p class="cadence__when">{c.when}</p>
+              <h3 class="cadence__name display">{c.name}</h3>
+              <p class="cadence__text">{c.body}</p>
+            </div>
+          </li>
+        ))
+      }
+    </ul>
+  </div>
+</section>
+
+<style>
+  .rhythm__label {
+    margin: clamp(2.5rem, 1.5rem + 4vw, 4rem) 0 clamp(1rem, 0.6rem + 1vw, 1.6rem);
+  }
+
+  .rhythm__label--cadence {
+    margin-block-start: clamp(3rem, 2rem + 4vw, 5rem);
+  }
+
+  /* --- Gates --- */
+  .gates {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: grid;
+    gap: clamp(1.75rem, 1rem + 2.5vw, 2.5rem);
+  }
+
+  @media (min-width: 46rem) {
+    .gates {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+  }
+
+  @media (min-width: 68rem) {
+    .gates {
+      grid-template-columns: repeat(5, minmax(0, 1fr));
+      gap: clamp(1rem, 0.2rem + 1.6vw, 2rem);
+    }
+  }
+
+  .gate {
+    display: grid;
+    align-content: start;
+    gap: 0.3rem;
+  }
+
+  .gate__figure {
+    margin: 0 0 0.9rem;
+    overflow: hidden;
+    aspect-ratio: 16 / 9;
+    border-block-start: 2px solid var(--color-gold);
+  }
+
+  .gate__figure :global(img) {
+    display: block;
+    inline-size: 100%;
+    block-size: 100%;
+    object-fit: cover;
+  }
+
+  /* The rail is drawn per-item and stitched together by the negative-inset
+     pseudo element, so it survives wrapping at every breakpoint. */
+  .gate__rail {
+    position: relative;
+    block-size: 1px;
+    background: color-mix(in srgb, var(--color-gold) 55%, transparent);
+    margin-block-end: 0.85rem;
+  }
+
+  .gate__node {
+    position: absolute;
+    inset-block-start: 50%;
+    inset-inline-start: 0;
+    inline-size: 0.6rem;
+    block-size: 0.6rem;
+    border-radius: 50%;
+    background: var(--color-gold);
+    transform: translateY(-50%);
+  }
+
+  .gate:last-child .gate__node {
+    background: var(--color-ink);
+  }
+
+  .gate__when {
+    margin: 0;
+    font-size: var(--text-micro);
+    font-weight: 600;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: var(--color-gold);
+  }
+
+  .gate__name {
+    margin: 0.1rem 0 0;
+    font-size: var(--text-h3);
+    color: var(--color-ink);
+    text-wrap: balance;
+  }
+
+  .gate__body {
+    margin: 0.35rem 0 0;
+    font-size: var(--text-small);
+    line-height: 1.55;
+    color: color-mix(in srgb, var(--color-ink) 78%, transparent);
+    text-wrap: pretty;
+  }
+
+  /* --- Cadence --- */
+  .cadences {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: grid;
+    gap: clamp(1.25rem, 0.6rem + 2vw, 2rem);
+  }
+
+  @media (min-width: 62rem) {
+    .cadences {
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+    }
+  }
+
+  .cadence {
+    flex-direction: row;
+    overflow: hidden;
+    border-inline-start: 4px solid var(--color-gold);
+  }
+
+  .cadence[data-cadence='quarterly'] {
+    border-inline-start-color: var(--color-ink);
+  }
+
+  .cadence__figure {
+    margin: 0;
+    flex: 0 0 clamp(5.5rem, 3.5rem + 9vw, 9rem);
+    overflow: hidden;
+  }
+
+  .cadence__figure :global(img) {
+    display: block;
+    inline-size: 100%;
+    block-size: 100%;
+    object-fit: cover;
+  }
+
+  .cadence__body {
+    display: grid;
+    align-content: start;
+    gap: 0.2rem;
+    padding: clamp(1rem, 0.7rem + 1.2vw, 1.6rem);
+  }
+
+  .cadence__when {
+    margin: 0;
+    font-size: var(--text-micro);
+    font-weight: 600;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: var(--color-gold);
+  }
+
+  .cadence[data-cadence='quarterly'] .cadence__when {
+    color: var(--color-ink);
+  }
+
+  .cadence__name {
+    margin: 0.1rem 0 0;
+    font-size: var(--text-h3);
+    color: var(--color-ink);
+  }
+
+  .cadence__text {
+    margin: 0.35rem 0 0;
+    font-size: var(--text-small);
+    line-height: 1.55;
+    color: color-mix(in srgb, var(--color-ink) 78%, transparent);
+    text-wrap: pretty;
+  }
+
+  @media (max-width: 30rem) {
+    .cadence {
+      flex-direction: column;
+    }
+
+    .cadence__figure {
+      flex: none;
+      block-size: 8rem;
+    }
+  }
+</style>

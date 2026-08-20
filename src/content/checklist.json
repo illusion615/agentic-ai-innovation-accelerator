@@ -1,0 +1,226 @@
+[
+  {
+    "id": "signin-studio",
+    "group": "access",
+    "order": 1,
+    "minTier": 1,
+    "derivedFrom": "resources-studio",
+    "flagBelow": 1,
+    "verifyUrl": "https://copilotstudio.microsoft.com",
+    "en": {
+      "title": "You can sign in to Copilot Studio",
+      "gates": "Every lab. Nothing else on this list matters until this one is yes.",
+      "how": "Open the link with your work account. If you land on a home screen with a 'Create' option, this is a yes. If you are asked to start a trial, or told your account cannot access it, mark it blocked — that is a licence question, not a you question.",
+      "verifyLabel": "Open Copilot Studio"
+    },
+    "zh": {
+      "title": "你能登录 Copilot Studio",
+      "gates": "所有 lab。这一条不是「行」，下面每一条都还谈不上。",
+      "how": "用你的工作账号打开链接。如果进到有「创建」的首页，就算行。如果它让你开试用、或者提示账号没有权限，标成受阻——那是许可问题，不是你的问题。",
+      "verifyLabel": "打开 Copilot Studio"
+    }
+  },
+  {
+    "id": "see-environment",
+    "group": "access",
+    "order": 2,
+    "minTier": 1,
+    "derivedFrom": "resources-admin",
+    "flagBelow": 1,
+    "verifyUrl": "https://make.powerapps.com",
+    "en": {
+      "title": "You can see at least one environment you are allowed to build in",
+      "gates": "Anything you build has to live somewhere. No environment, no lab.",
+      "how": "Open the link and check the environment picker in the top right. If the only entry is your personal default and you cannot switch, note that — it usually works for a first lab but not for anything you intend to keep.",
+      "verifyLabel": "Open the Power Platform maker portal"
+    },
+    "zh": {
+      "title": "你至少能看到一个可以建东西的环境",
+      "gates": "你建的东西总得放在某个地方。没有环境，就没有 lab。",
+      "how": "打开链接，看右上角的环境选择器。如果只有你自己的默认环境、且切不了，记下来——做第一个 lab 通常够用，但想留下来的东西放不了。",
+      "verifyLabel": "打开 Power Platform 制作者门户"
+    }
+  },
+  {
+    "id": "create-agent",
+    "group": "build",
+    "order": 1,
+    "minTier": 1,
+    "derivedFrom": "resources-studio",
+    "flagBelow": 2,
+    "verifyUrl": "https://copilotstudio.microsoft.com",
+    "en": {
+      "title": "You can create an agent and it actually saves",
+      "gates": "The first lab. Creating is a different permission from viewing, and plenty of accounts have one without the other.",
+      "how": "Create a throwaway agent — any name, default settings — and wait for it to finish provisioning. If it saves, delete it and mark this yes. If provisioning fails or hangs, that is the answer this check exists to find.",
+      "verifyLabel": "Try creating one"
+    },
+    "zh": {
+      "title": "你能创建一个 agent，而且真的存得下来",
+      "gates": "第一个 lab。「能看」和「能建」是两种权限，很多账号只有前者。",
+      "how": "随便建一个用完就删的 agent——名字随意、全默认——等它创建完。存下来了就标行，然后删掉。如果创建失败或一直转圈，那正是这条检查要找的答案。",
+      "verifyLabel": "试着建一个"
+    }
+  },
+  {
+    "id": "training-env",
+    "group": "build",
+    "order": 2,
+    "minTier": 1,
+    "derivedFrom": "resources-admin",
+    "flagBelow": 2,
+    "verifyUrl": "https://admin.powerplatform.microsoft.com",
+    "en": {
+      "title": "There is somewhere to practise that is not production",
+      "gates": "Hands-on training. People learn by breaking things, and they will not break things in an environment where a mistake is visible to the business.",
+      "how": "Ask whoever administers Power Platform whether a sandbox or developer environment can be stood up for training. You are not asking for budget — developer environments are normally available without one.",
+      "verifyLabel": "Open the admin centre"
+    },
+    "zh": {
+      "title": "有一个不是生产环境的地方可以练手",
+      "gates": "动手培训。人是靠把东西弄坏学会的；在一个出错会被业务看见的环境里，没人敢弄坏任何东西。",
+      "how": "问管 Power Platform 的人，能不能开一个沙盒或开发者环境专门用来培训。这不是要预算——开发者环境一般不需要。",
+      "verifyLabel": "打开管理中心"
+    }
+  },
+  {
+    "id": "knowledge-source",
+    "group": "build",
+    "order": 3,
+    "minTier": 2,
+    "derivedFrom": "resources-knowledge",
+    "flagBelow": 2,
+    "en": {
+      "title": "You can point an agent at a real document source",
+      "gates": "Every lab past the first. An agent with no knowledge source is a demo, not a scenario.",
+      "how": "Pick one SharePoint site or Teams channel holding documents your scenario would actually use, and confirm you can reach it with the same account you build with. Permissions, not availability, is what usually fails here.",
+      "verifyLabel": ""
+    },
+    "zh": {
+      "title": "你能给 agent 接上一个真实的文档来源",
+      "gates": "第一个之后的每一个 lab。没有知识来源的 agent 是个演示，不是场景。",
+      "how": "挑一个真实场景会用到的 SharePoint 站点或 Teams 频道，确认你用来建 agent 的那个账号能访问它。这里通常栽在权限上，而不是有没有。",
+      "verifyLabel": ""
+    }
+  },
+  {
+    "id": "publish-channel",
+    "group": "publish",
+    "order": 1,
+    "minTier": 1,
+    "derivedFrom": "resources-admin",
+    "flagBelow": 2,
+    "en": {
+      "title": "You can publish an agent so that someone else can open it",
+      "gates": "The moment a lab stops being a toy. Publishing is where most first attempts stop.",
+      "how": "Publish your throwaway agent to the demo website or Teams, then ask a colleague to open the link. If it needs an approval you cannot get, mark it blocked and note who the approver is — that name is the useful output of this check.",
+      "verifyLabel": ""
+    },
+    "zh": {
+      "title": "你能把 agent 发布出去，别人打得开",
+      "gates": "lab 从玩具变成真东西的那一刻。大多数人的第一次尝试就停在发布这一步。",
+      "how": "把那个用完就删的 agent 发布到演示网站或 Teams，然后让同事打开链接试试。如果卡在一个你拿不到的审批上，标成受阻并记下审批人是谁——这个名字才是这条检查真正的产出。",
+      "verifyLabel": ""
+    }
+  },
+  {
+    "id": "dlp-connectors",
+    "group": "publish",
+    "order": 2,
+    "minTier": 2,
+    "derivedFrom": "resources-knowledge",
+    "flagBelow": 2,
+    "en": {
+      "title": "Your DLP policy allows the connectors the scenario needs",
+      "gates": "Any scenario that touches a system other than Office. Worth checking before you design, not after.",
+      "how": "List the systems your first scenario has to reach, and ask whoever owns data-loss-prevention policy whether those connectors are permitted in the environment you will build in. A blocked connector found late is a redesign.",
+      "verifyLabel": ""
+    },
+    "zh": {
+      "title": "DLP 策略放行你这个场景需要的连接器",
+      "gates": "任何要碰 Office 以外系统的场景。这条要在设计之前查，不是设计之后。",
+      "how": "列出第一个场景必须连的系统，问管数据防泄漏策略的人：在你要建的那个环境里，这些连接器允不允许用。等设计完才发现连接器被禁，等于返工。",
+      "verifyLabel": ""
+    }
+  },
+  {
+    "id": "admin-consent",
+    "group": "publish",
+    "order": 3,
+    "minTier": 2,
+    "derivedFrom": "resources-admin",
+    "flagBelow": 1,
+    "en": {
+      "title": "Someone can grant admin consent when a connector asks for it",
+      "gates": "The first time a lab connects to anything real. It is a five-minute action for the right person and a two-week wait for everyone else.",
+      "how": "You do not need consent granted today — you need the name and the usual turnaround. Write both down.",
+      "verifyLabel": ""
+    },
+    "zh": {
+      "title": "连接器要管理员授权时，有人批得了",
+      "gates": "lab 第一次连真实系统的时候。对的人五分钟就批了，找不对人要等两周。",
+      "how": "今天不需要真的批下来——需要的是那个人的名字和平均要多久。两样都写下来。",
+      "verifyLabel": ""
+    }
+  },
+  {
+    "id": "licences",
+    "group": "sustain",
+    "order": 1,
+    "minTier": 1,
+    "derivedFrom": "resources-studio",
+    "flagBelow": 2,
+    "en": {
+      "title": "Licences exist beyond a trial, and someone owns them",
+      "gates": "Everything after the first month. A trial will carry you through the labs and then expire mid-project.",
+      "how": "Find out what you are on today and when it ends. If the answer is a trial, start the procurement conversation now — this is routinely the longest lead time in the whole programme.",
+      "verifyLabel": ""
+    },
+    "zh": {
+      "title": "有试用之外的正式许可，而且有人在管",
+      "gates": "第一个月之后的一切。试用能撑你把 lab 做完，然后在项目中途到期。",
+      "how": "搞清楚现在用的是什么、什么时候到期。如果答案是试用，现在就去开采购的口子——这一项的等待时间在整个项目里往往是最长的。",
+      "verifyLabel": ""
+    }
+  },
+  {
+    "id": "capacity",
+    "group": "sustain",
+    "order": 2,
+    "minTier": 2,
+    "derivedFrom": "resources-studio",
+    "flagBelow": 3,
+    "en": {
+      "title": "You know how message capacity is consumed, and who watches it",
+      "gates": "Anything with real users on it. Capacity runs out quietly and the agent simply stops answering.",
+      "how": "Confirm someone can see current consumption and would notice it trending up. See the Power Platform pricing article on the reading shelf for how the meter works.",
+      "verifyLabel": ""
+    },
+    "zh": {
+      "title": "你知道额度是怎么消耗的，也有人在看",
+      "gates": "任何有真实用户在用的东西。额度是悄悄用完的，用完了 agent 就不回话了。",
+      "how": "确认有人能看到当前消耗、并且会注意到它在往上走。计费口径见阅读清单里的 Power Platform 报价那一篇。",
+      "verifyLabel": ""
+    }
+  },
+  {
+    "id": "env-strategy",
+    "group": "sustain",
+    "order": 3,
+    "minTier": 3,
+    "derivedFrom": "resources-admin",
+    "flagBelow": 3,
+    "en": {
+      "title": "There is an environment strategy, and a named owner for it",
+      "gates": "Scaling past the first team. Without one, every new agent lands wherever its builder happened to be standing.",
+      "how": "Confirm there is a decided answer to: where do people build, where does it get tested, where does it run, and who moves things between them. See the Power Platform governance article on the reading shelf.",
+      "verifyLabel": ""
+    },
+    "zh": {
+      "title": "有一套环境策略，而且有具体的人负责",
+      "gates": "从第一个团队往外扩的时候。没有策略，每个新 agent 就落在它的建设者当时正好待着的地方。",
+      "how": "确认这几个问题有定论：人在哪儿建、在哪儿测、在哪儿跑、谁负责在这几个环境之间搬。参见阅读清单里的 Power Platform 治理那一篇。",
+      "verifyLabel": ""
+    }
+  }
+]

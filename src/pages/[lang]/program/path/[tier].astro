@@ -1,0 +1,444 @@
+---
+/**
+ * DELIVERY PATH — one page per tier.
+ *
+ * The tier decides the delivery motion, not only the scenarios. Tier 1 is by
+ * definition work business users do themselves, so the programme delivers
+ * capacity rather than the agent. Tier 2 is specialist work best reached by
+ * adapting a reference case. Tier 3 is enterprise transformation, which gets
+ * scoped with a partner. Three tiers, three motions.
+ *
+ * The tier's identity — traits, scenarios, value, complexity — is read from
+ * `tiers.items`, the same records section 09 renders. Only the motion and the
+ * material specific to it are authored here.
+ */
+import Base from '../../../../layouts/Base.astro';
+import SectionHead from '../../../../components/SectionHead.astro';
+import Assets from '../../../../components/Assets.astro';
+import { LANGS, isLang, localePath, type Lang } from '../../../../i18n/config';
+import { useTranslations } from '../../../../i18n/content';
+import { dictionaries } from '../../../../i18n/content';
+
+export function getStaticPaths() {
+  return LANGS.flatMap((lang) =>
+    dictionaries[lang].tiers.items.map((tier) => ({
+      params: { lang, tier: tier.key },
+    }))
+  );
+}
+
+const { lang: raw, tier: tierKey } = Astro.params;
+const lang: Lang = isLang(raw) ? raw : 'en';
+const t = useTranslations(lang);
+const paths = t.paths;
+
+const tier = t.tiers.items.find((x) => x.key === tierKey)!;
+const path = paths.items[tierKey!];
+const tierNumber = Number(tierKey!.replace('tier-', ''));
+---
+
+<Base lang={lang} path={`/program/path/${tierKey}/`} axis={false} title={path.title}>
+  <section id="path" class="section path">
+    <div class="shell">
+      <p class="eyebrow">{`${paths.eyebrow} · ${tier.index}`}</p>
+      <SectionHead as="h1" title={path.title} lede={path.lede} measure="wide" />
+
+      <p class="path__motion">
+        <span class="meta-label">{paths.motionLabel}</span>
+        <span class="path__motion-value display">{path.motion}</span>
+      </p>
+
+      <div class="path__grid">
+        <div>
+          <p class="meta-label">{paths.howLabel}</p>
+          <ol class="steps">
+            {
+              path.how.map((step, i) => (
+                <li class="step">
+                  <span class="step__index display" aria-hidden="true">
+                    {String(i + 1).padStart(2, '0')}
+                  </span>
+                  <span class="step__body">{step}</span>
+                </li>
+              ))
+            }
+          </ol>
+
+          <p class="meta-label path__who-label">{paths.whoLabel}</p>
+          <p class="path__who">{path.who}</p>
+        </div>
+
+        <aside class="tiercard">
+          <p class="meta-label">{paths.traitsLabel}</p>
+          <p class="tiercard__name display">{tier.name}</p>
+          <p class="tiercard__tagline">{tier.tagline}</p>
+          <ul class="tiercard__traits">
+            {tier.traits.map((trait) => <li>{trait}</li>)}
+          </ul>
+          <dl class="tiercard__facts">
+            <dt>{t.tiers.labels.businessValue}</dt><dd>{tier.businessValue}</dd>
+            <dt>{t.tiers.labels.complexity}</dt><dd>{tier.complexity}</dd>
+            <dt>{t.tiers.labels.investment}</dt><dd>{tier.investment}</dd>
+            <dt>{t.tiers.labels.returns}</dt><dd>{tier.returns}</dd>
+          </dl>
+        </aside>
+      </div>
+
+      <!-- Tier 1 — capacity: training tracks plus the scenarios that answer
+           "what would I even build first?" -->
+      {
+        tierNumber === 1 && (
+          <div class="block">
+            <p class="meta-label">{paths.tier1.trainingLabel}</p>
+            <p class="block__note">{paths.tier1.trainingNote}</p>
+            <ul class="tracks">
+              {t.solution.capabilities.map((cap, i) => (
+                <li class="track">
+                  <span class="track__index display" aria-hidden="true">
+                    {String(i + 1).padStart(2, '0')}
+                  </span>
+                  <p class="track__title display">{cap.title}</p>
+                  <p class="track__via">{cap.via}</p>
+                  <p class="track__body">{cap.body}</p>
+                </li>
+              ))}
+            </ul>
+          </div>
+        )
+      }
+
+      <!-- Tier 3 — partner engagement: what they bring, what you prepare. -->
+      {
+        tierNumber === 3 && (
+          <div class="block">
+            <p class="meta-label">{paths.tier3.partnerLabel}</p>
+            <p class="block__note">{paths.tier3.partnerNote}</p>
+            <div class="split">
+              <div>
+                <p class="split__label">{paths.tier3.bringsLabel}</p>
+                <ul class="ticks">
+                  {paths.tier3.brings.map((x) => (
+                    <li>{x}</li>
+                  ))}
+                </ul>
+              </div>
+              <div>
+                <p class="split__label">{paths.tier3.prepareLabel}</p>
+                <ul class="ticks ticks--ember">
+                  {paths.tier3.prepare.map((x) => (
+                    <li>{x}</li>
+                  ))}
+                </ul>
+              </div>
+            </div>
+          </div>
+        )
+      }
+
+      <!-- Every tier: its own scenarios, as the concrete starting points. -->
+      <div class="block">
+        <p class="meta-label">
+          {tierNumber === 1 ? paths.tier1.inspirationLabel : paths.scenariosLabel}
+        </p>
+        {tierNumber === 1 && <p class="block__note">{paths.tier1.inspirationNote}</p>}
+        <ul class="scenarios">
+          {
+            tier.scenarios.map((sc) => (
+              <li class="scenario">
+                <p class="scenario__name display">{sc.name}</p>
+                <p class="scenario__domain">{sc.domain}</p>
+              </li>
+            ))
+          }
+        </ul>
+      </div>
+
+    </div>
+  </section>
+
+  <!-- Tier 2 — the reference assets, moved out of the story. They are material
+       for people about to build, not an argument for people still deciding. -->
+  {
+    tierNumber === 2 && (
+      <div class="assets-host">
+        <div class="shell assets-host__intro">
+          <p class="meta-label">{paths.tier2.referenceLabel}</p>
+          <p class="block__note">{paths.tier2.referenceNote}</p>
+        </div>
+        <Assets lang={lang} framed={false} />
+      </div>
+    )
+  }
+
+  <div class="shell path__foot">
+    <a class="btn btn--quiet" href={localePath(lang, '/program/')}>
+      {t.readiness.result.consoleLabel}
+    </a>
+  </div>
+</Base>
+
+<style>
+  .path__motion {
+    margin: clamp(1.5rem, 1rem + 2vw, 2.5rem) 0 0;
+    display: flex;
+    flex-wrap: wrap;
+    align-items: baseline;
+    gap: 0.6rem 1rem;
+    padding-block-end: clamp(1.2rem, 0.9rem + 1.2vw, 1.8rem);
+    border-block-end: 1px solid color-mix(in srgb, var(--color-gold) 45%, transparent);
+  }
+
+  .path__motion-value {
+    font-size: var(--text-h3);
+    color: var(--color-gold);
+  }
+
+  .path__grid {
+    margin-block-start: clamp(1.75rem, 1.2rem + 2vw, 2.75rem);
+    display: grid;
+    gap: clamp(1.75rem, 1.2rem + 2.4vw, 3rem);
+    align-items: start;
+  }
+
+  .steps {
+    list-style: none;
+    margin: 0.8rem 0 0;
+    padding: 0;
+    display: grid;
+    gap: clamp(1rem, 0.8rem + 0.8vw, 1.5rem);
+  }
+
+  .step {
+    display: grid;
+    grid-template-columns: auto minmax(0, 1fr);
+    gap: 1rem;
+    align-items: baseline;
+  }
+
+  .step__index {
+    font-size: var(--text-h3);
+    line-height: 1;
+    color: color-mix(in srgb, var(--color-gold) 75%, var(--color-parchment));
+  }
+
+  .step__body {
+    font-size: var(--text-body);
+    line-height: 1.45;
+    color: var(--color-ink);
+  }
+
+  .path__who-label {
+    margin-block-start: clamp(1.5rem, 1.1rem + 1.4vw, 2.25rem);
+  }
+
+  .path__who {
+    margin: 0.4rem 0 0;
+    font-family: var(--font-display);
+    font-size: var(--text-lede);
+    color: var(--color-ink);
+    max-inline-size: 46ch;
+  }
+
+  /* --- the tier's own identity, read from section 09 --- */
+  .tiercard {
+    padding: clamp(1.2rem, 0.9rem + 1.2vw, 1.8rem);
+    background: color-mix(in srgb, #fff 70%, transparent);
+    border: 1px solid color-mix(in srgb, var(--color-ink) 12%, transparent);
+    border-block-start: 3px solid var(--color-gold);
+  }
+
+  .tiercard__name {
+    margin: 0.5rem 0 0;
+    font-size: var(--text-h3);
+    color: var(--color-ink);
+  }
+
+  .tiercard__tagline {
+    margin: 0.5rem 0 0;
+    font-size: var(--text-small);
+    color: color-mix(in srgb, var(--color-ink) 80%, var(--color-muted));
+  }
+
+  .tiercard__traits {
+    list-style: none;
+    margin: clamp(0.9rem, 0.7rem + 0.6vw, 1.3rem) 0 0;
+    padding: 0;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.4rem;
+  }
+
+  .tiercard__traits li {
+    font-size: var(--text-micro);
+    letter-spacing: 0.06em;
+    padding: 0.25rem 0.6rem;
+    border: 1px solid color-mix(in srgb, var(--color-gold) 50%, transparent);
+    color: color-mix(in srgb, var(--color-ink) 82%, var(--color-muted));
+  }
+
+  .tiercard__facts {
+    margin: clamp(1rem, 0.8rem + 0.7vw, 1.5rem) 0 0;
+    display: grid;
+    gap: 0.15rem 0.9rem;
+    font-size: var(--text-small);
+  }
+
+  .tiercard__facts dt {
+    font-size: var(--text-eyebrow);
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: var(--color-muted);
+    margin-block-start: 0.6rem;
+  }
+
+  .tiercard__facts dd {
+    margin: 0;
+    color: var(--color-ink);
+  }
+
+  /* --- shared blocks --- */
+  .block {
+    margin-block-start: clamp(2.5rem, 1.6rem + 3vw, 4rem);
+    padding-block-start: clamp(1.2rem, 0.9rem + 1.2vw, 1.8rem);
+    border-block-start: 1px solid color-mix(in srgb, var(--color-gold) 45%, transparent);
+  }
+
+  .block__note {
+    margin: 0.5rem 0 0;
+    font-size: var(--text-small);
+    color: color-mix(in srgb, var(--color-ink) 74%, var(--color-muted));
+    max-inline-size: 68ch;
+  }
+
+  .tracks,
+  .scenarios {
+    list-style: none;
+    margin: clamp(1.2rem, 0.9rem + 1.2vw, 1.8rem) 0 0;
+    padding: 0;
+    display: grid;
+    gap: clamp(1.2rem, 0.9rem + 1.4vw, 2rem);
+  }
+
+  .track,
+  .scenario {
+    min-inline-size: 0;
+    padding-block-start: 0.8rem;
+    border-block-start: 2px solid color-mix(in srgb, var(--color-gold) 55%, transparent);
+  }
+
+  .track__index {
+    font-size: var(--text-small);
+    color: var(--color-muted);
+  }
+
+  .track__title,
+  .scenario__name {
+    margin: 0.3rem 0 0;
+    font-size: var(--text-h3);
+    color: var(--color-ink);
+  }
+
+  .track__via {
+    margin: 0.2rem 0 0;
+    font-size: var(--text-eyebrow);
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: var(--color-gold);
+  }
+
+  .track__body,
+  .scenario__domain {
+    margin: 0.5rem 0 0;
+    font-size: var(--text-small);
+    line-height: 1.45;
+    color: color-mix(in srgb, var(--color-ink) 78%, var(--color-muted));
+  }
+
+  .scenario__domain {
+    font-family: var(--font-body);
+    letter-spacing: 0.06em;
+  }
+
+  .split {
+    margin-block-start: clamp(1.2rem, 0.9rem + 1.2vw, 1.8rem);
+    display: grid;
+    gap: clamp(1.5rem, 1rem + 2vw, 2.5rem);
+  }
+
+  .split__label {
+    margin: 0 0 0.7rem;
+    font-family: var(--font-display);
+    font-size: var(--text-body);
+    color: var(--color-ink);
+  }
+
+  .ticks {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: grid;
+    gap: 0.5rem;
+  }
+
+  .ticks li {
+    position: relative;
+    padding-inline-start: 1.1rem;
+    font-size: var(--text-small);
+    line-height: 1.45;
+    color: color-mix(in srgb, var(--color-ink) 84%, transparent);
+  }
+
+  .ticks li::before {
+    content: '';
+    position: absolute;
+    inset-inline-start: 0;
+    inset-block-start: 0.55em;
+    inline-size: 0.45rem;
+    block-size: 0.45rem;
+    background: var(--color-gold);
+    transform: rotate(45deg);
+  }
+
+  .ticks--ember li::before {
+    background: var(--color-ember);
+  }
+
+  .path__foot {
+    padding-block: clamp(1.5rem, 1rem + 2vw, 2.5rem) clamp(2.5rem, 1.6rem + 3vw, 4rem);
+  }
+
+  .assets-host__intro {
+    padding-block-start: clamp(1.5rem, 1rem + 2vw, 2.5rem);
+  }
+
+  /* The component brings its own section padding; without its heading the top
+     of that padding doubles up with the intro above it. */
+  .assets-host :global(.assets) {
+    padding-block-start: clamp(1rem, 0.7rem + 1vw, 1.75rem);
+  }
+
+  @media (min-width: 46rem) {
+    .tracks,
+    .scenarios {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+
+    .split {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+  }
+
+  @media (min-width: 68rem) {
+    .path__grid {
+      grid-template-columns: minmax(0, 1.35fr) minmax(0, 1fr);
+    }
+
+    .scenarios {
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+    }
+
+    .tracks {
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+    }
+  }
+</style>

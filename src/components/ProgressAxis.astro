@@ -1,0 +1,99 @@
+---
+import { type Lang } from '../i18n/config';
+import { useTranslations } from '../i18n/content';
+
+interface Props {
+  lang: Lang;
+}
+
+const { lang } = Astro.props;
+const t = useTranslations(lang);
+---
+
+<!-- The scroll indicator *is* the chaos → certainty axis. -->
+<div class="axis" aria-hidden="true">
+  <span class="axis__cap axis__cap--top">{t.axis.chaos}</span>
+  <div class="axis__track">
+    <div class="axis__fill"></div>
+    <div class="axis__head"></div>
+  </div>
+  <span class="axis__cap axis__cap--bottom">{t.axis.certainty}</span>
+</div>
+
+<style>
+  .axis {
+    position: fixed;
+    z-index: 40;
+    inset-block: 0;
+    inset-inline-end: clamp(0.9rem, 1.6vw, 2rem);
+    display: none;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 1.1rem;
+    pointer-events: none;
+    /* Keep the caps clear of the fixed top bar. */
+    padding-block: 5rem 2rem;
+  }
+
+  .axis__cap {
+    font-size: var(--text-eyebrow);
+    letter-spacing: 0.3em;
+    text-transform: uppercase;
+    writing-mode: vertical-rl;
+    color: var(--color-muted);
+    transition: color var(--duration-base) ease;
+  }
+
+  .axis__cap--bottom {
+    /* Reaches full gold exactly as the field finishes crystallizing. */
+    color: color-mix(
+      in srgb,
+      var(--color-gold) calc(var(--scroll-progress, 0) * 100%),
+      var(--color-muted)
+    );
+  }
+
+  .axis__track {
+    position: relative;
+    inline-size: 2px;
+    block-size: min(42vh, 26rem);
+    background: color-mix(in srgb, var(--color-muted) 35%, transparent);
+    overflow: visible;
+  }
+
+  .axis__fill {
+    position: absolute;
+    inset-inline: 0;
+    inset-block-start: 0;
+    block-size: 100%;
+    background: linear-gradient(
+      to bottom,
+      color-mix(in srgb, var(--color-muted) 60%, transparent),
+      var(--color-gold)
+    );
+    transform-origin: top center;
+    transform: scaleY(var(--scroll-progress, 0));
+  }
+
+  .axis__head {
+    position: absolute;
+    inset-inline-start: 50%;
+    inset-block-start: calc(var(--scroll-progress, 0) * 100%);
+    inline-size: 0.5rem;
+    block-size: 0.5rem;
+    margin-inline-start: -0.25rem;
+    margin-block-start: -0.25rem;
+    background: var(--color-gold);
+    /* Round while chaotic, faceted once certain — same language as the field. */
+    border-radius: calc((1 - var(--scroll-progress, 0)) * 50%);
+    box-shadow: 0 0 0 calc(var(--scroll-progress, 0) * 5px)
+      color-mix(in srgb, var(--color-gold) 22%, transparent);
+  }
+
+  @media (min-width: 64rem) {
+    .axis {
+      display: flex;
+    }
+  }
+</style>

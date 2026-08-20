@@ -1,0 +1,47 @@
+---
+/**
+ * THE STORY — the full 11-section narrative, rendered per locale.
+ *
+ * Order matters: it is the chaos → certainty axis. Sections 02–04 establish the
+ * problem and the mechanism, 05 is the operating model, 06–08 answer the
+ * objections a room will raise, 09 makes it concrete, and the last asks for the
+ * first commitment. The transmutation field crystallises across exactly this run.
+ *
+ * The three solution assets used to sit between 09 and the close. They now live
+ * on the Tier 2 delivery path instead: they are reference material for people
+ * about to build something like them, not an argument for a room still deciding
+ * whether to start. Moving them also gives the story back most of a screen.
+ */
+import { LANGS, isLang, type Lang } from '../../i18n/config';
+import Base from '../../layouts/Base.astro';
+import Hero from '../../components/Hero.astro';
+import Challenge from '../../components/Challenge.astro';
+import Solution from '../../components/Solution.astro';
+import Certainty from '../../components/Certainty.astro';
+import Journey from '../../components/Journey.astro';
+import Positioning from '../../components/Positioning.astro';
+import Risks from '../../components/Risks.astro';
+import Rhythm from '../../components/Rhythm.astro';
+import Tiers from '../../components/Tiers.astro';
+import Start from '../../components/Start.astro';
+
+export function getStaticPaths() {
+  return LANGS.map((lang) => ({ params: { lang } }));
+}
+
+const { lang: raw } = Astro.params;
+const lang: Lang = isLang(raw) ? raw : 'en';
+---
+
+<Base lang={lang}>
+  <Hero lang={lang} />
+  <Challenge lang={lang} />
+  <Solution lang={lang} />
+  <Certainty lang={lang} />
+  <Journey lang={lang} />
+  <Positioning lang={lang} />
+  <Risks lang={lang} />
+  <Rhythm lang={lang} />
+  <Tiers lang={lang} />
+  <Start lang={lang} />
+</Base>

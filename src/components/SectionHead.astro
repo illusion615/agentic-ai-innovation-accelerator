@@ -1,0 +1,137 @@
+---
+/**
+ * Shared section header: gold eyebrow, serif display heading, optional lede.
+ *
+ * Every section from 02 onward uses this so the vertical rhythm and the
+ * balance/measure rules live in exactly one place. `accent` renders as a
+ * second line in gold — the deck's habit of splitting a heading across a
+ * navy half and a gold half.
+ */
+interface Props {
+  eyebrow: string;
+  title: string;
+  accent?: string;
+  lede?: string;
+  /** Narrower measure for headings that would otherwise orphan a short word. */
+  measure?: 'default' | 'wide' | 'full';
+  align?: 'start' | 'center';
+  /**
+   * Heading level. Defaults to h2 because on the story page every one of these
+   * is a section inside the hero's h1. The program pages have no hero, so the
+   * first one on those pages must be the h1 — without it those pages shipped
+   * with no top-level heading at all, which is invisible in dev (the Astro
+   * toolbar injects one) and only shows up in the built output.
+   */
+  as?: 'h1' | 'h2';
+}
+
+const {
+  eyebrow,
+  title,
+  accent,
+  lede,
+  measure = 'default',
+  align = 'start',
+  as: Heading = 'h2',
+} = Astro.props;
+---
+
+<header class:list={['sechead', `sechead--${align}`, `sechead--${measure}`]}>
+  <p class="eyebrow" data-reveal>{eyebrow}</p>
+  <Heading class="display sechead__title" data-reveal style="--beat:1">
+    <span class="sechead__lead">{title}</span>
+    {accent && <span class="sechead__accent">{accent}</span>}
+  </Heading>
+  {
+    lede && (
+      <p class="sechead__lede" data-reveal style="--beat:2">
+        {lede}
+      </p>
+    )
+  }
+</header>
+
+<style>
+  .sechead {
+    display: grid;
+    gap: clamp(0.7rem, 0.4rem + 1vw, 1.3rem);
+  }
+
+  .sechead--center {
+    justify-items: center;
+    text-align: center;
+  }
+
+  .sechead__title {
+    margin: 0;
+    font-size: var(--text-h2);
+    color: var(--color-ink);
+    /* `balance` stops a two-word tail dropping to its own line, which the
+       long serif headings in this deck are very prone to. */
+    text-wrap: balance;
+    max-inline-size: 18ch;
+  }
+
+  .sechead--wide .sechead__title {
+    max-inline-size: 26ch;
+  }
+
+  /* For headings that are a whole sentence and would otherwise stack five
+     deep before any content appears. */
+  .sechead--full .sechead__title {
+    max-inline-size: 34ch;
+  }
+
+  .sechead--center .sechead__title {
+    margin-inline: auto;
+  }
+
+  :global(.section--dark) .sechead__title {
+    color: var(--color-parchment);
+  }
+
+  .sechead__lead,
+  .sechead__accent {
+    display: block;
+  }
+
+  .sechead__accent {
+    color: var(--color-gold);
+  }
+
+  .sechead__lede {
+    margin: clamp(0.5rem, 0.2rem + 1vw, 1.1rem) 0 0;
+    font-size: var(--text-lede);
+    line-height: 1.45;
+    max-inline-size: 46ch;
+    color: color-mix(in srgb, var(--color-ink) 82%, transparent);
+    text-wrap: pretty;
+  }
+
+  :global(.section--dark) .sechead__lede {
+    color: color-mix(in srgb, var(--color-parchment) 78%, transparent);
+  }
+
+  .sechead--center .sechead__lede {
+    margin-inline: auto;
+  }
+
+  /* Chinese measures are in `em`, not `ch`: a `ch` is the width of "0", which
+     is roughly half a CJK glyph, so a ch-based measure wraps a Chinese heading
+     at about half the intended character count and splits words across lines.
+     `balance` is also disabled — it shortens every line toward the midpoint,
+     which is exactly where a two-character word tends to be. */
+  :global(html[lang='zh']) .sechead__title {
+    letter-spacing: 0.01em;
+    text-wrap: normal;
+    max-inline-size: 18em;
+  }
+
+  :global(html[lang='zh']) .sechead--wide .sechead__title {
+    max-inline-size: 22em;
+  }
+
+  :global(html[lang='zh']) .sechead--full .sechead__title {
+    max-inline-size: 26em;
+  }
+</style>

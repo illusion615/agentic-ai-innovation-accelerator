@@ -1,0 +1,91 @@
+---
+/**
+ * A deck illustration used as a section's *backdrop* — a room the reader walks
+ * into, not a picture that scrolls past them.
+ *
+ * The layer is pinned to the viewport and never moves: no parallax, no scale,
+ * no sticky release at the section's edge. The only thing scroll changes is
+ * opacity, so arriving at a section is a cross-fade from one room to the next,
+ * and everything after that is content walking across a backdrop that is
+ * standing still.
+ *
+ * The earlier version was sticky inside its section and drifted, scaled and
+ * released as the section ended, and the joins were papered over with long
+ * parchment ramps at its top and bottom edge. That is what made the page read
+ * as sliding rather than as changing scene: the picture was always moving, so
+ * it never held long enough to be a place, and the ramps laid a gradient band
+ * across exactly the part of the painting the section title sits on.
+ *
+ * Legibility is bought once, uniformly, by the veil below. Uniform is the
+ * point: a local wash behind the type is a visible rectangle of light on the
+ * painting, which is the thing this replaced.
+ */
+import { Image } from 'astro:assets';
+
+interface Props {
+  src: ImageMetadata;
+  alt: string;
+  tone?: 'parchment' | 'ink';
+  /** object-position for the underlying image. */
+  focus?: string;
+}
+
+const { src, alt, tone = 'parchment', focus = 'center' } = Astro.props;
+---
+
+<div class:list={['section-art', `section-art--${tone}`]} data-section-art>
+  <Image
+    src={src}
+    alt={alt}
+    widths={[900, 1400, 1900, 2400]}
+    sizes="100vw"
+    format="webp"
+    quality={78}
+    loading="lazy"
+    style={`object-position:${focus}`}
+  />
+</div>
+
+<style>
+  .section-art {
+    position: fixed;
+    inset: 0;
+    /* Behind every section's own ground, not just behind its content. These
+       layers span the whole viewport, so a section further down the document
+       would otherwise paint its room over the navy band the reader is still
+       looking at. Negative, therefore, rather than 0: the backdrop is page
+       furniture, and a section that wants an opaque ground (the dark bands,
+       the closing panel) simply covers it. */
+    z-index: -1;
+    pointer-events: none;
+    /* Driven by src/scripts/scene.ts. Zero by default: the layers are stacked
+       on top of one another in the viewport, so if the script never runs the
+       right answer is no backdrop at all, not four of them at once. */
+    opacity: var(--art-opacity, 0);
+  }
+
+  .section-art :global(img) {
+    display: block;
+    inline-size: 100%;
+    block-size: 100%;
+    object-fit: cover;
+  }
+
+  /* One flat veil, at the strength the type actually needs, replacing both the
+     old tonal wash and the local light that used to sit behind the title.
+     Because it never varies across the frame it cannot be read as a shape on
+     the painting — only as the room standing a little further back. */
+  .section-art::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+  }
+
+  .section-art--parchment::after {
+    background: color-mix(in srgb, var(--color-parchment) 58%, transparent);
+  }
+
+  .section-art--ink::after {
+    background: color-mix(in srgb, var(--color-ink-deep) 62%, transparent);
+  }
+</style>

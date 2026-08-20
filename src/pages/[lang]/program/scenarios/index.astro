@@ -1,0 +1,742 @@
+---
+/**
+ * STAGE 02 — INSPIRE & COLLECT.
+ *
+ * The accelerator does not sell training. It works out what to build from the
+ * customer's own business needs, and the hands-on build in stage 04 is designed
+ * for whichever scenario stage 03 picked. That ordering is the whole point, and
+ * it makes this page the input to everything after it: with an empty list there
+ * is nothing to prioritise and nothing to design a lab against.
+ *
+ * So the examples are *not* a catalogue to choose from. They are prompts, there
+ * to make the reader's own scenarios easier to name — which is why every card's
+ * action is "we have this too" rather than "select this", and why taking one
+ * copies it into an editable entry of their own rather than linking away.
+ *
+ * The list lives in `session.scenarios`, the field the design brief reserved
+ * for it on day one, so the prioritisation instrument in stage 03 will read the
+ * same record without anything here having to change.
+ */
+import { getCollection } from 'astro:content';
+import Base from '../../../../layouts/Base.astro';
+import SectionHead from '../../../../components/SectionHead.astro';
+import { LANGS, isLang, localePath, type Lang } from '../../../../i18n/config';
+import { useTranslations } from '../../../../i18n/content';
+
+export function getStaticPaths() {
+  return LANGS.map((lang) => ({ params: { lang } }));
+}
+
+const { lang: raw } = Astro.params;
+const lang: Lang = isLang(raw) ? raw : 'en';
+const t = useTranslations(lang);
+const k = t.intake;
+
+const DEPTS = ['general', 'crm', 'finance', 'hr', 'it'] as const;
+const TIERS = [1, 2, 3] as const;
+const CAPS = [
+  'agent-basics',
+  'knowledge-grounding',
+  'topics-flow',
+  'orchestration',
+  'actions-connectors',
+  'power-automate',
+  'doc-extraction',
+  'human-approval',
+  'dataverse',
+  'channels-publish',
+  'governance',
+  'measurement',
+] as const;
+
+const examples = await getCollection('scenarios');
+
+const bootstrap = {
+  departments: k.departments,
+  tierNames: t.readiness.result.tierNames,
+  removeLabel: k.removeLabel,
+  addedLabel: k.addedLabel,
+  takeLabel: k.takeLabel,
+  countLabel: k.countLabel,
+  capabilities: t.capabilities,
+  // Taken examples render from here rather than from what was stored, so the
+  // list follows the reader's language.
+  examples: Object.fromEntries(
+    examples.map((e) => [e.id, { title: e.data[lang].title, pain: e.data[lang].pain }])
+  ),
+};
+---
+
+<Base lang={lang} path="/program/scenarios/" axis={false} title={k.title}>
+  <section id="intake" class="section intake">
+    <div class="shell">
+      <SectionHead as="h1" eyebrow={k.eyebrow} title={k.title} lede={k.lede} measure="wide" />
+
+      <!-- The customer's own list first: the examples exist to serve it, not
+           the other way round. -->
+      <section class="mine">
+        <div class="mine__head">
+          <h2 class="mine__title display">{k.yoursLabel}</h2>
+          <p class="mine__count" data-count aria-live="polite"></p>
+        </div>
+        <p class="mine__note">{k.yoursNote}</p>
+
+        <div class="mine__empty" data-empty>
+          <h3 class="mine__empty-title">{k.emptyTitle}</h3>
+          <p class="mine__empty-body">{k.emptyBody}</p>
+        </div>
+
+        <ul class="mine__list" data-list></ul>
+
+        <details class="own">
+          <summary class="own__summary">{k.addOwnLabel}</summary>
+          <form class="own__form" data-form>
+            <label class="own__field">
+              <span class="meta-label">{k.titleField}</span>
+              <input class="own__input" type="text" name="title" required placeholder={k.titlePlaceholder} />
+            </label>
+
+            <div class="own__row">
+              <label class="own__field">
+                <span class="meta-label">{k.deptField}</span>
+                <select class="own__input" name="department">
+                  {DEPTS.map((d) => <option value={d}>{k.departments[d]}</option>)}
+                </select>
+              </label>
+
+              <label class="own__field">
+                <span class="meta-label">{k.tierField}</span>
+                <select class="own__input" name="tier">
+                  {TIERS.map((n) => <option value={String(n)}>{t.readiness.result.tierNames[n - 1]}</option>)}
+                </select>
+              </label>
+            </div>
+
+            <label class="own__field">
+              <span class="meta-label">{k.painField}</span>
+              <textarea class="own__input" name="pain" rows="2" placeholder={k.painPlaceholder}></textarea>
+            </label>
+
+            <fieldset class="own__caps">
+              <legend class="meta-label">{k.capsField}</legend>
+              <p class="own__caps-note">{k.capsNote}</p>
+              <div class="own__caps-list">
+                {
+                  CAPS.map((cap) => (
+                    <label class="capbox">
+                      <input type="checkbox" name="capabilities" value={cap} />
+                      <span>{t.capabilities[cap]}</span>
+                    </label>
+                  ))
+                }
+              </div>
+            </fieldset>
+
+            <button type="submit" class="btn btn--gold">{k.addCta}</button>
+          </form>
+        </details>
+      </section>
+
+      <section class="examples">
+        <h2 class="examples__title display">{k.examplesLabel}</h2>
+        <p class="examples__note">{k.examplesNote}</p>
+
+        <div class="examples__filter" role="group" aria-label={k.examplesLabel}>
+          <button type="button" class="chip" data-dept="" aria-pressed="true">{k.allDepts}</button>
+          {
+            DEPTS.map((d) => (
+              <button type="button" class="chip" data-dept={d} aria-pressed="false">
+                {k.departments[d]}
+              </button>
+            ))
+          }
+        </div>
+
+        <ul class="examples__list">
+          {
+            examples.map((example) => {
+              const copy = example.data[lang];
+              return (
+                <li class="example" data-example={example.id} data-dept={example.data.department}>
+                  <p class="example__meta meta-label">
+                    {k.departments[example.data.department]} · {k.tierLabel}{' '}
+                    {t.readiness.result.tierNames[example.data.tier - 1]}
+                  </p>
+                  <h3 class="example__title">{copy.title}</h3>
+
+                  <p class="example__line">
+                    <span class="example__label">{k.painLabel}</span>
+                    <span>{copy.pain}</span>
+                  </p>
+                  <p class="example__line">
+                    <span class="example__label example__label--after">{k.changesLabel}</span>
+                    <span>{copy.changes}</span>
+                  </p>
+
+                  <ul class="tags">
+                    {
+                      example.data.capabilities.map((cap) => (
+                        <li class="tag">{t.capabilities[cap]}</li>
+                      ))
+                    }
+                  </ul>
+
+                  <button
+                    type="button"
+                    class="example__take"
+                    data-take
+                    data-source={example.id}
+                    data-title={copy.title}
+                    data-pain={copy.pain}
+                    data-dept-key={example.data.department}
+                    data-tier={String(example.data.tier)}
+                    data-caps={example.data.capabilities.join(',')}
+                  >
+                    {k.takeLabel}
+                  </button>
+                </li>
+              );
+            })
+          }
+        </ul>
+      </section>
+
+      <div class="intake__next">
+        <h2 class="intake__next-title display">{k.nextTitle}</h2>
+        <p class="intake__next-body">{k.nextBody}</p>
+        <div class="intake__next-actions">
+          <a class="btn btn--gold" href={localePath(lang, '/program/labs/')}>{k.nextCta}</a>
+          <a class="btn btn--quiet" href={localePath(lang, '/program/')}>{k.backLabel}</a>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <script type="application/json" data-intake-bootstrap set:html={JSON.stringify(bootstrap)} />
+</Base>
+
+<script>
+  import { LocalSessionStore, openActiveSession, type Scenario } from '../../../../lib/session';
+
+  const boot = document.querySelector('[data-intake-bootstrap]');
+
+  if (boot) {
+    const cfg = JSON.parse(boot.textContent ?? '{}');
+    const store = new LocalSessionStore();
+    const session = await openActiveSession(store);
+
+    const list = document.querySelector<HTMLElement>('[data-list]')!;
+    const empty = document.querySelector<HTMLElement>('[data-empty]')!;
+    const count = document.querySelector<HTMLElement>('[data-count]')!;
+
+    function render() {
+      list.textContent = '';
+      empty.hidden = session.scenarios.length > 0;
+      count.textContent = session.scenarios.length
+        ? `${session.scenarios.length} ${cfg.countLabel}`
+        : '';
+
+      for (const item of session.scenarios) {
+        // An entry taken from an example renders from the example in this
+        // edition's language; one the customer typed renders as they typed it.
+        const source = item.sourceId ? cfg.examples[item.sourceId] : undefined;
+        const shownTitle = source?.title ?? item.title;
+        const shownPain = source?.pain ?? item.pain;
+
+        const li = document.createElement('li');
+        li.className = 'kept';
+
+        const meta = document.createElement('p');
+        meta.className = 'kept__meta meta-label';
+        const dept = item.department ? cfg.departments[item.department] : '';
+        meta.textContent = [dept, cfg.tierNames[item.tier - 1]].filter(Boolean).join(' · ');
+
+        const title = document.createElement('h3');
+        title.className = 'kept__title';
+        title.textContent = shownTitle;
+
+        li.append(meta, title);
+
+        if (shownPain) {
+          const pain = document.createElement('p');
+          pain.className = 'kept__pain';
+          pain.textContent = shownPain;
+          li.append(pain);
+        }
+
+        if (item.capabilities?.length) {
+          const tags = document.createElement('ul');
+          tags.className = 'tags';
+          for (const cap of item.capabilities) {
+            const tag = document.createElement('li');
+            tag.className = 'tag';
+            tag.textContent = cfg.capabilities[cap] ?? cap;
+            tags.append(tag);
+          }
+          li.append(tags);
+        }
+
+        const remove = document.createElement('button');
+        remove.type = 'button';
+        remove.className = 'kept__remove';
+        remove.textContent = cfg.removeLabel;
+        remove.addEventListener('click', () => {
+          session.scenarios = session.scenarios.filter((s) => s.id !== item.id);
+          void store.save(session);
+          render();
+          paintTaken();
+        });
+
+        li.append(remove);
+        list.append(li);
+      }
+    }
+
+    /** An example already taken shows as taken — the loop has to be visible. */
+    function paintTaken() {
+      document.querySelectorAll<HTMLElement>('[data-example]').forEach((card) => {
+        const btn = card.querySelector<HTMLButtonElement>('[data-take]')!;
+        const taken = session.scenarios.some((s) => s.sourceId === btn.dataset.source);
+        card.toggleAttribute('data-taken', taken);
+        btn.textContent = taken ? cfg.addedLabel : cfg.takeLabel;
+        btn.disabled = taken;
+      });
+    }
+
+    function add(scenario: Omit<Scenario, 'id'>) {
+      session.scenarios = [...session.scenarios, { id: crypto.randomUUID(), ...scenario }];
+      void store.save(session);
+      render();
+      paintTaken();
+    }
+
+    document.querySelectorAll<HTMLButtonElement>('[data-take]').forEach((btn) => {
+      btn.addEventListener('click', () => {
+        add({
+          title: btn.dataset.title ?? '',
+          pain: btn.dataset.pain,
+          department: btn.dataset.deptKey,
+          tier: Number(btn.dataset.tier) as 1 | 2 | 3,
+          capabilities: (btn.dataset.caps ?? '').split(',').filter(Boolean),
+          sourceId: btn.dataset.source,
+        });
+      });
+    });
+
+    const form = document.querySelector<HTMLFormElement>('[data-form]');
+    form?.addEventListener('submit', (event) => {
+      event.preventDefault();
+      const data = new FormData(form);
+      const title = String(data.get('title') ?? '').trim();
+      if (!title) return;
+      add({
+        title,
+        pain: String(data.get('pain') ?? '').trim() || undefined,
+        department: String(data.get('department') ?? ''),
+        tier: Number(data.get('tier')) as 1 | 2 | 3,
+        capabilities: data.getAll('capabilities').map(String),
+      });
+      form.reset();
+    });
+
+    document.querySelectorAll<HTMLButtonElement>('[data-dept]').forEach((chip) => {
+      chip.addEventListener('click', () => {
+        const want = chip.dataset.dept ?? '';
+        document.querySelectorAll<HTMLElement>('[data-dept]').forEach((other) => {
+          if (other.classList.contains('chip')) {
+            other.setAttribute('aria-pressed', String(other === chip));
+          }
+        });
+        document.querySelectorAll<HTMLElement>('[data-example]').forEach((card) => {
+          card.hidden = !!want && card.dataset.dept !== want;
+        });
+      });
+    });
+
+    render();
+    paintTaken();
+  }
+</script>
+
+<style>
+  .mine {
+    margin-block-start: clamp(1.75rem, 1.2rem + 2vw, 2.75rem);
+    max-inline-size: 62rem;
+  }
+
+  .mine__head {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: 0.5rem 1.5rem;
+  }
+
+  .mine__title,
+  .examples__title,
+  .intake__next-title {
+    margin: 0;
+    font-size: var(--text-h3);
+    color: var(--color-ink);
+  }
+
+  .mine__count {
+    margin: 0;
+    font-family: var(--font-display);
+    font-size: var(--text-lede);
+    color: var(--color-gold);
+  }
+
+  .mine__note,
+  .examples__note {
+    margin: 0.45rem 0 0;
+    max-inline-size: 62ch;
+    font-size: var(--text-small);
+    line-height: 1.6;
+    color: var(--color-muted);
+  }
+
+  .mine__empty {
+    margin-block-start: 1.2rem;
+    padding: clamp(1.1rem, 0.85rem + 1vw, 1.6rem);
+    border: 1px dashed color-mix(in srgb, var(--color-ink) 26%, transparent);
+    background: color-mix(in srgb, var(--color-parchment-deep) 40%, transparent);
+  }
+
+  .mine__empty-title {
+    margin: 0;
+    font-family: var(--font-display);
+    font-size: var(--text-lede);
+    color: var(--color-ink);
+  }
+
+  .mine__empty-body {
+    margin: 0.4rem 0 0;
+    max-inline-size: 58ch;
+    font-size: var(--text-small);
+    line-height: 1.6;
+    color: color-mix(in srgb, var(--color-ink) 78%, transparent);
+  }
+
+  .mine__list {
+    list-style: none;
+    margin: 1.2rem 0 0;
+    padding: 0;
+    display: grid;
+    gap: 0.8rem;
+  }
+
+  .mine__list:empty {
+    display: none;
+  }
+
+  /* The kept list is built in script, so these elements never receive Astro's
+     scope attribute and a scoped selector would not match them. */
+  .mine__list :global(.kept) {
+    position: relative;
+    padding: clamp(0.9rem, 0.75rem + 0.8vw, 1.3rem);
+    padding-inline-end: 6.5rem;
+    background: #fff;
+    border: 1px solid color-mix(in srgb, var(--color-ink) 12%, transparent);
+    border-inline-start: 3px solid var(--color-gold);
+  }
+
+  .mine__list :global(.kept__meta) {
+    margin: 0;
+  }
+
+  .mine__list :global(.kept__title) {
+    margin: 0.25rem 0 0;
+    font-family: var(--font-display);
+    font-size: var(--text-lede);
+    line-height: 1.25;
+    color: var(--color-ink);
+  }
+
+  .mine__list :global(.kept__pain) {
+    margin: 0.35rem 0 0;
+    max-inline-size: 62ch;
+    font-size: var(--text-small);
+    line-height: 1.5;
+    color: color-mix(in srgb, var(--color-ink) 74%, transparent);
+  }
+
+  .mine__list :global(.kept__remove) {
+    position: absolute;
+    inset-block-start: clamp(0.9rem, 0.75rem + 0.8vw, 1.3rem);
+    inset-inline-end: clamp(0.9rem, 0.75rem + 0.8vw, 1.3rem);
+    font: inherit;
+    font-size: var(--text-micro);
+    letter-spacing: 0.08em;
+    padding: 0.35em 0.9em;
+    cursor: pointer;
+    background: transparent;
+    color: var(--color-muted);
+    border: 1px solid color-mix(in srgb, var(--color-ink) 20%, transparent);
+  }
+
+  .mine__list :global(.kept__remove:hover) {
+    color: var(--color-ember);
+    border-color: var(--color-ember);
+  }
+
+  .own {
+    margin-block-start: 1.2rem;
+  }
+
+  .own__summary {
+    cursor: pointer;
+    display: inline-block;
+    list-style: none;
+    font-size: var(--text-micro);
+    font-weight: 600;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+    color: var(--color-ink);
+    padding-block-end: 0.25rem;
+    border-block-end: 1px solid var(--color-gold);
+  }
+
+  .own__summary::-webkit-details-marker {
+    display: none;
+  }
+
+  .own__form {
+    display: grid;
+    gap: 0.9rem;
+    margin-block-start: 1.1rem;
+    padding: clamp(1.1rem, 0.85rem + 1vw, 1.6rem);
+    border: 1px solid color-mix(in srgb, var(--color-ink) 12%, transparent);
+    background: color-mix(in srgb, #fff 62%, transparent);
+    max-inline-size: 48rem;
+  }
+
+  .own__row {
+    display: grid;
+    gap: 0.9rem;
+  }
+
+  .own__field {
+    display: grid;
+    gap: 0.35rem;
+    min-inline-size: 0;
+  }
+
+  .own__input {
+    inline-size: 100%;
+    font: inherit;
+    font-size: var(--text-small);
+    color: var(--color-ink);
+    background: #fff;
+    border: 1px solid color-mix(in srgb, var(--color-ink) 20%, transparent);
+    padding: 0.55rem 0.7rem;
+  }
+
+  .own__input:focus-visible {
+    outline: none;
+    border-color: var(--color-gold);
+  }
+
+  .own__caps {
+    border: 0;
+    padding: 0;
+    margin: 0;
+    min-inline-size: 0;
+  }
+
+  .own__caps-note {
+    margin: 0.35rem 0 0.7rem;
+    max-inline-size: 58ch;
+    font-size: var(--text-micro);
+    line-height: 1.5;
+    color: var(--color-muted);
+  }
+
+  .own__caps-list {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.4rem;
+  }
+
+  .capbox {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.35rem;
+    padding: 0.35em 0.7em;
+    cursor: pointer;
+    font-size: var(--text-micro);
+    border: 1px solid color-mix(in srgb, var(--color-ink) 20%, transparent);
+  }
+
+  .capbox:has(input:checked) {
+    background: var(--color-ink-deep);
+    border-color: var(--color-ink-deep);
+    color: var(--color-parchment);
+  }
+
+  .tags,
+  .mine__list :global(.tags) {
+    list-style: none;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.35rem;
+    margin: 0.8rem 0 0;
+    padding: 0;
+  }
+
+  .tag,
+  .mine__list :global(.tag) {
+    font-size: var(--text-micro);
+    letter-spacing: 0.04em;
+    padding: 0.2em 0.6em;
+    color: color-mix(in srgb, var(--color-ink) 78%, transparent);
+    background: color-mix(in srgb, var(--color-gold) 16%, transparent);
+    border: 1px solid color-mix(in srgb, var(--color-gold) 40%, transparent);
+  }
+
+  .examples {
+    margin-block-start: clamp(2.5rem, 1.6rem + 3vw, 4rem);
+    max-inline-size: 68rem;
+  }
+
+  .examples__filter {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+    margin-block-start: 1.1rem;
+  }
+
+  .chip {
+    font: inherit;
+    font-size: var(--text-micro);
+    font-weight: 600;
+    letter-spacing: 0.08em;
+    padding: 0.45em 1em;
+    cursor: pointer;
+    background: transparent;
+    color: var(--color-ink);
+    border: 1px solid color-mix(in srgb, var(--color-ink) 22%, transparent);
+  }
+
+  .chip:hover {
+    border-color: var(--color-gold);
+  }
+
+  .chip[aria-pressed='true'] {
+    background: var(--color-ink-deep);
+    border-color: var(--color-ink-deep);
+    color: var(--color-parchment);
+  }
+
+  .examples__list {
+    list-style: none;
+    margin: clamp(1.2rem, 0.9rem + 1.2vw, 1.8rem) 0 0;
+    padding: 0;
+    display: grid;
+    gap: clamp(0.9rem, 0.7rem + 0.8vw, 1.3rem);
+  }
+
+  .example {
+    padding: clamp(1rem, 0.8rem + 0.9vw, 1.4rem);
+    border: 1px solid color-mix(in srgb, var(--color-ink) 12%, transparent);
+    background: color-mix(in srgb, #fff 58%, transparent);
+  }
+
+  .example[data-taken] {
+    border-color: color-mix(in srgb, var(--color-gold) 60%, transparent);
+    background: color-mix(in srgb, var(--color-gold) 8%, #fff);
+  }
+
+  .example__meta {
+    margin: 0;
+  }
+
+  .example__title {
+    margin: 0.25rem 0 0;
+    font-family: var(--font-display);
+    font-size: var(--text-lede);
+    line-height: 1.25;
+    color: var(--color-ink);
+    text-wrap: pretty;
+  }
+
+  .example__line {
+    display: grid;
+    gap: 0.1rem;
+    margin: 0.6rem 0 0;
+    max-inline-size: 66ch;
+    font-size: var(--text-small);
+    line-height: 1.55;
+    color: color-mix(in srgb, var(--color-ink) 78%, transparent);
+  }
+
+  .example__label {
+    font-size: var(--text-micro);
+    font-weight: 600;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: var(--color-ember);
+  }
+
+  .example__label--after {
+    color: var(--color-gold);
+  }
+
+  .example__take {
+    margin-block-start: 1rem;
+    font: inherit;
+    font-size: var(--text-micro);
+    font-weight: 600;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    padding: 0.5em 1.1em;
+    cursor: pointer;
+    background: transparent;
+    color: var(--color-ink);
+    border: 1px solid var(--color-gold);
+  }
+
+  .example__take:hover:not(:disabled) {
+    background: var(--color-gold);
+    color: var(--color-ink-deep);
+  }
+
+  .example__take:disabled {
+    cursor: default;
+    color: var(--color-muted);
+    border-color: color-mix(in srgb, var(--color-ink) 18%, transparent);
+  }
+
+  .intake__next {
+    margin-block-start: clamp(2.5rem, 1.6rem + 3vw, 4rem);
+    padding-block-start: clamp(1.2rem, 0.9rem + 1.2vw, 1.8rem);
+    border-block-start: 1px solid color-mix(in srgb, var(--color-gold) 45%, transparent);
+    max-inline-size: 62rem;
+  }
+
+  .intake__next-body {
+    margin: 0.5rem 0 1.2rem;
+    max-inline-size: 62ch;
+    font-size: var(--text-small);
+    line-height: 1.6;
+    color: color-mix(in srgb, var(--color-ink) 80%, transparent);
+  }
+
+  .intake__next-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.7rem;
+  }
+
+  @media (min-width: 46rem) {
+    .own__row {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+  }
+
+  @media (min-width: 62rem) {
+    .examples__list {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+  }
+</style>

@@ -1,0 +1,268 @@
+---
+import SectionArt from './SectionArt.astro';
+import challengeImage from '../assets/images/challenge-crucible.webp';
+import { type Lang } from '../i18n/config';
+import { useTranslations } from '../i18n/content';
+
+interface Props {
+  lang: Lang;
+}
+
+const { lang } = Astro.props;
+const t = useTranslations(lang);
+const c = t.challenge;
+---
+
+<section id="challenge" class="challenge">
+  <SectionArt src={challengeImage} alt={c.imageAlt} focus="center 42%" />
+
+  <div class="shell">
+    <header class="challenge__head lead">
+      <p class="eyebrow" data-reveal>{c.eyebrow}</p>
+      <h2 class="challenge__title display" data-reveal style="--beat:1">
+        <span>{c.titleLead}</span>{' '}<span class="challenge__title-accent">{c.titleAccent}</span>
+      </h2>
+      <p class="challenge__subtitle" data-reveal style="--beat:2">{c.subtitle}</p>
+    </header>
+
+    <div class="challenge__body plate">
+      <ul class="stats" data-stats>
+        {
+          c.stats.map((stat, i) => (
+            <li
+              class:list={['stat', stat.tone === 'gold' && 'stat--pivot']}
+              data-reveal
+              style={`--beat:${i}`}
+            >
+              <p class="stat__value display">
+                <span class="stat__number" data-count={stat.value}>
+                  0
+                </span>
+                <span class="stat__suffix">{stat.suffix}</span>
+              </p>
+              <div class="stat__measure" aria-hidden="true">
+                <span class="stat__measure-fill" style={`--measure:${stat.value}%`} />
+              </div>
+              <p class="stat__label">{stat.label}</p>
+              {stat.tone === 'gold' && <p class="stat__pivot-note">{c.turningPoint}</p>}
+            </li>
+          ))
+        }
+      </ul>
+
+      <blockquote class="pullquote display" data-reveal style="--beat:3">
+        {c.pullQuote}
+      </blockquote>
+    </div>
+
+    <div class="challenge__foot lead">
+      <p class="challenge__lede" data-reveal>{c.body}</p>
+      <p class="challenge__source" data-reveal style="--beat:0">{c.source}</p>
+    </div>
+  </div>
+</section>
+
+<script>
+  import { animate, inView } from 'motion';
+
+  const reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  const numbers = document.querySelectorAll<HTMLElement>('[data-count]');
+
+  numbers.forEach((el) => {
+    const target = Number(el.dataset.count ?? '0');
+
+    if (reduce) {
+      el.textContent = String(target);
+      return;
+    }
+
+    el.textContent = '0';
+    inView(
+      el,
+      () => {
+        animate(0, target, {
+          duration: 1.6,
+          ease: [0.16, 1, 0.3, 1],
+          onUpdate: (v: number) => {
+            el.textContent = String(Math.round(v));
+          },
+        });
+      },
+      { amount: 0.6 }
+    );
+  });
+</script>
+
+<style>
+  .challenge {
+    position: relative;
+    padding-block: var(--spacing-section);
+  }
+
+  .challenge__head {
+    max-inline-size: 60ch;
+  }
+
+  /* The plate already carries the gold rule and the separation, so the foot
+     drops the border it used to draw for itself. */
+  .challenge__foot {
+    border-block-start: 0;
+  }
+
+  .challenge__title {
+    margin: clamp(1rem, 0.6rem + 1.4vw, 2rem) 0 0;
+    font-size: var(--text-h2);
+    color: var(--color-ink);
+    text-wrap: balance;
+    max-inline-size: 18ch;
+  }
+
+  :global(html[lang='zh']) .challenge__title {
+    text-wrap: normal;
+    max-inline-size: 18em;
+  }
+
+  .challenge__title-accent {
+    color: var(--color-gold);
+  }
+
+  .challenge__subtitle {
+    margin: clamp(0.9rem, 0.6rem + 1vw, 1.6rem) 0 0;
+    font-family: var(--font-display);
+    font-style: italic;
+    font-size: var(--text-lede);
+    color: color-mix(in srgb, var(--color-gold) 88%, var(--color-ink));
+  }
+
+  .challenge__body {
+    display: grid;
+    gap: clamp(2rem, 1.2rem + 3vw, 3.5rem);
+    margin-block-start: clamp(1.5rem, 1rem + 2vw, 2.5rem);
+    align-items: start;
+  }
+
+  .stats {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: grid;
+    gap: clamp(2rem, 1rem + 3vw, 3.5rem);
+  }
+
+  .stat {
+    min-inline-size: 0;
+  }
+
+  .stat__value {
+    margin: 0;
+    font-size: var(--text-stat);
+    line-height: 0.92;
+    color: var(--color-ink);
+    display: flex;
+    align-items: baseline;
+    gap: 0.02em;
+    font-variant-numeric: tabular-nums;
+  }
+
+  .stat__suffix {
+    font-size: 0.62em;
+  }
+
+  .stat__measure {
+    margin-block-start: clamp(0.7rem, 0.4rem + 0.8vw, 1.2rem);
+    block-size: 3px;
+    background: color-mix(in srgb, var(--color-muted) 32%, transparent);
+  }
+
+  .stat__measure-fill {
+    display: block;
+    block-size: 100%;
+    inline-size: var(--measure);
+    background: color-mix(in srgb, var(--color-ink) 70%, transparent);
+    transform: scaleX(0);
+    transform-origin: left center;
+    transition: transform 1.6s var(--ease-out-expo) 120ms;
+  }
+
+  [data-revealed] .stat__measure-fill {
+    transform: scaleX(1);
+  }
+
+  .stat__label {
+    margin: clamp(0.7rem, 0.5rem + 0.6vw, 1.1rem) 0 0;
+    font-size: var(--text-small);
+    color: color-mix(in srgb, var(--color-ink) 78%, var(--color-muted));
+  }
+
+  /* --- The pivot of the entire narrative: only 6 in 100 saw a payback. --- */
+  .stat--pivot .stat__value {
+    color: var(--color-gold);
+    text-shadow: 0 0 clamp(1.5rem, 4vw, 3.5rem)
+      color-mix(in srgb, var(--color-gold) 34%, transparent);
+  }
+
+  .stat--pivot .stat__measure {
+    background: color-mix(in srgb, var(--color-ember) 22%, transparent);
+    block-size: 5px;
+  }
+
+  .stat--pivot .stat__measure-fill {
+    background: var(--color-gold);
+    box-shadow: 0 0 12px color-mix(in srgb, var(--color-gold) 70%, transparent);
+  }
+
+  .stat--pivot .stat__label {
+    color: var(--color-ink);
+    font-weight: 500;
+  }
+
+  .stat__pivot-note {
+    margin: 0.6rem 0 0;
+    font-size: var(--text-eyebrow);
+    letter-spacing: 0.26em;
+    text-transform: uppercase;
+    color: var(--color-ember);
+  }
+
+  .pullquote {
+    margin: 0;
+    font-size: var(--text-h3);
+    line-height: 1.25;
+    color: var(--color-ink);
+    padding-inline-start: clamp(1.2rem, 2vw, 2rem);
+    border-inline-start: 3px solid var(--color-gold);
+    max-inline-size: 22ch;
+  }
+
+  .challenge__foot {
+    margin-block-start: clamp(1.5rem, 1rem + 2vw, 2.5rem);
+  }
+
+  .challenge__lede {
+    margin: 0;
+    max-inline-size: 62ch;
+    font-size: var(--text-lede);
+    line-height: 1.4;
+    color: var(--color-ink);
+  }
+
+  .challenge__source {
+    margin: clamp(1rem, 0.7rem + 0.9vw, 1.6rem) 0 0;
+    font-size: var(--text-micro);
+    color: var(--color-muted);
+    max-inline-size: 80ch;
+  }
+
+  @media (min-width: 48rem) {
+    .stats {
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+    }
+  }
+
+  @media (min-width: 80rem) {
+    .challenge__body {
+      grid-template-columns: minmax(0, 2.2fr) minmax(0, 1fr);
+      align-items: center;
+    }
+  }
+</style>

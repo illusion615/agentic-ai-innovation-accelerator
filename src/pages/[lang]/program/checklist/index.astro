@@ -1,0 +1,491 @@
+---
+/**
+ * THE ENVIRONMENT CHECK — the gap between "I know my path" and "I can start".
+ *
+ * The twelve questions establish where the reader enters. They cannot establish
+ * whether the tenant will actually let them sign in, build, publish and keep
+ * the thing running — those are facts only someone inside it can find out. So
+ * every item here is a thing the reader goes and *does*, and the page records
+ * what happened.
+ *
+ * Two design rules earn their keep:
+ *
+ *  - **It is not a generic checklist.** The list is scoped to the tier the
+ *    diagnosis produced, and items whose predicting question scored low are
+ *    pre-flagged and floated to the top of their group. The programme already
+ *    knows where this organisation is weakest; making the reader rediscover it
+ *    would waste the only thing the assessment bought.
+ *  - **A blocked item is an output, not a failure.** Nobody clears this list
+ *    alone — half of it belongs to whoever owns licences and policy. So the
+ *    page ends by producing the message you send them, rather than a score.
+ *
+ * Everything is derived client-side from the stored session, because that is
+ * where the diagnosis lives (local storage, nothing leaves the machine).
+ */
+import { getCollection } from 'astro:content';
+import Base from '../../../../layouts/Base.astro';
+import SectionHead from '../../../../components/SectionHead.astro';
+import { LANGS, isLang, localePath, type Lang } from '../../../../i18n/config';
+import { useTranslations } from '../../../../i18n/content';
+
+export function getStaticPaths() {
+  return LANGS.map((lang) => ({ params: { lang } }));
+}
+
+const { lang: raw } = Astro.params;
+const lang: Lang = isLang(raw) ? raw : 'en';
+const t = useTranslations(lang);
+const c = t.checklist;
+
+const GROUPS = ['access', 'build', 'publish', 'sustain'] as const;
+const STATES = ['ok', 'blocked', 'na'] as const;
+
+const items = (await getCollection('checklist')).sort((a, b) => a.data.order - b.data.order);
+
+// The client re-derives the diagnosis, so it needs the scoring shape only.
+const questions = (await getCollection('questions'))
+  .sort((a, b) => a.data.order - b.data.order)
+  .map((q) => ({
+    id: q.id,
+    data: { dimension: q.data.dimension, options: q.data.options.map((o) => ({ score: o.score })) },
+  }));
+
+const bootstrap = {
+  questions,
+  strings: {
+    summary: c.summary,
+    allClear: c.allClear,
+    copied: c.copiedLabel,
+    copy: c.copyLabel,
+    blockedHeading: c.title,
+  },
+};
+---
+
+<Base lang={lang} path="/program/checklist/" axis={false} title={c.title}>
+  <section id="checklist" class="section check">
+    <div class="shell">
+      <SectionHead as="h1" eyebrow={c.eyebrow} title={c.title} lede={c.lede} measure="wide" />
+
+      <!-- Shown until the diagnosis is found: without a tier this would be the
+           generic list it exists not to be. -->
+      <div class="check__gate" data-gate>
+        <h2 class="check__gate-title display">{c.noTierTitle}</h2>
+        <p class="check__gate-body">{c.noTierBody}</p>
+        <a class="btn btn--gold" href={localePath(lang, '/program/')}>{c.noTierCta}</a>
+      </div>
+
+      <div class="check__live" data-live hidden>
+        <p class="check__tier-note">{c.tierNote}</p>
+
+        <div class="check__summary" data-summary aria-live="polite"></div>
+
+        {
+          GROUPS.map((group) => (
+            <section class="cgroup" data-group={group} hidden>
+              <h2 class="cgroup__title display">{c.groups[group].label}</h2>
+              <p class="cgroup__note">{c.groups[group].note}</p>
+
+              <ul class="cgroup__list">
+                {items
+                  .filter((item) => item.data.group === group)
+                  .map((item) => {
+                    const copy = item.data[lang];
+                    return (
+                      <li
+                        class="citem"
+                        data-item={item.id}
+                        data-min-tier={String(item.data.minTier)}
+                        data-derived-from={item.data.derivedFrom}
+                        data-flag-below={String(item.data.flagBelow)}
+                        hidden
+                      >
+                        <p class="citem__flag" data-flag hidden>
+                          {c.flaggedLabel}
+                        </p>
+
+                        <h3 class="citem__title">{copy.title}</h3>
+
+                        <p class="citem__meta">
+                          <span class="meta-label">{c.gatesLabel}</span>
+                          <span class="citem__gates">{copy.gates}</span>
+                        </p>
+
+                        <p class="citem__meta">
+                          <span class="meta-label">{c.howLabel}</span>
+                          <span class="citem__how">{copy.how}</span>
+                        </p>
+
+                        {item.data.verifyUrl && copy.verifyLabel && (
+                          <a
+                            class="citem__verify"
+                            href={item.data.verifyUrl}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                          >
+                            {copy.verifyLabel}
+                            <span aria-hidden="true"> ↗</span>
+                          </a>
+                        )}
+
+                        <div class="citem__answer" role="group" aria-label={copy.title}>
+                          {STATES.map((state) => (
+                            <button type="button" class="citem__state" data-set={state}>
+                              {c.states[state]}
+                            </button>
+                          ))}
+                          <button type="button" class="citem__clear" data-set="">
+                            {c.clearLabel}
+                          </button>
+                        </div>
+                      </li>
+                    );
+                  })}
+              </ul>
+            </section>
+          ))
+        }
+
+        <div class="check__blocked" data-blocked hidden>
+          <p class="check__blocked-note">{c.blockedNote}</p>
+          <button type="button" class="btn btn--quiet" data-copy>{c.copyLabel}</button>
+        </div>
+
+        <div class="check__foot">
+          <a class="btn btn--gold" href={localePath(lang, '/program/')}>{c.backLabel}</a>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <script type="application/json" data-check-bootstrap set:html={JSON.stringify(bootstrap)} />
+</Base>
+
+<script>
+  import { LocalSessionStore, openActiveSession, type CheckState } from '../../../../lib/session';
+  import { diagnose } from '../../../../lib/assessment';
+
+  const boot = document.querySelector('[data-check-bootstrap]');
+
+  if (boot) {
+    const cfg = JSON.parse(boot.textContent ?? '{}');
+    const store = new LocalSessionStore();
+    const session = await openActiveSession(store);
+
+    const diagnosis = session.readiness
+      ? diagnose(cfg.questions, session.readiness.answers)
+      : null;
+
+    if (diagnosis?.complete) {
+      document.querySelector<HTMLElement>('[data-gate]')!.hidden = true;
+      document.querySelector<HTMLElement>('[data-live]')!.hidden = false;
+      render(diagnosis.startTier);
+    }
+
+    function render(tier: number) {
+      const answers = session.readiness?.answers ?? {};
+      const shown: HTMLElement[] = [];
+
+      document.querySelectorAll<HTMLElement>('[data-item]').forEach((el) => {
+        if (Number(el.dataset.minTier) > tier) return;
+        el.hidden = false;
+        shown.push(el);
+
+        // Pre-flag from the answer that predicts this item, and float it: the
+        // assessment already found the weak spot, so the checklist should open
+        // on it rather than bury it in reading order.
+        const answer = answers[el.dataset.derivedFrom ?? ''];
+        const flagged = answer !== undefined && answer <= Number(el.dataset.flagBelow);
+        el.toggleAttribute('data-flagged', flagged);
+        el.querySelector<HTMLElement>('[data-flag]')!.hidden = !flagged;
+      });
+
+      document.querySelectorAll<HTMLElement>('[data-group]').forEach((group) => {
+        const live = [...group.querySelectorAll<HTMLElement>('[data-item]')].filter((i) => !i.hidden);
+        group.hidden = live.length === 0;
+
+        const list = group.querySelector('.cgroup__list');
+        live
+          .sort((a, b) => Number(b.hasAttribute('data-flagged')) - Number(a.hasAttribute('data-flagged')))
+          .forEach((i) => list?.appendChild(i));
+      });
+
+      shown.forEach(paint);
+      wire();
+      summarise();
+    }
+
+    function paint(el: HTMLElement) {
+      const state = session.checklist[el.dataset.item ?? ''];
+      el.setAttribute('data-state', state ?? '');
+      el.querySelectorAll<HTMLButtonElement>('[data-set]').forEach((btn) => {
+        const isCurrent = !!btn.dataset.set && btn.dataset.set === state;
+        btn.setAttribute('aria-pressed', String(isCurrent));
+      });
+    }
+
+    function wire() {
+      document.querySelectorAll<HTMLElement>('[data-item]').forEach((el) => {
+        el.querySelectorAll<HTMLButtonElement>('[data-set]').forEach((btn) => {
+          btn.addEventListener('click', () => {
+            const id = el.dataset.item!;
+            const next = btn.dataset.set as CheckState | '';
+            if (next) session.checklist[id] = next;
+            else delete session.checklist[id];
+            void store.save(session);
+            paint(el);
+            summarise();
+          });
+        });
+      });
+    }
+
+    function summarise() {
+      const live = [...document.querySelectorAll<HTMLElement>('[data-item]')].filter((i) => !i.hidden);
+      const answered = live.filter((i) => !!session.checklist[i.dataset.item!]);
+      const blocked = live.filter((i) => session.checklist[i.dataset.item!] === 'blocked');
+
+      const box = document.querySelector<HTMLElement>('[data-summary]')!;
+      const line = cfg.strings.summary
+        .replace('{done}', String(answered.length))
+        .replace('{total}', String(live.length))
+        .replace('{blocked}', String(blocked.length));
+      const clear = answered.length === live.length && blocked.length === 0;
+      box.textContent = clear ? `${line} — ${cfg.strings.allClear}` : line;
+      box.toggleAttribute('data-clear', clear);
+
+      document.querySelector<HTMLElement>('[data-blocked]')!.hidden = blocked.length === 0;
+    }
+
+    document.querySelector('[data-copy]')?.addEventListener('click', async (event) => {
+      const blocked = [...document.querySelectorAll<HTMLElement>('[data-item]')]
+        .filter((i) => !i.hidden && session.checklist[i.dataset.item!] === 'blocked')
+        .map((i) => {
+          const title = i.querySelector('.citem__title')?.textContent?.trim() ?? '';
+          const how = i.querySelector('.citem__how')?.textContent?.trim() ?? '';
+          return `- ${title}\n  ${how}`;
+        });
+      if (!blocked.length) return;
+
+      const text = `${cfg.strings.blockedHeading}\n\n${blocked.join('\n\n')}`;
+      try {
+        await navigator.clipboard.writeText(text);
+        const btn = event.currentTarget as HTMLButtonElement;
+        const original = btn.textContent;
+        btn.textContent = cfg.strings.copied;
+        window.setTimeout(() => (btn.textContent = original), 1800);
+      } catch {
+        /* clipboard blocked — the list is on screen and can be selected */
+      }
+    });
+  }
+</script>
+
+<style>
+  .check__gate {
+    margin-block-start: clamp(1.75rem, 1.2rem + 2vw, 2.75rem);
+    padding: clamp(1.3rem, 1rem + 1.4vw, 2rem);
+    background: color-mix(in srgb, var(--color-parchment-deep) 55%, transparent);
+    border-inline-start: 4px solid color-mix(in srgb, var(--color-gold) 60%, transparent);
+    max-inline-size: 56rem;
+  }
+
+  .check__gate-title {
+    margin: 0;
+    font-size: var(--text-h3);
+    color: var(--color-ink);
+  }
+
+  .check__gate-body {
+    margin: 0.5rem 0 1.1rem;
+    max-inline-size: 56ch;
+    font-size: var(--text-small);
+    line-height: 1.6;
+    color: color-mix(in srgb, var(--color-ink) 80%, transparent);
+  }
+
+  .check__tier-note {
+    margin: clamp(1.5rem, 1rem + 1.6vw, 2.25rem) 0 0;
+    max-inline-size: 62ch;
+    font-size: var(--text-small);
+    color: var(--color-muted);
+  }
+
+  .check__summary {
+    margin-block-start: 1rem;
+    padding: 0.8rem 1.1rem;
+    border: 1px solid color-mix(in srgb, var(--color-ink) 14%, transparent);
+    background: color-mix(in srgb, #fff 62%, transparent);
+    font-size: var(--text-small);
+    font-weight: 600;
+    color: var(--color-ink);
+    max-inline-size: 56rem;
+  }
+
+  .check__summary[data-clear] {
+    border-color: var(--color-gold);
+    background: color-mix(in srgb, var(--color-gold) 14%, #fff);
+  }
+
+  .cgroup {
+    margin-block-start: clamp(2.25rem, 1.5rem + 2.6vw, 3.5rem);
+    max-inline-size: 62rem;
+  }
+
+  .cgroup__title {
+    margin: 0;
+    font-size: var(--text-h3);
+    color: var(--color-ink);
+  }
+
+  .cgroup__note {
+    margin: 0.45rem 0 0;
+    max-inline-size: 58ch;
+    font-size: var(--text-small);
+    line-height: 1.6;
+    color: var(--color-muted);
+  }
+
+  .cgroup__list {
+    list-style: none;
+    margin: clamp(1rem, 0.8rem + 1vw, 1.5rem) 0 0;
+    padding: 0;
+    display: grid;
+    gap: clamp(0.9rem, 0.7rem + 0.8vw, 1.3rem);
+  }
+
+  .citem {
+    padding: clamp(1rem, 0.8rem + 0.9vw, 1.4rem);
+    border: 1px solid color-mix(in srgb, var(--color-ink) 12%, transparent);
+    border-inline-start: 3px solid color-mix(in srgb, var(--color-ink) 14%, transparent);
+    background: color-mix(in srgb, #fff 58%, transparent);
+  }
+
+  .citem[data-flagged] {
+    border-inline-start-color: var(--color-ember);
+  }
+
+  .citem[data-state='ok'] {
+    border-inline-start-color: var(--color-gold);
+    background: color-mix(in srgb, var(--color-gold) 8%, #fff);
+  }
+
+  .citem[data-state='blocked'] {
+    border-inline-start-color: var(--color-ember);
+    background: color-mix(in srgb, var(--color-ember) 7%, #fff);
+  }
+
+  .citem[data-state='na'] {
+    opacity: 0.6;
+  }
+
+  .citem__flag {
+    margin: 0 0 0.4rem;
+    font-size: var(--text-micro);
+    font-weight: 600;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: var(--color-ember);
+  }
+
+  .citem__title {
+    margin: 0;
+    font-family: var(--font-display);
+    font-size: var(--text-lede);
+    line-height: 1.25;
+    color: var(--color-ink);
+    text-wrap: pretty;
+  }
+
+  .citem__meta {
+    display: grid;
+    gap: 0.15rem;
+    margin: 0.7rem 0 0;
+    max-inline-size: 68ch;
+    font-size: var(--text-small);
+    line-height: 1.55;
+    color: color-mix(in srgb, var(--color-ink) 78%, transparent);
+  }
+
+  .citem__verify {
+    display: inline-block;
+    margin-block-start: 0.8rem;
+    font-size: var(--text-micro);
+    font-weight: 600;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--color-ink);
+    text-decoration: none;
+    padding-block-end: 0.2rem;
+    border-block-end: 1px solid var(--color-gold);
+  }
+
+  .citem__verify:hover {
+    color: var(--color-gold);
+  }
+
+  .citem__answer {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+    margin-block-start: 1rem;
+  }
+
+  .citem__state,
+  .citem__clear {
+    font: inherit;
+    font-size: var(--text-micro);
+    font-weight: 600;
+    letter-spacing: 0.08em;
+    padding: 0.45em 1em;
+    cursor: pointer;
+    background: transparent;
+    color: var(--color-ink);
+    border: 1px solid color-mix(in srgb, var(--color-ink) 24%, transparent);
+    transition:
+      background-color var(--duration-quick) ease,
+      border-color var(--duration-quick) ease,
+      color var(--duration-quick) ease;
+  }
+
+  .citem__state:hover,
+  .citem__clear:hover {
+    border-color: var(--color-gold);
+  }
+
+  .citem__state[aria-pressed='true'] {
+    background: var(--color-ink-deep);
+    border-color: var(--color-ink-deep);
+    color: var(--color-parchment);
+  }
+
+  .citem__clear {
+    border-style: dashed;
+    color: var(--color-muted);
+  }
+
+  .check__blocked {
+    margin-block-start: clamp(2rem, 1.4rem + 2vw, 3rem);
+    padding: clamp(1.1rem, 0.85rem + 1vw, 1.6rem);
+    border-inline-start: 4px solid var(--color-ember);
+    background: color-mix(in srgb, var(--color-ember) 7%, transparent);
+    max-inline-size: 62rem;
+  }
+
+  .check__blocked-note {
+    margin: 0 0 1rem;
+    max-inline-size: 58ch;
+    font-size: var(--text-small);
+    line-height: 1.6;
+    color: color-mix(in srgb, var(--color-ink) 82%, transparent);
+  }
+
+  .check__foot {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.7rem;
+    margin-block-start: clamp(2.5rem, 1.6rem + 3vw, 4rem);
+    padding-block-start: clamp(1.2rem, 0.9rem + 1.2vw, 1.8rem);
+    border-block-start: 1px solid color-mix(in srgb, var(--color-gold) 45%, transparent);
+  }
+</style>

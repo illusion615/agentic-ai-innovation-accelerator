@@ -1,0 +1,246 @@
+[
+  {
+    "id": "email-routing",
+    "department": "crm",
+    "tier": 1,
+    "capabilities": ["agent-basics", "actions-connectors", "power-automate", "human-approval"],
+    "en": {
+      "title": "Email routing and first-reply drafting",
+      "pain": "A shared mailbox someone reads every morning, sorting what is urgent from what is routine, and typing the same four answers.",
+      "changes": "Mail is classified on arrival, routine replies are drafted for a human to send, and the rest is routed to the right person with context attached."
+    },
+    "zh": {
+      "title": "邮件分流与首轮回复起草",
+      "pain": "一个每天早上有人挨条看的公共邮箱：分出哪些急、哪些是例行，然后把同样的四种回复再打一遍。",
+      "changes": "邮件进来就分类，例行回复自动起草交人确认发出，其余的连同上下文一起转给对的人。"
+    }
+  },
+  {
+    "id": "rfp-response",
+    "department": "crm",
+    "tier": 2,
+    "capabilities": ["knowledge-grounding", "doc-extraction", "orchestration", "human-approval"],
+    "en": {
+      "title": "Bid and RFP response assembly",
+      "pain": "Every bid is assembled by hand from previous bids nobody can find, and the deadline decides how much reuse actually happens.",
+      "changes": "Requirements are extracted from the RFP, matched against past answers, and assembled into a first draft with the gaps marked for a human."
+    },
+    "zh": {
+      "title": "投标与 RFP 应答组装",
+      "pain": "每份标书都是从「谁也找不到」的历史标书里手工拼出来的，最后能复用多少取决于还剩几天。",
+      "changes": "从 RFP 里抽出条目、匹配历史答复、拼出初稿，缺口标出来留给人补。"
+    }
+  },
+  {
+    "id": "service-ops-agent",
+    "department": "crm",
+    "tier": 3,
+    "capabilities": ["orchestration", "actions-connectors", "dataverse", "channels-publish", "governance"],
+    "en": {
+      "title": "Field service operations agent",
+      "pain": "Dispatch, parts, history and the engineer's own notes live in four systems, and the person in the van has none of them.",
+      "changes": "One agent answers across all four, in the field, and writes the visit back to the system of record."
+    },
+    "zh": {
+      "title": "现场服务运营 Agent",
+      "pain": "派工、备件、历史工单和工程师自己的记录分在四个系统里，而车上那个人一个都打不开。",
+      "changes": "一个 agent 横跨四个系统在现场作答，并把这次上门写回记录系统。"
+    }
+  },
+
+  {
+    "id": "invoice-recognition",
+    "department": "finance",
+    "tier": 1,
+    "capabilities": ["doc-extraction", "power-automate", "human-approval", "dataverse"],
+    "en": {
+      "title": "Invoice and order recognition",
+      "pain": "Someone retypes numbers from a PDF into a form, and the errors surface a month later in a reconciliation.",
+      "changes": "Fields are read off the document, checked against the order, and only the exceptions reach a person."
+    },
+    "zh": {
+      "title": "发票与订单识别",
+      "pain": "有人把 PDF 上的数字重新敲进表单，错误一个月后在对账时才浮出来。",
+      "changes": "字段直接从单据读出、与订单核对，只有异常才送到人手上。"
+    }
+  },
+  {
+    "id": "expense-policy",
+    "department": "finance",
+    "tier": 1,
+    "capabilities": ["agent-basics", "knowledge-grounding", "channels-publish"],
+    "en": {
+      "title": "Expense policy questions",
+      "pain": "Finance answers the same twenty questions every month, and the policy document is long enough that nobody reads it first.",
+      "changes": "An agent answers from the current policy, cites the clause, and escalates the genuinely ambiguous cases."
+    },
+    "zh": {
+      "title": "报销政策答疑",
+      "pain": "财务每个月回答同样的二十个问题，而政策文档长到没人愿意先翻一遍。",
+      "changes": "Agent 依据现行政策作答并引用条款，真正模糊的情况再升级给人。"
+    }
+  },
+  {
+    "id": "close-checklist",
+    "department": "finance",
+    "tier": 2,
+    "capabilities": ["power-automate", "dataverse", "human-approval", "measurement"],
+    "en": {
+      "title": "Month-end close chase-up",
+      "pain": "Close depends on a dozen submissions arriving, and someone spends the last three days chasing the ones that have not.",
+      "changes": "Outstanding items are tracked and chased automatically, with the status visible to everyone instead of living in one person's spreadsheet."
+    },
+    "zh": {
+      "title": "月结催办",
+      "pain": "结账要等十几份材料齐，最后三天总有人在挨个催没交的那几份。",
+      "changes": "未交项自动跟踪催办，状态对所有人可见，而不是躺在某一个人的表格里。"
+    }
+  },
+
+  {
+    "id": "hr-policy-qa",
+    "department": "hr",
+    "tier": 1,
+    "capabilities": ["agent-basics", "knowledge-grounding", "human-approval", "channels-publish"],
+    "en": {
+      "title": "HR policy and benefits questions",
+      "pain": "The same questions about leave, benefits and process arrive in HR's inbox all year, phrased differently every time.",
+      "changes": "An agent answers from the current handbook and hands over to a person the moment the question becomes personal."
+    },
+    "zh": {
+      "title": "HR 政策与福利答疑",
+      "pain": "关于休假、福利、流程的同一批问题全年不断进 HR 邮箱，每次问法还不一样。",
+      "changes": "Agent 依据现行手册作答；一旦问题涉及个人情况，立刻转人。"
+    }
+  },
+  {
+    "id": "onboarding-runbook",
+    "department": "hr",
+    "tier": 2,
+    "capabilities": ["power-automate", "actions-connectors", "dataverse", "human-approval"],
+    "en": {
+      "title": "New-joiner onboarding runbook",
+      "pain": "Onboarding is a checklist in someone's head, spread across HR, IT and the hiring manager, and every new joiner gets a slightly different version.",
+      "changes": "One tracked runbook that opens the right tickets, nudges the right people, and shows the new joiner where they are."
+    },
+    "zh": {
+      "title": "新人入职流程",
+      "pain": "入职是存在某个人脑子里的清单，横跨 HR、IT 和用人经理，每个新人拿到的版本都略有不同。",
+      "changes": "一份被跟踪的流程：自动开对应工单、提醒对应的人，新人自己也看得到进度。"
+    }
+  },
+  {
+    "id": "jd-screening",
+    "department": "hr",
+    "tier": 2,
+    "capabilities": ["knowledge-grounding", "doc-extraction", "orchestration"],
+    "en": {
+      "title": "Job description drafting and CV first pass",
+      "pain": "Every role is written from scratch, and the first CV pass is a volume problem that pushes real judgement to the end.",
+      "changes": "Drafts come from roles you have already written; the first pass surfaces evidence against the criteria rather than a score."
+    },
+    "zh": {
+      "title": "JD 起草与简历初筛",
+      "pain": "每个岗位都从零写起；简历初筛是个量的问题，把真正需要判断的部分挤到了最后。",
+      "changes": "JD 从你写过的岗位里生成；初筛给出对照标准的证据，而不是一个分数。"
+    }
+  },
+
+  {
+    "id": "it-helpdesk",
+    "department": "it",
+    "tier": 1,
+    "capabilities": ["agent-basics", "knowledge-grounding", "topics-flow", "channels-publish"],
+    "en": {
+      "title": "IT helpdesk first line",
+      "pain": "A large share of tickets are password, access and how-do-I questions that a knowledge base already answers.",
+      "changes": "The agent resolves what the knowledge base covers, and everything else reaches a human already triaged."
+    },
+    "zh": {
+      "title": "IT 服务台一线",
+      "pain": "相当大一部分工单是密码、权限和「这个怎么弄」，而知识库里本来就有答案。",
+      "changes": "知识库覆盖得到的由 agent 直接解决，其余的到人手上时已经分好类。"
+    }
+  },
+  {
+    "id": "access-requests",
+    "department": "it",
+    "tier": 2,
+    "capabilities": ["topics-flow", "power-automate", "human-approval", "dataverse"],
+    "en": {
+      "title": "Access request handling",
+      "pain": "Access requests arrive as free text, need an approver nobody can name, and stall for days at the wrong desk.",
+      "changes": "The request is structured on arrival, the approver is resolved from the system, and the wait becomes visible."
+    },
+    "zh": {
+      "title": "权限申请处理",
+      "pain": "权限申请以大白话提交，需要一个谁也说不清是谁的审批人，然后在错的人那里卡好几天。",
+      "changes": "申请进来就结构化，审批人从系统里解析出来，等待时间变得可见。"
+    }
+  },
+  {
+    "id": "business-system-agent",
+    "department": "it",
+    "tier": 3,
+    "capabilities": ["actions-connectors", "orchestration", "dataverse", "governance"],
+    "en": {
+      "title": "Agent over a legacy business system",
+      "pain": "A system everyone depends on and nobody wants to change, reachable only by people who know its screens.",
+      "changes": "An agent fronts it for the common tasks, so the system stays put while the people around it stop having to learn it."
+    },
+    "zh": {
+      "title": "老业务系统前置 Agent",
+      "pain": "一个所有人都依赖、但谁也不想动的系统，只有熟悉它界面的人才用得了。",
+      "changes": "常见操作由 agent 代劳：系统原地不动，但周围的人不必再去学它。"
+    }
+  },
+
+  {
+    "id": "doc-review",
+    "department": "general",
+    "tier": 2,
+    "capabilities": ["doc-extraction", "knowledge-grounding", "orchestration", "measurement"],
+    "en": {
+      "title": "Document review against rules",
+      "pain": "Contracts, specs or submissions are checked by hand against a set of rules that lives partly in a document and partly in an expert's memory.",
+      "changes": "Every clause is checked against the stated rules, with the evidence quoted, so the reviewer argues with findings instead of reading from scratch."
+    },
+    "zh": {
+      "title": "按规则做文档审查",
+      "pain": "合同、规格书或申报材料靠人工比对一套规则，而这套规则一半在文档里、一半在专家脑子里。",
+      "changes": "每一条都对照明示的规则检查并给出原文证据，审查者从「重头读」变成「跟结论较真」。"
+    }
+  },
+  {
+    "id": "meeting-to-actions",
+    "department": "general",
+    "tier": 1,
+    "capabilities": ["agent-basics", "actions-connectors", "power-automate"],
+    "en": {
+      "title": "Meeting notes to tracked actions",
+      "pain": "Decisions and owners are agreed in the room and then live in someone's notebook until the next meeting rediscovers them.",
+      "changes": "Actions and owners are extracted and land in the tracker the team already uses."
+    },
+    "zh": {
+      "title": "会议纪要转可跟踪行动项",
+      "pain": "决定和负责人在会上说定了，然后躺在某人的笔记本里，直到下次开会重新发现一遍。",
+      "changes": "行动项和负责人被抽出来，落进团队本来就在用的跟踪工具。"
+    }
+  },
+  {
+    "id": "knowledge-search",
+    "department": "general",
+    "tier": 1,
+    "capabilities": ["agent-basics", "knowledge-grounding", "governance"],
+    "en": {
+      "title": "Ask across your own documents",
+      "pain": "The answer exists, in a file, in a site nobody remembers the name of, written by someone who has left.",
+      "changes": "One place to ask, answering only from your own documents, with the source shown so the answer can be checked."
+    },
+    "zh": {
+      "title": "对着自己的文档提问",
+      "pain": "答案是有的——在某个文件里，在某个没人记得名字的站点上，作者已经离职了。",
+      "changes": "一个统一入口提问，只依据你自己的文档作答，并给出出处以便核对。"
+    }
+  }
+]

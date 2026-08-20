@@ -1,0 +1,346 @@
+---
+/**
+ * 06 — Program positioning: what it isn't → what it is.
+ *
+ * This is the presales objection-handling section ("isn't this just another
+ * training?"), so the reframe has to read as a *movement*, not a table. Each
+ * row is a matched pair of paintings: the misconception drained of colour on an
+ * ember rule, then the same scene as it should be, in full colour on a gold
+ * rule, with a gold arrow between them and the bridge line carried underneath.
+ * Showing both sides is what makes the row land — a lone grey thumbnail with an
+ * empty column opposite reads as a missing image, not as a contrast.
+ *
+ * The picture is the argument here, so it is sized as one. An earlier version
+ * ran them as ~8rem thumbnails cropped to 4/3 beside the copy, which left half
+ * the row empty and reduced a 512px scene to an unreadable fragment. They now
+ * take the full column at their native square, and the copy reads as the
+ * caption below.
+ */
+import { Image } from 'astro:assets';
+import SectionHead from './SectionHead.astro';
+import { type Lang } from '../i18n/config';
+import { useTranslations } from '../i18n/content';
+
+import demo from '../assets/images/pos-demo.webp';
+import training from '../assets/images/pos-training.webp';
+import delivery from '../assets/images/pos-delivery.webp';
+import inspire from '../assets/images/pos-inspire.webp';
+import empower from '../assets/images/pos-empower.webp';
+import accelerate from '../assets/images/pos-accelerate.webp';
+
+interface Props {
+  lang: Lang;
+}
+
+const { lang } = Astro.props;
+const p = useTranslations(lang).positioning;
+
+const art: Record<string, { isnt: ImageMetadata; is: ImageMetadata }> = {
+  demo: { isnt: demo, is: inspire },
+  training: { isnt: training, is: empower },
+  delivery: { isnt: delivery, is: accelerate },
+};
+---
+
+<section id="positioning" class="section positioning">
+  <div class="shell">
+    <SectionHead
+      eyebrow={p.eyebrow}
+      title={p.titleLead}
+      accent={p.titleAccent}
+      measure="full"
+    />
+
+    <div class="positioning__legend" data-reveal>
+      <span class="meta-label positioning__legend-isnt">{p.isntLabel}</span>
+      <span class="meta-label positioning__legend-is">{p.isLabel}</span>
+    </div>
+
+    <ol class="reframes">
+      {
+        p.reframes.map((r, i) => (
+          <li class="reframe" data-reveal style={`--beat:${i}`}>
+            <figure class="side__figure side__figure--isnt">
+              <Image
+                src={art[r.key].isnt}
+                alt={r.imageAlt}
+                widths={[288, 400, 512]}
+                sizes="(min-width: 62rem) 30rem, 86vw"
+                format="webp"
+                quality={80}
+                loading="lazy"
+              />
+            </figure>
+
+            <span class="reframe__arrow" aria-hidden="true" />
+
+            <figure class="side__figure side__figure--is">
+              <Image
+                src={art[r.key].is}
+                alt={r.isImageAlt}
+                widths={[288, 400, 512]}
+                sizes="(min-width: 62rem) 30rem, 86vw"
+                format="webp"
+                quality={80}
+                loading="lazy"
+              />
+            </figure>
+
+            <div class="side__copy side__copy--isnt">
+              <h3 class="side__title display">{r.isntTitle}</h3>
+              <p class="side__body">{r.isntBody}</p>
+            </div>
+
+            <div class="side__copy side__copy--is">
+              <h3 class="side__title side__title--is display">{r.isTitle}</h3>
+              <p class="side__body">{r.isBody}</p>
+            </div>
+
+            <p class="reframe__bridge">{r.bridge}</p>
+          </li>
+        ))
+      }
+    </ol>
+
+    <p class="positioning__closing display" data-reveal>{p.closing}</p>
+  </div>
+</section>
+
+<style>
+  .positioning__legend {
+    display: none;
+    margin-block-start: clamp(1.75rem, 1rem + 2.4vw, 2.75rem);
+  }
+
+  .positioning__legend-isnt {
+    color: var(--color-ember);
+  }
+
+  .positioning__legend-is {
+    color: var(--color-gold);
+  }
+
+  /* The paintings are 512px squares. Capping the list means a figure is never
+     asked to render wider than its source — even at the widest desktop the
+     column lands around 26rem, so the scene stays crisp — and it keeps three
+     full-height pairs from turning the section into a scroll of its own. */
+  .positioning__legend,
+  .reframes {
+    max-inline-size: 60rem;
+  }
+
+  .reframes {
+    list-style: none;
+    margin: 0.9rem 0 0;
+    padding: 0;
+    display: grid;
+    gap: clamp(2rem, 1.2rem + 3vw, 3.5rem);
+  }
+
+  /* Narrow: one column, the pair read top to bottom with the arrow turning to
+     point down between them. */
+  .reframe {
+    display: grid;
+    gap: clamp(0.8rem, 0.5rem + 1vw, 1.1rem);
+    grid-template-areas:
+      'isnt-fig'
+      'isnt-copy'
+      'arrow'
+      'is-fig'
+      'is-copy'
+      'bridge';
+    padding-block-start: clamp(1.1rem, 0.7rem + 1.2vw, 1.6rem);
+    border-block-start: 1px solid color-mix(in srgb, var(--color-ink) 14%, transparent);
+  }
+
+  .side__figure--isnt {
+    grid-area: isnt-fig;
+  }
+
+  .side__figure--is {
+    grid-area: is-fig;
+  }
+
+  .side__copy--isnt {
+    grid-area: isnt-copy;
+  }
+
+  .side__copy--is {
+    grid-area: is-copy;
+  }
+
+  .reframe__arrow {
+    grid-area: arrow;
+  }
+
+  .reframe__bridge {
+    grid-area: bridge;
+  }
+
+  .side__figure {
+    margin: 0;
+    overflow: hidden;
+    /* Square, because the source is: the old 4/3 crop threw away a third of a
+       composition that was already too small to read. */
+    aspect-ratio: 1 / 1;
+    inline-size: 100%;
+    max-inline-size: 22rem;
+  }
+
+  /* A rule under the picture rather than beside it — it now reads as the line
+     that binds the scene to the words below it. */
+  .side__figure--isnt {
+    border-block-end: 3px solid var(--color-ember);
+  }
+
+  .side__figure--is {
+    border-block-end: 3px solid var(--color-gold);
+  }
+
+  .side__figure :global(img) {
+    display: block;
+    inline-size: 100%;
+    block-size: 100%;
+    object-fit: cover;
+  }
+
+  /* The misconception side is deliberately drained of colour so the eye
+     travels toward the gold half of the row. */
+  .side__figure--isnt :global(img) {
+    filter: saturate(0.24) contrast(1.05) brightness(1.02);
+  }
+
+  .side__copy {
+    display: grid;
+    align-content: start;
+    gap: 0.3rem;
+  }
+
+  .side__copy--isnt {
+    margin-block-end: clamp(0.6rem, 0.3rem + 1vw, 1rem);
+  }
+
+  .side__title {
+    margin: 0;
+    font-size: var(--text-h3);
+    line-height: 1.15;
+    color: color-mix(in srgb, var(--color-ink) 58%, transparent);
+    text-wrap: balance;
+  }
+
+  .side__title--is {
+    color: var(--color-gold);
+  }
+
+  .side__body {
+    margin: 0;
+    font-size: var(--text-small);
+    line-height: 1.55;
+    color: color-mix(in srgb, var(--color-ink) 78%, transparent);
+    text-wrap: pretty;
+  }
+
+  /* Points down while the pair is stacked; the wide layout below turns it. */
+  .reframe__arrow {
+    position: relative;
+    justify-self: start;
+    margin-inline-start: clamp(1.5rem, 8vw, 4.5rem);
+    margin-block: 0.4rem;
+    inline-size: 1px;
+    block-size: 2.25rem;
+    background: var(--color-gold);
+  }
+
+  .reframe__arrow::after {
+    content: '';
+    position: absolute;
+    inset-block-end: 0;
+    inset-inline-start: 50%;
+    inline-size: 0.55rem;
+    block-size: 0.55rem;
+    border-inline-end: 1px solid var(--color-gold);
+    border-block-end: 1px solid var(--color-gold);
+    transform: translateX(-50%) rotate(45deg);
+  }
+
+  .reframe__bridge {
+    margin: clamp(0.4rem, 0.2rem + 0.6vw, 0.9rem) 0 0;
+    font-family: var(--font-display);
+    font-style: italic;
+    font-size: var(--text-small);
+    color: var(--color-gold);
+    text-wrap: pretty;
+  }
+
+  :global(html[lang='zh']) .reframe__bridge {
+    font-style: normal;
+  }
+
+  .positioning__closing {
+    margin: clamp(1.75rem, 1rem + 2.6vw, 3rem) 0 0;
+    padding-block-start: clamp(1.1rem, 0.7rem + 1.2vw, 1.75rem);
+    border-block-start: 1px solid color-mix(in srgb, var(--color-gold) 55%, transparent);
+    font-size: var(--text-lede);
+    line-height: 1.35;
+    color: var(--color-ink);
+    max-inline-size: 46ch;
+    text-wrap: balance;
+  }
+
+  /* --- Wide: the two scenes face each other, arrow between them, and the two
+         captions share a row so the titles land on one line. --- */
+  @media (min-width: 62rem) {
+    .positioning__legend {
+      display: grid;
+      /* The middle track mirrors the arrow so each label sits over its column. */
+      grid-template-columns: minmax(0, 1fr) 2.75rem minmax(0, 1fr);
+      column-gap: clamp(1.5rem, 0.5rem + 2vw, 2.75rem);
+    }
+
+    .positioning__legend-is {
+      grid-column: 3;
+    }
+
+    .reframe {
+      grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr);
+      grid-template-areas:
+        'isnt-fig  arrow  is-fig'
+        'isnt-copy .      is-copy'
+        'bridge    bridge bridge';
+      column-gap: clamp(1.5rem, 0.5rem + 2vw, 2.75rem);
+      row-gap: clamp(0.9rem, 0.6rem + 0.8vw, 1.3rem);
+    }
+
+    .side__figure {
+      max-inline-size: none;
+    }
+
+    .side__copy--isnt {
+      margin-block-end: 0;
+    }
+
+    .reframe__arrow {
+      justify-self: center;
+      align-self: center;
+      margin: 0;
+      inline-size: 2.75rem;
+      block-size: 1px;
+    }
+
+    .reframe__arrow::after {
+      inset-block-start: 50%;
+      inset-block-end: auto;
+      inset-inline-start: auto;
+      inset-inline-end: 0;
+      border-block-end: 0;
+      border-block-start: 1px solid var(--color-gold);
+      transform: translateY(-50%) rotate(45deg);
+    }
+
+    .reframe__bridge {
+      justify-self: center;
+      text-align: center;
+      max-inline-size: 52ch;
+    }
+  }
+</style>

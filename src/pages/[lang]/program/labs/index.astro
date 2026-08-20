@@ -1,0 +1,454 @@
+---
+/**
+ * STAGE 04 — the lab path, composed rather than authored.
+ *
+ * The accelerator's deliverable is not somebody's expense bot. It is the answer
+ * to "given what you want to do, which tools do your people need to be able to
+ * reach for" — generalising from the particular scenarios they brought. So a
+ * scenario carries capability tags, a lab module teaches exactly one
+ * capability, and a customer's path is the union of the tags across everything
+ * they collected, closed over prerequisites and sorted into an order that can
+ * actually be walked.
+ *
+ * Two things this buys, and both are the reason it is worth the indirection:
+ * a module is written once and serves every scenario that needs it, rather
+ * than a bespoke lab per customer; and a colleague who has never opened the
+ * tool gets a path that is demonstrably about their own work rather than a
+ * generic course they have to translate.
+ *
+ * With nothing collected the shelf is still shown in full — it is useful on its
+ * own to someone who just wants to know what there is to learn — but the
+ * composed path is the output that matters.
+ */
+import { getCollection } from 'astro:content';
+import Base from '../../../../layouts/Base.astro';
+import SectionHead from '../../../../components/SectionHead.astro';
+import { LANGS, isLang, localePath, type Lang } from '../../../../i18n/config';
+import { useTranslations } from '../../../../i18n/content';
+
+export function getStaticPaths() {
+  return LANGS.map((lang) => ({ params: { lang } }));
+}
+
+const { lang: raw } = Astro.params;
+const lang: Lang = isLang(raw) ? raw : 'en';
+const t = useTranslations(lang);
+const l = t.labs;
+
+const modules = (await getCollection('labs')).sort((a, b) => a.data.order - b.data.order);
+const examples = await getCollection('scenarios');
+
+const bootstrap = {
+  capabilities: t.capabilities,
+  // Enough to close over prerequisites and order the result client-side.
+  modules: modules.map((m) => ({ id: m.id, requires: m.data.requires, order: m.data.order, minutes: m.data.minutes })),
+  // Taken scenarios are titled from here so the path reads in this edition.
+  exampleTitles: Object.fromEntries(examples.map((e) => [e.id, e.data[lang].title])),
+  strings: {
+    composedNote: l.composedNote,
+    fromLabel: l.fromLabel,
+    prereqNote: l.prereqNote,
+    minutesLabel: l.minutesLabel,
+  },
+};
+---
+
+<Base lang={lang} path="/program/labs/" axis={false} title={l.title}>
+  <section id="labs" class="section labs">
+    <div class="shell">
+      <SectionHead as="h1" eyebrow={l.eyebrow} title={l.title} lede={l.lede} measure="wide" />
+
+      <div class="labs__empty" data-empty hidden>
+        <h2 class="labs__empty-title display">{l.emptyTitle}</h2>
+        <p class="labs__empty-body">{l.emptyBody}</p>
+        <a class="btn btn--gold" href={localePath(lang, '/program/scenarios/')}>{l.emptyCta}</a>
+      </div>
+
+      <section class="composed" data-composed hidden>
+        <div class="composed__head">
+          <h2 class="composed__title display">{l.composedTitle}</h2>
+          <p class="composed__count" data-count></p>
+        </div>
+        <ol class="composed__list" data-path></ol>
+        <p class="composed__note">{l.notYetNote}</p>
+      </section>
+
+      <section class="shelf">
+        <h2 class="shelf__title display">{l.shelfTitle}</h2>
+        <p class="shelf__note">{l.shelfNote}</p>
+
+        <ul class="shelf__list">
+          {
+            modules.map((mod) => {
+              const copy = mod.data[lang];
+              return (
+                <li class="mod" data-module={mod.id}>
+                  <p class="mod__meta meta-label">
+                    {t.capabilities[mod.id]} · {mod.data.minutes} {l.minutesLabel}
+                  </p>
+                  <h3 class="mod__name">{copy.name}</h3>
+
+                  <p class="mod__line">
+                    <span class="mod__label">{l.teachesLabel}</span>
+                    <span>{copy.teaches}</span>
+                  </p>
+                  <p class="mod__line">
+                    <span class="mod__label mod__label--out">{l.buildLabel}</span>
+                    <span>{copy.build}</span>
+                  </p>
+
+                  {mod.data.requires.length > 0 && (
+                    <p class="mod__req">
+                      {l.afterLabel}:{' '}
+                      {mod.data.requires.map((r) => t.capabilities[r]).join(' · ')}
+                    </p>
+                  )}
+                </li>
+              );
+            })
+          }
+        </ul>
+      </section>
+
+      <div class="labs__foot">
+        <a class="btn btn--quiet" href={localePath(lang, '/program/scenarios/')}>{l.emptyCta}</a>
+        <a class="btn btn--gold" href={localePath(lang, '/program/')}>{l.backLabel}</a>
+      </div>
+    </div>
+  </section>
+
+  <script type="application/json" data-labs-bootstrap set:html={JSON.stringify(bootstrap)} />
+</Base>
+
+<script>
+  import { LocalSessionStore, openActiveSession } from '../../../../lib/session';
+
+  const boot = document.querySelector('[data-labs-bootstrap]');
+
+  if (boot) {
+    const cfg = JSON.parse(boot.textContent ?? '{}');
+    const store = new LocalSessionStore();
+    const session = await openActiveSession(store);
+
+    interface Mod {
+      id: string;
+      requires: string[];
+      order: number;
+      minutes: number;
+    }
+    const byId = new Map<string, Mod>(cfg.modules.map((m: Mod) => [m.id, m]));
+
+    // Which collected scenarios asked for each capability — the reason a module
+    // is in the path is as useful as the module.
+    const askedBy = new Map<string, string[]>();
+    for (const scenario of session.scenarios) {
+      const title = scenario.sourceId
+        ? (cfg.exampleTitles[scenario.sourceId] ?? scenario.title)
+        : scenario.title;
+      for (const cap of scenario.capabilities ?? []) {
+        askedBy.set(cap, [...(askedBy.get(cap) ?? []), title]);
+      }
+    }
+
+    // Close over prerequisites: a module can pull in one nobody asked for, and
+    // that one still has to be in the path or the path cannot be walked.
+    const needed = new Set(askedBy.keys());
+    const queue = [...needed];
+    while (queue.length) {
+      const current = byId.get(queue.pop()!);
+      for (const req of current?.requires ?? []) {
+        if (!needed.has(req)) {
+          needed.add(req);
+          queue.push(req);
+        }
+      }
+    }
+
+    // Topological order, tie-broken by the shelf's own order so two independent
+    // modules always appear in the same sequence.
+    const ordered: Mod[] = [];
+    const placed = new Set<string>();
+    const pending = [...needed]
+      .map((id) => byId.get(id))
+      .filter((m): m is Mod => !!m)
+      .sort((a, b) => a.order - b.order);
+
+    while (pending.length) {
+      const next = pending.findIndex((m) => m.requires.every((r) => !needed.has(r) || placed.has(r)));
+      // A cycle would strand everything; take the lowest-order module instead
+      // of looping forever, so a bad edge degrades to a wrong order not a hang.
+      const [taken] = pending.splice(next === -1 ? 0 : next, 1);
+      ordered.push(taken);
+      placed.add(taken.id);
+    }
+
+    const emptyBox = document.querySelector<HTMLElement>('[data-empty]')!;
+    const composed = document.querySelector<HTMLElement>('[data-composed]')!;
+
+    if (!ordered.length) {
+      emptyBox.hidden = false;
+    } else {
+      composed.hidden = false;
+      renderPath(ordered);
+    }
+
+    function renderPath(path: Mod[]) {
+      const list = document.querySelector<HTMLElement>('[data-path]')!;
+      const totalMinutes = path.reduce((sum, m) => sum + m.minutes, 0);
+      const hours = Math.round((totalMinutes / 60) * 2) / 2;
+
+      document.querySelector<HTMLElement>('[data-count]')!.textContent = cfg.strings.composedNote
+        .replace('{modules}', String(path.length))
+        .replace('{hours}', `${hours}h`);
+
+      list.textContent = '';
+
+      for (const mod of path) {
+        // The shelf already renders every module; clone rather than rebuild so
+        // the two can never describe the same module differently.
+        const source = document.querySelector<HTMLElement>(`[data-module="${mod.id}"]`)!;
+        const li = source.cloneNode(true) as HTMLElement;
+        li.removeAttribute('data-module');
+        li.classList.add('mod--in-path');
+
+        const why = document.createElement('p');
+        why.className = 'mod__why';
+        const asked = askedBy.get(mod.id);
+        why.textContent = asked?.length
+          ? `${cfg.strings.fromLabel}: ${[...new Set(asked)].join(' · ')}`
+          : cfg.strings.prereqNote;
+        if (!asked?.length) why.classList.add('mod__why--prereq');
+        li.append(why);
+
+        list.append(li);
+      }
+    }
+  }
+</script>
+
+<style>
+  .labs__empty {
+    margin-block-start: clamp(1.75rem, 1.2rem + 2vw, 2.75rem);
+    padding: clamp(1.3rem, 1rem + 1.4vw, 2rem);
+    background: color-mix(in srgb, var(--color-parchment-deep) 55%, transparent);
+    border-inline-start: 4px solid color-mix(in srgb, var(--color-gold) 60%, transparent);
+    max-inline-size: 56rem;
+  }
+
+  .labs__empty-title {
+    margin: 0;
+    font-size: var(--text-h3);
+    color: var(--color-ink);
+  }
+
+  .labs__empty-body {
+    margin: 0.5rem 0 1.1rem;
+    max-inline-size: 58ch;
+    font-size: var(--text-small);
+    line-height: 1.6;
+    color: color-mix(in srgb, var(--color-ink) 80%, transparent);
+  }
+
+  .composed {
+    margin-block-start: clamp(1.75rem, 1.2rem + 2vw, 2.75rem);
+    max-inline-size: 62rem;
+  }
+
+  .composed__head {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: 0.5rem 1.5rem;
+  }
+
+  .composed__title,
+  .shelf__title {
+    margin: 0;
+    font-size: var(--text-h3);
+    color: var(--color-ink);
+  }
+
+  .composed__count {
+    margin: 0;
+    font-family: var(--font-display);
+    font-size: var(--text-lede);
+    color: var(--color-gold);
+  }
+
+  .composed__list {
+    list-style: none;
+    counter-reset: step;
+    margin: clamp(1.2rem, 0.9rem + 1.2vw, 1.8rem) 0 0;
+    padding: 0;
+    display: grid;
+    gap: clamp(0.9rem, 0.7rem + 0.8vw, 1.3rem);
+  }
+
+  .composed__note {
+    margin: 1.2rem 0 0;
+    max-inline-size: 62ch;
+    font-size: var(--text-small);
+    line-height: 1.6;
+    color: var(--color-muted);
+  }
+
+  .shelf {
+    margin-block-start: clamp(2.5rem, 1.6rem + 3vw, 4rem);
+    max-inline-size: 68rem;
+  }
+
+  .shelf__note {
+    margin: 0.45rem 0 0;
+    max-inline-size: 62ch;
+    font-size: var(--text-small);
+    line-height: 1.6;
+    color: var(--color-muted);
+  }
+
+  .shelf__list {
+    list-style: none;
+    margin: clamp(1.2rem, 0.9rem + 1.2vw, 1.8rem) 0 0;
+    padding: 0;
+    display: grid;
+    gap: clamp(0.9rem, 0.7rem + 0.8vw, 1.3rem);
+  }
+
+  .mod {
+    padding: clamp(1rem, 0.8rem + 0.9vw, 1.4rem);
+    border: 1px solid color-mix(in srgb, var(--color-ink) 12%, transparent);
+    background: color-mix(in srgb, #fff 58%, transparent);
+  }
+
+  /* Cloned into the composed path, so these have to be global. */
+  .composed__list :global(.mod) {
+    position: relative;
+    counter-increment: step;
+    padding: clamp(1rem, 0.8rem + 0.9vw, 1.4rem);
+    padding-inline-start: clamp(3.2rem, 2.6rem + 2vw, 4.4rem);
+    background: #fff;
+    border: 1px solid color-mix(in srgb, var(--color-ink) 12%, transparent);
+    border-inline-start: 3px solid var(--color-gold);
+  }
+
+  .composed__list :global(.mod)::before {
+    content: counter(step);
+    position: absolute;
+    inset-block-start: clamp(1rem, 0.8rem + 0.9vw, 1.4rem);
+    inset-inline-start: clamp(1rem, 0.8rem + 0.9vw, 1.4rem);
+    font-family: var(--font-display);
+    font-size: var(--text-h3);
+    line-height: 1;
+    color: var(--color-gold);
+  }
+
+  .composed__list :global(.mod__meta) {
+    margin: 0;
+  }
+
+  .composed__list :global(.mod__name) {
+    margin: 0.25rem 0 0;
+    font-family: var(--font-display);
+    font-size: var(--text-lede);
+    line-height: 1.25;
+    color: var(--color-ink);
+  }
+
+  .composed__list :global(.mod__line) {
+    display: grid;
+    gap: 0.1rem;
+    margin: 0.6rem 0 0;
+    max-inline-size: 62ch;
+    font-size: var(--text-small);
+    line-height: 1.55;
+    color: color-mix(in srgb, var(--color-ink) 78%, transparent);
+  }
+
+  .composed__list :global(.mod__label) {
+    font-size: var(--text-micro);
+    font-weight: 600;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: var(--color-muted);
+  }
+
+  .composed__list :global(.mod__label--out) {
+    color: var(--color-gold);
+  }
+
+  .composed__list :global(.mod__req) {
+    margin: 0.6rem 0 0;
+    font-size: var(--text-micro);
+    color: var(--color-muted);
+  }
+
+  .composed__list :global(.mod__why) {
+    margin: 0.8rem 0 0;
+    padding-block-start: 0.6rem;
+    border-block-start: 1px solid color-mix(in srgb, var(--color-ink) 12%, transparent);
+    font-size: var(--text-micro);
+    line-height: 1.5;
+    color: color-mix(in srgb, var(--color-ink) 74%, transparent);
+  }
+
+  .composed__list :global(.mod__why--prereq) {
+    font-style: italic;
+    color: var(--color-muted);
+  }
+
+  .mod__meta {
+    margin: 0;
+  }
+
+  .mod__name {
+    margin: 0.25rem 0 0;
+    font-family: var(--font-display);
+    font-size: var(--text-lede);
+    line-height: 1.25;
+    color: var(--color-ink);
+    text-wrap: pretty;
+  }
+
+  .mod__line {
+    display: grid;
+    gap: 0.1rem;
+    margin: 0.6rem 0 0;
+    max-inline-size: 62ch;
+    font-size: var(--text-small);
+    line-height: 1.55;
+    color: color-mix(in srgb, var(--color-ink) 78%, transparent);
+  }
+
+  .mod__label {
+    font-size: var(--text-micro);
+    font-weight: 600;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: var(--color-muted);
+  }
+
+  .mod__label--out {
+    color: var(--color-gold);
+  }
+
+  .mod__req {
+    margin: 0.6rem 0 0;
+    font-size: var(--text-micro);
+    color: var(--color-muted);
+  }
+
+  .labs__foot {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.7rem;
+    margin-block-start: clamp(2.5rem, 1.6rem + 3vw, 4rem);
+    padding-block-start: clamp(1.2rem, 0.9rem + 1.2vw, 1.8rem);
+    border-block-start: 1px solid color-mix(in srgb, var(--color-gold) 45%, transparent);
+  }
+
+  @media (min-width: 62rem) {
+    .shelf__list {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+  }
+</style>

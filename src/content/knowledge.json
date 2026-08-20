@@ -1,0 +1,128 @@
+[
+  {
+    "id": "copilot-studio-overview",
+    "slug": "copilot-studio-overview",
+    "group": "start",
+    "order": 1,
+    "en": {
+      "title": "Microsoft Copilot Studio: Positioning, Capabilities, Adoption & Pricing",
+      "why": "If you read one article before the twelve questions, read this one. It is what Copilot Studio actually is, what it can and cannot do, and what it costs."
+    },
+    "zh": {
+      "title": "Microsoft Copilot Studio：定位、能力、落地路径与费用",
+      "why": "回答十二道题之前只读一篇的话，就读这篇。Copilot Studio 到底是什么、能做什么不能做什么、以及要花多少钱。"
+    }
+  },
+  {
+    "id": "agentic-ai-adoption",
+    "slug": "agentic-ai-adoption-practice",
+    "group": "start",
+    "order": 2,
+    "en": {
+      "title": "Agentic AI Adoption Practice: Planning Enterprise Rollout with a Maturity Model",
+      "why": "The maturity model the twelve questions are measuring you against, written out in full."
+    },
+    "zh": {
+      "title": "Agentic AI 导入实践：用成熟度模型规划企业落地",
+      "why": "十二道题在拿什么尺子量你——这篇把那把尺子完整写了出来。"
+    }
+  },
+  {
+    "id": "copilot-studio-vs-agent-sdk",
+    "slug": "copilot-studio-vs-agent-sdk",
+    "group": "start",
+    "order": 3,
+    "en": {
+      "title": "Copilot Studio vs Agents SDK: Positioning, Relationship & Scenario Selection",
+      "why": "Answers the question every technical person in the room asks first: why not just write the code ourselves?"
+    },
+    "zh": {
+      "title": "Copilot Studio 与 Agents SDK：产品定位、协作关系与场景选型",
+      "why": "回答会议室里技术同事一定会先问的那句：为什么不干脆自己写代码？"
+    }
+  },
+  {
+    "id": "copilot-studio-constraints",
+    "slug": "copilot-studio-constraints",
+    "group": "build",
+    "order": 1,
+    "en": {
+      "title": "Microsoft Copilot Studio: Constraints & Engineering Boundaries",
+      "why": "The limits you will hit — quotas, topic and instruction ceilings, knowledge-source sync. Cheaper to read now than to discover in week six."
+    },
+    "zh": {
+      "title": "Microsoft Copilot Studio 约束条件与工程边界",
+      "why": "你迟早会撞上的那些墙：配额、Topics 与 Instructions 的硬上限、知识源同步限制。现在读，比第六周才发现便宜得多。"
+    }
+  },
+  {
+    "id": "copilot-studio-memory",
+    "slug": "copilot-studio-memory",
+    "group": "build",
+    "order": 2,
+    "en": {
+      "title": "Copilot Studio Memory Management: Variable Scopes, Conversation History & Knowledge Retrieval",
+      "why": "Why your agent forgets things, and which of the four memory layers to reach for."
+    },
+    "zh": {
+      "title": "Copilot Studio 记忆管理机制：变量作用域、对话历史与知识检索",
+      "why": "你的 agent 为什么会忘事，以及四层记忆机制该用哪一层。"
+    }
+  },
+  {
+    "id": "copilot-studio-cua",
+    "slug": "copilot-studio-cua",
+    "group": "build",
+    "order": 3,
+    "en": {
+      "title": "Copilot Studio CUA: GUI Automation Capability, Limits & Cost",
+      "why": "For the systems with no API. Read the success-rate and cost sections before you promise anyone this."
+    },
+    "zh": {
+      "title": "Copilot Studio CUA：让 Agent 操作网页与桌面应用的能力、边界与成本",
+      "why": "给那些没有 API 的老系统用的。在向任何人承诺之前，先看成功率和成本那两节。"
+    }
+  },
+  {
+    "id": "power-platform-governance",
+    "slug": "power-platform-governance",
+    "group": "it",
+    "order": 1,
+    "en": {
+      "title": "Power Platform Governance Quickstart: Licensing to Operations",
+      "why": "Licensing, capacity, environments and permissions in one place — the background to every item on your IT checklist."
+    },
+    "zh": {
+      "title": "Power Platform 治理速览：从许可到运维落地",
+      "why": "许可、容量、环境、权限一次讲清——你那份 IT 清单上每一条的背景都在这里。"
+    }
+  },
+  {
+    "id": "power-platform-pricing-quote-tool",
+    "slug": "power-platform-pricing-quote-tool",
+    "group": "it",
+    "order": 2,
+    "en": {
+      "title": "Power Platform Pricing System & Interactive Estimator",
+      "why": "Includes a working estimator. Use it to put a number on the licence line before you take the checklist to procurement."
+    },
+    "zh": {
+      "title": "Power Platform 报价体系与互动估算器：从需求到产品配置",
+      "why": "里面有个能用的估算器。把清单交给采购之前，先用它把许可那一行的数字算出来。"
+    }
+  },
+  {
+    "id": "dataverse-security-roles",
+    "slug": "dataverse-security-roles",
+    "group": "it",
+    "order": 3,
+    "en": {
+      "title": "Dataverse Security Role Guide: Concepts, Predefined Roles & Best Practices",
+      "why": "What to hand your identity team when the checklist asks who may build, and who may publish."
+    },
+    "zh": {
+      "title": "Dataverse Security Role 完全指南：概念、预定义角色与最佳实践",
+      "why": "当清单问到「谁能建、谁能发布」时，这就是你要转给身份管理团队的那一篇。"
+    }
+  }
+]

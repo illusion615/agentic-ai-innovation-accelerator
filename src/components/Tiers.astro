@@ -1,0 +1,351 @@
+---
+/**
+ * 09 — One guild, three tiers.
+ *
+ * Nine scenarios layered by who builds them. Filtering is the point: in the
+ * room a presales lead asks "which of these are you?" and pins the answer, so
+ * the rest of the conversation happens inside one tier. Selection is held on
+ * `data-active-tier` and resolved entirely in CSS — no per-node JS, so it stays
+ * instant and survives reduced-motion without a special case.
+ */
+import { Image } from 'astro:assets';
+import SectionHead from './SectionHead.astro';
+import SectionArt from './SectionArt.astro';
+import { type Lang } from '../i18n/config';
+import { useTranslations } from '../i18n/content';
+
+import guildHall from '../assets/images/guild-hall.webp';
+import tier1 from '../assets/images/tier-1.webp';
+import tier2 from '../assets/images/tier-2.webp';
+import tier3 from '../assets/images/tier-3.webp';
+
+interface Props {
+  lang: Lang;
+}
+
+const { lang } = Astro.props;
+const t = useTranslations(lang).tiers;
+
+const art: Record<string, ImageMetadata> = {
+  'tier-1': tier1,
+  'tier-2': tier2,
+  'tier-3': tier3,
+};
+---
+
+<section id="tiers" class="section tiers">
+  <SectionArt src={guildHall} alt={t.imageAlt} focus="center 38%" />
+
+  <div class="shell">
+    <div class="lead">
+      <SectionHead eyebrow={t.eyebrow} title={t.title} lede={t.lede} measure="wide" />
+    </div>
+
+    <div class="tiers__board plate">
+      <div class="tiers__controls" data-reveal>
+      <span class="meta-label">{t.filterLabel}</span>
+      <div class="tiers__filters" role="group" aria-label={t.filterLabel}>
+        <button type="button" class="tier-btn" data-tier-btn="all" aria-pressed="true">
+          {t.allLabel}
+        </button>
+        {
+          t.items.map((tier) => (
+            <button type="button" class="tier-btn" data-tier-btn={tier.key} aria-pressed="false">
+              {tier.index}
+            </button>
+          ))
+        }
+      </div>
+    </div>
+
+      <ol class="tier-grid" data-tiers data-active-tier="all">
+      {
+        t.items.map((tier, i) => (
+          <li class="tier" data-tier={tier.key} data-reveal style={`--beat:${i}`}>
+            <figure class="tier__figure">
+              <Image
+                src={art[tier.key]}
+                alt={tier.imageAlt}
+                widths={[420, 640, 900]}
+                sizes="(min-width: 64rem) 30vw, 90vw"
+                format="webp"
+                quality={78}
+                loading="lazy"
+              />
+              <figcaption class="tier__index">{tier.index}</figcaption>
+            </figure>
+
+            <h3 class="tier__name display">{tier.name}</h3>
+            <p class="tier__tagline">{tier.tagline}</p>
+
+            <ul class="traits">
+              {tier.traits.map((trait) => (
+                <li class="trait">{trait}</li>
+              ))}
+            </ul>
+
+            <ul class="scenarios">
+              {tier.scenarios.map((s) => (
+                <li class="scenario">
+                  <span class="scenario__name">{s.name}</span>
+                  <span class="scenario__domain">{s.domain}</span>
+                </li>
+              ))}
+            </ul>
+
+            <dl class="tier-metrics">
+              <div class="tier-metric">
+                <dt>{t.labels.businessValue}</dt>
+                <dd>{tier.businessValue}</dd>
+              </div>
+              <div class="tier-metric">
+                <dt>{t.labels.complexity}</dt>
+                <dd>{tier.complexity}</dd>
+              </div>
+              <div class="tier-metric">
+                <dt>{t.labels.investment}</dt>
+                <dd>{tier.investment}</dd>
+              </div>
+              <div class="tier-metric tier-metric--return">
+                <dt>{t.labels.returns}</dt>
+                <dd>{tier.returns}</dd>
+              </div>
+            </dl>
+          </li>
+        ))
+      }
+      </ol>
+    </div>
+  </div>
+</section>
+
+<script>
+  const grid = document.querySelector<HTMLElement>('[data-tiers]');
+  const buttons = Array.from(document.querySelectorAll<HTMLButtonElement>('[data-tier-btn]'));
+
+  if (grid && buttons.length) {
+    buttons.forEach((button) => {
+      button.addEventListener('click', () => {
+        const key = button.dataset.tierBtn ?? 'all';
+        // Clicking the pinned tier again releases the filter, so the control
+        // is a toggle rather than a mode you can get stuck in.
+        const next = grid.dataset.activeTier === key && key !== 'all' ? 'all' : key;
+        grid.dataset.activeTier = next;
+        buttons.forEach((b) => {
+          b.setAttribute('aria-pressed', String((b.dataset.tierBtn ?? 'all') === next));
+        });
+      });
+    });
+  }
+</script>
+
+<style>
+  /* Filter and cards are one instrument, so they share one plate. */
+  .tiers__board {
+    margin-block-start: clamp(1.5rem, 1rem + 2vw, 2.5rem);
+  }
+
+  .tiers__controls {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.75rem clamp(1rem, 0.5rem + 1.5vw, 2rem);
+    margin-block-start: 0;
+  }
+
+  .tiers__filters {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+  }
+
+  .tier-btn {
+    font: inherit;
+    font-size: var(--text-small);
+    padding: 0.4em 1.05em;
+    cursor: pointer;
+    color: var(--color-ink);
+    background: transparent;
+    border: 1px solid color-mix(in srgb, var(--color-ink) 24%, transparent);
+    transition:
+      background var(--duration-quick) var(--ease-in-out-soft),
+      border-color var(--duration-quick) var(--ease-in-out-soft),
+      color var(--duration-quick) var(--ease-in-out-soft);
+  }
+
+  .tier-btn:hover {
+    border-color: var(--color-gold);
+  }
+
+  .tier-btn[aria-pressed='true'] {
+    background: var(--color-ink);
+    border-color: var(--color-ink);
+    color: var(--color-parchment);
+  }
+
+  /* --- Grid --- */
+  .tier-grid {
+    list-style: none;
+    margin: clamp(1.75rem, 1rem + 2.5vw, 2.75rem) 0 0;
+    padding: 0;
+    display: grid;
+    gap: clamp(2rem, 1rem + 3vw, 3rem);
+  }
+
+  @media (min-width: 64rem) {
+    .tier-grid {
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+    }
+  }
+
+  .tier {
+    display: grid;
+    align-content: start;
+    grid-template-rows: auto auto auto auto 1fr auto;
+    padding-block-start: 1.1rem;
+    border-block-start: 2px solid var(--color-gold);
+    transition:
+      opacity var(--duration-base) var(--ease-in-out-soft),
+      filter var(--duration-base) var(--ease-in-out-soft);
+  }
+
+  /* Dimming is enumerated rather than computed because CSS cannot compare a
+     parent attribute to a child attribute. Three tiers, three rules. */
+  [data-tiers][data-active-tier='tier-1'] .tier:not([data-tier='tier-1']),
+  [data-tiers][data-active-tier='tier-2'] .tier:not([data-tier='tier-2']),
+  [data-tiers][data-active-tier='tier-3'] .tier:not([data-tier='tier-3']) {
+    opacity: 0.26;
+    filter: saturate(0.35);
+  }
+
+  .tier__figure {
+    position: relative;
+    margin: 0 0 1rem;
+    overflow: hidden;
+    /* Slightly wider than the source's 2.33:1 so the bottom strip of baked-in
+       English scenario labels is cropped off rather than sliced mid-word. The
+       scenario names are listed in full below, in the reader's language. */
+    aspect-ratio: 2.62 / 1;
+  }
+
+  .tier__figure :global(img) {
+    display: block;
+    inline-size: 100%;
+    block-size: 100%;
+    object-fit: cover;
+    object-position: center top;
+  }
+
+  .tier__index {
+    position: absolute;
+    inset-block-end: 0;
+    inset-inline-start: 0;
+    padding: 0.35em 0.9em;
+    background: var(--color-ink-deep);
+    color: var(--color-gold);
+    font-size: var(--text-micro);
+    font-weight: 600;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+  }
+
+  .tier__name {
+    margin: 0;
+    font-size: var(--text-h3);
+    color: var(--color-ink);
+    text-wrap: balance;
+  }
+
+  .tier__tagline {
+    margin: 0.4rem 0 0;
+    font-size: var(--text-small);
+    line-height: 1.55;
+    color: color-mix(in srgb, var(--color-ink) 78%, transparent);
+    text-wrap: pretty;
+  }
+
+  .traits {
+    list-style: none;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.4rem 0.55rem;
+    margin: 0.9rem 0 0;
+    padding: 0;
+  }
+
+  .trait {
+    font-size: var(--text-micro);
+    letter-spacing: 0.06em;
+    padding: 0.25em 0.7em;
+    color: color-mix(in srgb, var(--color-ink) 70%, transparent);
+    background: color-mix(in srgb, var(--color-parchment-deep) 75%, transparent);
+    border: 1px solid color-mix(in srgb, var(--color-ink) 10%, transparent);
+  }
+
+  .scenarios {
+    list-style: none;
+    margin: 1.25rem 0 0;
+    padding: 0;
+    display: grid;
+    gap: 0.55rem;
+  }
+
+  .scenario {
+    display: grid;
+    gap: 0.1rem;
+    padding: 0.7rem 0.9rem;
+    background: #fff;
+    border: 1px solid color-mix(in srgb, var(--color-ink) 10%, transparent);
+    border-inline-start: 3px solid var(--color-gold);
+  }
+
+  .scenario__name {
+    font-size: var(--text-small);
+    font-weight: 500;
+    color: var(--color-ink);
+  }
+
+  .scenario__domain {
+    font-size: var(--text-micro);
+    color: var(--color-muted);
+  }
+
+  .tier-metrics {
+    margin: 1.5rem 0 0;
+    padding-block-start: 1rem;
+    border-block-start: 1px solid color-mix(in srgb, var(--color-ink) 14%, transparent);
+    display: grid;
+    gap: 0.7rem;
+  }
+
+  .tier-metric {
+    display: grid;
+    gap: 0.1rem;
+  }
+
+  .tier-metric dt {
+    font-size: var(--text-micro);
+    font-weight: 600;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: var(--color-muted);
+  }
+
+  .tier-metric dd {
+    margin: 0;
+    font-size: var(--text-small);
+    line-height: 1.5;
+    color: color-mix(in srgb, var(--color-ink) 82%, transparent);
+  }
+
+  .tier-metric--return dt {
+    color: var(--color-gold);
+  }
+
+  .tier-metric--return dd {
+    color: var(--color-ink);
+    font-family: var(--font-display);
+    font-size: var(--text-body);
+    line-height: 1.35;
+  }
+</style>

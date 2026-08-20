@@ -1,0 +1,552 @@
+@import 'tailwindcss';
+@import './fonts.css';
+
+/* ============================================================
+   DESIGN TOKENS — single source of truth for the whole site.
+   Inherited from the Agentic AI Innovation Accelerator deck.
+   ============================================================ */
+@theme {
+  /* --- Palette --- */
+  --color-parchment: #f5f0e6;
+  --color-parchment-deep: #ebe3d3;
+  --color-ink: #16294a;
+  --color-ink-deep: #0e1b33;
+  --color-gold: #c9a227;
+  --color-gold-bright: #e0bd4a;
+  --color-ember: #c4622d;
+  --color-muted: #8a8578;
+
+  /* --- Type families --- */
+  /* Latin comes from the vendored webfonts; CJK falls through to the best
+     available system Song/Hei face so the Chinese edition still reads as
+     serif-display / sans-body without shipping a 10 MB font. */
+  --font-display: 'EB Garamond', 'Songti SC', 'Noto Serif SC', 'Source Han Serif SC', 'STSong',
+    'SimSun', serif;
+  --font-body: 'Inter', 'PingFang SC', 'Noto Sans SC', 'Source Han Sans SC', 'Microsoft YaHei',
+    'Hiragino Sans GB', sans-serif;
+
+  /* --- Fluid type scale, tuned one notch larger than a normal
+         marketing site so the back row of a meeting room can read it.
+         The ceilings are deliberately lower than the hero's own scale: a
+         section heading that renders at hero size costs a whole projector
+         screen before any content appears, which pushes an illustration and
+         the copy it belongs to onto separate screens. At 1600px this yields
+         ~62px headings / ~27px ledes / ~22px body — still a clear step up from
+         a conventional site's 44 / 20 / 16. --- */
+  --text-eyebrow: clamp(0.75rem, 0.62rem + 0.42vw, 1.05rem);
+  --text-micro: clamp(0.78rem, 0.7rem + 0.2vw, 0.92rem);
+  --text-small: clamp(0.92rem, 0.85rem + 0.22vw, 1.08rem);
+  --text-body: clamp(1.05rem, 0.95rem + 0.4vw, 1.35rem);
+  --text-lede: clamp(1.15rem, 0.98rem + 0.7vw, 1.6rem);
+  --text-h3: clamp(1.3rem, 1.08rem + 0.85vw, 1.85rem);
+  --text-h2: clamp(2.1rem, 1.35rem + 2.6vw, 3.9rem);
+  --text-h1: clamp(3rem, 1.6rem + 6.2vw, 8.5rem);
+  --text-stat: clamp(3.6rem, 2rem + 6.6vw, 8.5rem);
+
+  /* --- Rhythm --- */
+  --spacing-section: clamp(3.5rem, 2.4rem + 3.2vw, 5.75rem);
+  --spacing-gutter: clamp(1.5rem, 0.6rem + 3.6vw, 6rem);
+
+  /* --- Motion --- */
+  --duration-quick: 220ms;
+  --duration-base: 520ms;
+  --duration-slow: 1100ms;
+  --duration-count: 1600ms;
+  --ease-out-expo: cubic-bezier(0.16, 1, 0.3, 1);
+  --ease-in-out-soft: cubic-bezier(0.65, 0, 0.35, 1);
+
+  /* --- Beat: the site's single unit of narrative timing ---
+         Every staged entrance anywhere on the site is `--beat: N` and lands
+         N steps after the first element of its group. Before this the stagger
+         was hand-written per component at 90 / 100 / 110 / 120 / 130ms, so no
+         two sections shared a tempo and the page read as eleven different
+         animations. One step, one duration, one curve — everywhere. */
+  --beat-step: 88ms;
+  --beat-dur: 980ms;
+  --beat-rise: 2.6rem;
+}
+
+/* ============================================================
+   BASE
+   ============================================================ */
+html {
+  scroll-behavior: smooth;
+  /* Applies to every scroll-into-view the browser performs on this container,
+     not just anchor jumps: tabbing to a control near the top of a section used
+     to park it underneath the sticky bar, where it could neither be read nor
+     clicked. The per-section scroll-margin below handles the same problem for
+     anchors; this covers keyboard focus and programmatic scrolls. */
+  scroll-padding-block-start: 6rem;
+  background-color: var(--color-parchment);
+  -webkit-text-size-adjust: 100%;
+}
+
+body {
+  margin: 0;
+  /* No background of its own: the page's parchment is set on `html`, where it
+     becomes the canvas and therefore sits below everything. A background here
+     would paint as an ordinary block box — above the backdrop layers, which
+     are deliberately negative (see SectionArt.astro) — and hide every
+     painting on the page. */
+  color: var(--color-ink);
+  font-family: var(--font-body);
+  font-size: var(--text-body);
+  line-height: 1.55;
+  overflow-x: hidden;
+  font-synthesis-weight: none;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* Chinese needs a touch more leading and slightly looser tracking. */
+html[lang='zh'] body {
+  line-height: 1.75;
+  letter-spacing: 0.01em;
+}
+
+::selection {
+  background: var(--color-gold);
+  color: var(--color-ink-deep);
+}
+
+:focus-visible {
+  outline: 3px solid var(--color-gold);
+  outline-offset: 3px;
+}
+
+/* ============================================================
+   COMPONENT PRIMITIVES
+   ============================================================ */
+@utility shell {
+  width: 100%;
+  max-width: 108rem;
+  margin-inline: auto;
+  padding-inline: var(--spacing-gutter);
+}
+
+/* The deck's signature eyebrow: all caps, wide tracking, small, gold. */
+@utility eyebrow {
+  font-family: var(--font-body);
+  font-size: var(--text-eyebrow);
+  font-weight: 500;
+  letter-spacing: 0.34em;
+  text-transform: uppercase;
+  color: var(--color-gold);
+  line-height: 1.2;
+}
+
+@utility display {
+  font-family: var(--font-display);
+  font-weight: 400;
+  line-height: 1.02;
+  letter-spacing: -0.015em;
+}
+
+@utility rule-gold {
+  display: block;
+  width: 4.5rem;
+  height: 3px;
+  background: var(--color-gold);
+  border: 0;
+}
+
+/* ============================================================
+   SECTION SHELL
+   ============================================================ */
+.section {
+  position: relative;
+  padding-block: var(--spacing-section);
+}
+
+/* The top bar is sticky, so an anchor jump or scrollIntoView would otherwise
+   park the section's eyebrow underneath it. */
+:where(section[id]) {
+  scroll-margin-block-start: 5.5rem;
+}
+
+/* Dark bands break up the parchment run and give the eye a place to rest.
+   They also let the gold particle field read at full strength. */
+.section--dark {
+  background: var(--color-ink-deep);
+  color: var(--color-parchment);
+}
+
+.section--dark .eyebrow {
+  color: var(--color-gold-bright);
+}
+
+.section--tight {
+  padding-block: calc(var(--spacing-section) * 0.62);
+}
+
+/* ============================================================
+   LAYERING
+   The transmutation canvas is fixed at z-index 3. Everything readable is
+   lifted above it: over a glyph the ordered gold squares are noise, and by
+   the end of the page the lattice is dense enough to genuinely impede
+   reading. Section backgrounds (the navy bands, the ghosted illustrations)
+   deliberately stay *below* the canvas, so the field still drifts across
+   them and the effect reads as continuous through the whole page.
+
+   (#main must stay z-index:auto or none of this works — see Base.astro.)
+   ============================================================ */
+/* Horizontal overflow guard. Wide boards and rules occasionally reach past the
+   gutter; on the left it is absorbed, but on the right it counts toward
+   scrollWidth and can push the menu button off a phone screen.
+
+   `clip`, not `hidden`: `hidden` would make this a scroll container. Applied
+   here rather than on `body`, whose overflow propagates to the viewport
+   instead of clipping anything. */
+#main {
+  overflow-x: clip;
+}
+
+#main .shell,
+#main figure {
+  position: relative;
+  z-index: 4;
+}
+
+/* Over a painting the deck's muted grey falls below AA in the illustration's
+   darkest passages — measured worst case is 1.7:1 against a shadowed figure.
+   Inside art-backed sections it is pulled toward ink just far enough to clear
+   4.5:1 there, while staying clearly subordinate to the ink-navy body text on
+   the parchment that makes up most of the field. */
+section:has(.section-art) {
+  --color-muted: color-mix(in srgb, var(--color-ink) 70%, #8a8578);
+}
+
+/* ============================================================
+   SECTION ATMOSPHERE
+   Wide deck illustrations used to run as capped bands inside their section.
+   That kept the layout tight but reduced a narrative painting to a decorative
+   stripe — most of what the picture was saying got cropped away. They are now
+   full-bleed section backgrounds behind a contrast veil (see SectionArt.astro),
+   cross-fading with scroll so the art is present for exactly as long as the
+   argument it belongs to.
+   ============================================================ */
+
+/* ============================================================
+   PLATE — a surface for copy that sits over artwork.
+
+   The first version of the section art protected the text by veiling the whole
+   painting to 72% parchment. That works, but it pays for legibility with the
+   picture: the areas carrying the most meaning — a face, a furnace, the coins
+   in the counting house — get flattened along with the areas behind the type,
+   even though nothing is written there.
+
+   Inverting it costs nothing and reads far better. The veil drops to a light
+   tonal wash, and the copy carries its own ground: a near-opaque parchment
+   plate with the deck's gold rule on top. Between and around the plates the
+   painting runs at close to full strength, which is where it was doing its
+   work anyway.
+
+   One plate per group of copy, never per item — a page of small boxes over a
+   painting reads as a broken grid, not as a layout.
+   ============================================================ */
+.plate {
+  position: relative;
+  isolation: isolate;
+  padding: clamp(1.15rem, 0.85rem + 1.3vw, 1.9rem) clamp(1.15rem, 0.8rem + 1.6vw, 2.25rem);
+  background: color-mix(in srgb, var(--color-parchment) 93%, transparent);
+  /* The remaining 7% would read as a flat cut-out; blurring what shows through
+     keeps the plate feeling like it is resting on the painting. */
+  backdrop-filter: blur(7px);
+  border-block-start: 2px solid var(--color-gold);
+  box-shadow: 0 14px 44px -22px rgb(22 41 74 / 0.4);
+}
+
+/* ============================================================
+   OVERTURE — the empty run at the top of a painted section.
+
+   The paintings are not decoration; each one is an argument made in a picture,
+   and the reader was being denied it. Art and copy used to arrive together, so
+   the image was never seen except as the thing behind some words — which is
+   the one state in which it says nothing.
+
+   The fix is time, not styling. Every section that carries a painting opens
+   with roughly a third of a screen of nothing, so scrolling into it resolves
+   the image first and holds it alone for a beat. Only then does the title
+   cross the (deliberately deepened) reveal line and begin to explain what is
+   already on screen. Picture, then caption — never both at once.
+
+   Capped in rem so a tall desktop does not turn the pause into a dead screen,
+   and floored low so a phone does not spend its whole viewport waiting.
+   ============================================================ */
+#main > section:has(> .section-art) {
+  padding-block-start: calc(var(--spacing-section) + clamp(2rem, 26vh, 13rem));
+}
+
+@media (max-width: 40rem) {
+  #main > section:has(> .section-art) {
+    padding-block-start: calc(var(--spacing-section) + clamp(1.5rem, 14vh, 6rem));
+  }
+}
+
+/* ============================================================
+   LEAD — a section's title card, over artwork, with no ground of its own.
+
+   A plate is a surface, and a surface is right for structured content: a board
+   of five stages, three statistics, a list of capabilities. Those are read as
+   a table, and a table wants a table's ground.
+
+   A title is not a table, and it turns out it does not want a ground either.
+   Two versions were tried and both failed the same way. A solid plate put a
+   flat rectangle across the most composed part of every painting. Replacing it
+   with a wide feathered wash of light removed the corners but not the shape:
+   a bright patch that fades out under the last line still reads as a gradient
+   panel sitting on the picture, and it moved with the type, so the painting
+   had a soft-edged rectangle wandering over it.
+
+   So the title now sits directly in the picture as type, and contrast is paid
+   for where it belongs — once, evenly, by the backdrop's own veil (see
+   SectionArt.astro), plus a tight halo on the glyphs themselves. Nothing is
+   drawn behind the words at all. Measured ink-navy contrast holds above 7:1
+   at the type; see README.
+   ============================================================ */
+.lead {
+  position: relative;
+  isolation: isolate;
+  max-inline-size: 56ch;
+}
+
+/* `:global()` is an Astro scoped-style construct; this is a plain stylesheet,
+   where it is not a valid selector and the rule silently never matched. */
+html[lang='zh'] .lead {
+  max-inline-size: 40em;
+}
+
+/* Micro-contrast at the glyph edge, for the case where a highlight in the
+   painting lands directly under a stroke. Parchment-coloured and tight to the
+   letterform, so it reads as the glyph biting into the picture rather than as
+   a panel behind it. */
+.lead :is(h1, h2, h3, p) {
+  text-shadow:
+    0 0 3px color-mix(in srgb, var(--color-parchment) 88%, transparent),
+    0 1px 14px color-mix(in srgb, var(--color-parchment) 72%, transparent);
+}
+
+.section--dark .lead :is(h1, h2, h3, p) {
+  text-shadow:
+    0 0 3px color-mix(in srgb, var(--color-ink-deep) 90%, transparent),
+    0 1px 16px color-mix(in srgb, var(--color-ink-deep) 78%, transparent);
+}
+
+.section--dark .plate {
+  background: color-mix(in srgb, var(--color-ink-deep) 88%, transparent);
+  box-shadow: none;
+}
+
+/* ============================================================
+   BUTTON
+   The story page never needed one — it is read, not operated. The console and
+   its instruments are operated, often by someone standing at a projector, so
+   the hit areas and the type are sized for that rather than for a mouse.
+   ============================================================ */
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  padding: 0.7em 1.4em;
+  min-block-size: 2.75rem;
+  font-family: var(--font-body);
+  font-size: var(--text-small);
+  font-weight: 500;
+  letter-spacing: 0.04em;
+  line-height: 1.2;
+  text-decoration: none;
+  text-align: center;
+  cursor: pointer;
+  border: 1px solid transparent;
+  background: transparent;
+  color: inherit;
+  transition:
+    background-color var(--duration-quick) ease,
+    border-color var(--duration-quick) ease,
+    color var(--duration-quick) ease,
+    opacity var(--duration-quick) ease;
+}
+
+.btn:disabled,
+.btn[aria-disabled='true'] {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+.btn--gold {
+  background: var(--color-gold);
+  color: var(--color-ink-deep);
+  font-weight: 600;
+}
+
+.btn--gold:hover:not(:disabled) {
+  background: var(--color-gold-bright);
+}
+
+.btn--quiet {
+  border-color: color-mix(in srgb, currentColor 32%, transparent);
+}
+
+.btn--quiet:hover:not(:disabled) {
+  border-color: var(--color-gold);
+  color: color-mix(in srgb, var(--color-gold) 80%, currentColor);
+}
+
+/* ============================================================
+   CARD — the deck's soft white panel, adapted for both backgrounds
+   ============================================================ */
+.card {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  background: #fff;
+  border: 1px solid color-mix(in srgb, var(--color-ink) 10%, transparent);
+  box-shadow: 0 1px 2px rgb(22 41 74 / 0.04), 0 8px 24px -12px rgb(22 41 74 / 0.14);
+}
+
+.section--dark .card {
+  background: color-mix(in srgb, var(--color-parchment) 7%, transparent);
+  border-color: color-mix(in srgb, var(--color-gold) 26%, transparent);
+  box-shadow: none;
+}
+
+/* Small caps meta label — a quieter sibling of the gold eyebrow, used inside
+   cards where a second gold eyebrow would compete with the section heading. */
+.meta-label {
+  font-family: var(--font-body);
+  font-size: var(--text-micro);
+  font-weight: 600;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: var(--color-muted);
+  line-height: 1.2;
+}
+
+.section--dark .meta-label {
+  color: color-mix(in srgb, var(--color-parchment) 62%, transparent);
+}
+
+/* ============================================================
+   SCROLL REVEAL — the entrance beat.
+
+   Driven by the IntersectionObserver in Base.astro: it plays once, at a fixed
+   tempo, in a fixed order. Entrances are deliberately *not* scrubbed against
+   the scrollbar — a headline that tracks a trackpad twitches, and this page is
+   read aloud off a projector where a twitching headline is worse than a late
+   one. What is scrubbed is the exit (see SCENE, below), because that is what
+   carries one section into the next.
+   ============================================================ */
+[data-reveal] {
+  opacity: 0;
+  /* A shade of scale as well as the rise: pure translation reads as a slide,
+     the scale reads as something coming forward into place. */
+  transform: translate3d(0, var(--beat-rise), 0) scale(0.988);
+  transition:
+    opacity var(--beat-dur) var(--ease-out-expo),
+    transform var(--beat-dur) var(--ease-out-expo);
+  transition-delay: calc(var(--beat, 0) * var(--beat-step));
+}
+
+[data-reveal][data-revealed] {
+  opacity: 1;
+  transform: none;
+}
+
+/* ============================================================
+   LANGUAGE HANDOFF — see src/scripts/lang-handoff.ts
+
+   `visibility`, not `display`: the restore has to measure section geometry to
+   find the reader's place, and a hidden-by-display page has no geometry.
+   ============================================================ */
+html[data-lang-restore] #main,
+html[data-lang-restore] .axis {
+  visibility: hidden;
+}
+
+html[data-lang-restore] [data-reveal] {
+  transition: none !important;
+}
+
+/* ============================================================
+   SCENE — continuity between sections.
+
+   Values published by src/scripts/scene.ts. Defaults are the at-rest state, so
+   a section is fully composed and legible if the script never runs.
+   ============================================================ */
+[data-scene] {
+  --scene-in: 1;
+  --scene-out: 0;
+  --scene-p: 0.5;
+  --lead-out: 0;
+}
+
+/* The title card. It arrives with its own cascade of beats, holds for the whole
+   time it is being read, then lifts and dims as the scene hands over — so the
+   next section arrives onto a cleared stage rather than colliding with the last
+   one. The opacity floor is deliberate and fairly high: a facilitator can stop
+   anywhere and talk, so a card that has been scrolled past must read as *past*,
+   never as broken. */
+/* A plate's ground belongs to its scene, not to the scrollbar position of the
+   text inside it. Without this the box slid in at full strength while its copy
+   was still waiting on the reveal cascade, so every section announced itself
+   with an empty parchment rectangle — the single most slide-like moment left on
+   the page. Now the ground materialises as the scene commits and the copy
+   cascades onto it. */
+/* Registered so it can be transitioned. The plate's opacity is the product of
+   two independent things: `--scene-in`, which is welded to the scrollbar and
+   must stay instantaneous, and `--ground-in`, which is a one-way fade timed to
+   the copy. Multiplying them keeps the scrub crisp while the ground still
+   materialises rather than snapping. */
+@property --ground-in {
+  syntax: '<number>';
+  inherits: false;
+  initial-value: 1;
+}
+
+[data-scene] .plate {
+  opacity: calc(var(--scene-in) * var(--ground-in));
+  transition: --ground-in calc(var(--beat-dur) * 1.15) var(--ease-out-expo);
+}
+
+[data-scene] .plate:not([data-copy-in]) {
+  --ground-in: 0;
+}
+
+/* Must follow the rule above: a title card is sometimes also a plate (the
+   sechead inside a board), and then needs both terms. */
+[data-scene] [data-lead] {
+  transform: translate3d(0, calc(var(--lead-out) * -2.4rem), 0);
+  opacity: calc(var(--scene-in) * (1 - 0.52 * var(--lead-out)));
+  will-change: transform, opacity;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
+
+  [data-reveal] {
+    opacity: 1 !important;
+    transform: none !important;
+    transition: none !important;
+  }
+
+  [data-scene] .plate {
+    --ground-in: 1 !important;
+    transition: none !important;
+  }
+
+  [data-scene] .plate,
+  [data-scene] [data-lead] {
+    transform: none !important;
+    opacity: 1 !important;
+  }
+
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.001ms !important;
+  }
+}
