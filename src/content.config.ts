@@ -188,7 +188,7 @@ const checklist = defineCollection({
 });
 
 /**
- * The twelve capabilities a Copilot Studio build can call on.
+ * The capabilities a Copilot Studio build can call on.
  *
  * This list is the join between what a customer wants and what they must be
  * taught: a scenario is tagged with the capabilities its build would exercise,
@@ -201,6 +201,7 @@ const checklist = defineCollection({
  * then teach those. Generalising from the particular is the deliverable.
  */
 export const CAPABILITIES = [
+  'agent-anatomy',
   'agent-instructions',
   'knowledge-grounding',
   'deterministic-dialogue',
@@ -208,14 +209,17 @@ export const CAPABILITIES = [
   'system-actions',
   'structured-data-query',
   'deterministic-automation',
+  'event-driven-workflows',
   'document-extraction',
   'human-approval',
   'structured-persistence',
   'custom-tool-extension',
+  'multi-agent-routing',
   'test-evaluation',
   'deployment-channels',
   'governance-guardrails',
   'operational-measurement',
+  'handover-demo',
 ] as const;
 
 /**
@@ -326,6 +330,9 @@ const labs = defineCollection({
     order: z.number().int().positive(),
     minutes: z.number().int().positive(),
     requires: z.array(z.enum(CAPABILITIES)),
+    /** Proper nouns, so they are not translated and stay filterable as one set. */
+    products: z.array(z.string()).min(1),
+    features: z.array(z.string()).min(1),
     en: labContent,
     zh: labContent,
     /** Absent until the module has been walked through and captured. */

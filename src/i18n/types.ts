@@ -88,6 +88,7 @@ export interface Cadence {
  * Kept in step with `CAPABILITIES` in src/content.config.ts.
  */
 export type CapabilityId =
+  | 'agent-anatomy'
   | 'agent-instructions'
   | 'knowledge-grounding'
   | 'deterministic-dialogue'
@@ -95,14 +96,17 @@ export type CapabilityId =
   | 'system-actions'
   | 'structured-data-query'
   | 'deterministic-automation'
+  | 'event-driven-workflows'
   | 'document-extraction'
   | 'human-approval'
   | 'structured-persistence'
   | 'custom-tool-extension'
+  | 'multi-agent-routing'
   | 'test-evaluation'
   | 'deployment-channels'
   | 'governance-guardrails'
-  | 'operational-measurement';
+  | 'operational-measurement'
+  | 'handover-demo';
 
 /** The functional groupings examples are shelved under. */
 export type DepartmentId = 'general' | 'crm' | 'finance' | 'hr' | 'it' | 'supply-chain';
@@ -510,9 +514,41 @@ export interface Dictionary {
     /** "The whole shelf · {n} modules" */
     shelfSummary: string;
     shelfNote: string;
+    libraryTitle: string;
+    libraryLede: string;
+    libraryEyebrow: string;
+    libraryOpen: string;
+    libraryBack: string;
+    libraryCount: string;
+    librarySelected: string;
+    libraryAdd: string;
+    libraryRemove: string;
+    libraryRequired: string;
+    libraryPrerequisite: string;
+    libraryInAgenda: string;
+    libraryManualReason: string;
+    libraryBrowse: string;
+    libraryBrowseNote: string;
+    librarySearchLabel: string;
+    librarySearchPlaceholder: string;
+    librarySortLabel: string;
+    librarySortSequence: string;
+    librarySortShortest: string;
+    librarySortLongest: string;
+    librarySortAdded: string;
+    /** "{n} of {total} shown" */
+    libraryResults: string;
+    libraryNoResults: string;
+    libraryClear: string;
+    libraryProductsLabel: string;
+    libraryFeaturesLabel: string;
     buildOrderTitle: string;
     buildOrderNote: string;
     buildStepLabel: string;
+    agendaTitle: string;
+    agendaNote: string;
+    /** "Session {n} of {total}" */
+    sessionTitle: string;
     buildNoScoreNote: string;
     buildNoScoreCta: string;
     /**
@@ -525,6 +561,8 @@ export interface Dictionary {
     buildLabel: string;
     afterLabel: string;
     minutesLabel: string;
+    /** The click-by-click page for one module, followed at your own desk. */
+    guideLabel: string;
     notYetNote: string;
     backLabel: string;
   };

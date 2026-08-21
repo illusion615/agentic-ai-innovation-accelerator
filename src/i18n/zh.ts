@@ -3,7 +3,7 @@ import type { Dictionary } from './types';
 export const zh: Dictionary = {
   meta: {
     title: 'Agentic AI Innovation Accelerator · 智能体 AI 创新加速器',
-    description: '把散乱的 AI 实验，变成受治理的、生产级的 Copilot Studio 解决方案。',
+    description: '把散乱的 AI 实验，变成受治理的、生产级的智能化业务解决方案。',
     langToggleLabel: '切换到英文',
   },
   nav: {
@@ -26,11 +26,11 @@ export const zh: Dictionary = {
     certainty: '确定',
   },
   hero: {
-    eyebrow: 'Microsoft Copilot Studio',
+    eyebrow: 'Microsoft Agentic Business Process',
     eyebrowSub: 'Agents · Workflows · Apps',
     titleTop: 'Agentic AI',
     titleBottom: 'Innovation Accelerator',
-    lede: '把散乱的 AI 实验，变成受治理的、生产级的 Copilot Studio 解决方案。',
+    lede: '把散乱的 AI 实验，变成受治理的、生产级的智能化业务解决方案。',
     scrollHint: '向下滚动，见证嬗变',
     imageAlt: '黎明时分的炼金工坊：哥特式拱窗、暖金色晨光、烧瓶与摊开在雕花讲台上的手稿。',
   },
@@ -653,6 +653,7 @@ export const zh: Dictionary = {
   },
 
   capabilities: {
+    'agent-anatomy': 'Agent 构成认知',
     'agent-instructions': 'Agent 指令设计',
     'knowledge-grounding': '知识接地',
     'deterministic-dialogue': '确定性对话',
@@ -660,14 +661,17 @@ export const zh: Dictionary = {
     'system-actions': '系统动作',
     'structured-data-query': '结构化数据查询',
     'deterministic-automation': '确定性自动化',
+    'event-driven-workflows': '事件驱动工作流',
     'document-extraction': '文档抽取',
     'human-approval': '人工审批',
     'structured-persistence': '结构化存储',
     'custom-tool-extension': '自定义工具扩展',
+    'multi-agent-routing': '多 Agent 路由',
     'test-evaluation': '测试与评估',
     'deployment-channels': '发布与渠道',
     'governance-guardrails': '治理与护栏',
     'operational-measurement': '运行度量',
+    'handover-demo': '演示与交接',
   },
 
   present: {
@@ -780,11 +784,43 @@ export const zh: Dictionary = {
     emptyCta: '去阶段 02',
     shelfSummary: '整个书架 · {n} 个模块',
     shelfNote:
-      '一个能力一个模块。所谓路径，就是从这些里按依赖顺序挑出一些来。',
-    buildOrderTitle: '你的建设顺序',
+      '一个能力一个模块，而且每个模块都作用在同一个 agent 上——就是第一节课你自己写下的那条业务。每一课都接着上一课的成果往下做，所以一条路径是按依赖顺序挑出来的一串，不是一堆互不相干的练习。任何一个模块也都能用参考素材单独拿出来做。',
+    libraryTitle: 'Lab Library',
+    libraryLede:
+      '自由浏览全部能力模块，打开逐步指引，并把需要的内容加入当前项目。场景必需项会被保留；你手动加入的模块会进入同一份按依赖编排的议程。',
+    libraryEyebrow: '阶段 04 · 浏览与选课',
+    libraryOpen: '打开 Lab Library',
+    libraryBack: '返回 Lab 议程',
+    libraryCount: '手动加入 {selected} 个 · 馆藏共 {total} 个',
+    librarySelected: '已加入当前项目',
+    libraryAdd: '加入当前 Lab 列表',
+    libraryRemove: '从当前 Lab 列表移除',
+    libraryRequired: '当前场景必需',
+    libraryPrerequisite: '作为前置自动加入',
+    libraryInAgenda: '已在议程中',
+    libraryManualReason: '从 Lab Library 手动加入',
+    libraryBrowse: '浏览馆藏',
+    libraryBrowseNote: '点开标题可查看完整指引；加入一个模块时，它需要的前置模块会自动进入议程。',
+    librarySearchLabel: '检索',
+    librarySearchPlaceholder: '标题、产品或特性',
+    librarySortLabel: '排序',
+    librarySortSequence: '按教学顺序',
+    librarySortShortest: '时长从短到长',
+    librarySortLongest: '时长从长到短',
+    librarySortAdded: '已加入的排在前',
+    libraryResults: '显示 {n} / {total}',
+    libraryNoResults: '没有匹配的模块。清空检索即可看到全部馆藏。',
+    libraryClear: '清空',
+    libraryProductsLabel: '涉及产品',
+    libraryFeaturesLabel: '涉及特性',
+    buildOrderTitle: 'Top 3 场景的建设需求',
     buildOrderNote:
-      '得分最高的三个，每个后面跟着它自己那一次建设需要的模块。这就是会议室里要按的顺序。',
+      '得分最高的三个场景，各自列出建设它所需的模块。为了让每个场景完整，共用模块会在这里重复出现；下面的议程会把它们合并后只安排一次。',
     buildStepLabel: '建',
+    agendaTitle: '基于场景动态编排的 Lab 议程',
+    agendaNote:
+      '合并 Top 3 的建设需求，去重并自动补齐前置，再按依赖关系排序。每个模块只安排一次，每场不超过两小时。',
+    sessionTitle: '第 {n} 场 · 共 {total} 场',
     buildNoScoreNote:
       '在阶段 03 给清单打分，这里就会变成一份建设顺序——三个场景，每个配上它自己要用的模块。',
     buildNoScoreCta: '去阶段 03',
@@ -794,8 +830,9 @@ export const zh: Dictionary = {
     buildLabel: '做完你带走什么',
     afterLabel: '在这之后',
     minutesLabel: '分钟',
+    guideLabel: '逐步指引',
     notYetNote:
-      '把这个顺序带进会议室——它就是该按的顺序。每个模块的逐步操作指引，发布后从这里打开。',
+      '点开议程里的任一模块就是逐步指引；既可以在会议室投屏演示，也可以回到自己的环境里照着做。',
     backLabel: '返回路线图',
   },
 

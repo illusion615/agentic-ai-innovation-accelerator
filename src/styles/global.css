@@ -163,6 +163,15 @@ html[lang='zh'] body {
   scroll-margin-block-start: 5.5rem;
 }
 
+/* The bar is *fixed*, and a section's own padding happens to be almost exactly
+   its height — so a page whose first section carries no artwork opens flush
+   against it, eyebrow touching the rule. The hero and the story's
+   picture-first sections already buy their own pause; every other page needs
+   one here. */
+#main > section:first-child:not(.hero):not(:has(> .section-art)) {
+  padding-block-start: calc(var(--spacing-section) + clamp(2rem, 1.4rem + 2vw, 3.25rem));
+}
+
 /* Dark bands break up the parchment run and give the eye a place to rest.
    They also let the gold particle field read at full strength. */
 .section--dark {

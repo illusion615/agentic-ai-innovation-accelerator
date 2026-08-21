@@ -1,0 +1,430 @@
+---
+/**
+ * One lab module, written to be followed alone.
+ *
+ * The shelf answers "which modules do we need"; the room deck projects the
+ * same walkthrough at a facilitator's pace. Neither of those helps the person
+ * who wants to sit down afterwards and do it in their own environment, which
+ * is what this page is for: the pre-flight, the map, then the walkthrough as
+ * something you read and act on rather than something someone advances for you.
+ *
+ * Labels are borrowed from `present` on purpose. A step called "you should
+ * see" on the projector must not become "expected result" in the guide, or the
+ * room and the desk stop describing the same act.
+ */
+import { getCollection } from 'astro:content';
+import Base from '../../../../layouts/Base.astro';
+import SectionHead from '../../../../components/SectionHead.astro';
+import { LANGS, isLang, localePath, type Lang } from '../../../../i18n/config';
+import { useTranslations } from '../../../../i18n/content';
+
+export async function getStaticPaths() {
+  const modules = await getCollection('labs');
+  return LANGS.flatMap((lang) => modules.map((mod) => ({ params: { lang, module: mod.id }, props: { mod } })));
+}
+
+const { lang: raw } = Astro.params;
+const { mod } = Astro.props;
+const lang: Lang = isLang(raw) ? raw : 'en';
+const t = useTranslations(lang);
+const l = t.labs;
+const p = t.present;
+
+const copy = mod.data[lang];
+const walkthrough = mod.data.walkthrough ?? [];
+
+// Same resolution as the deck: a step whose capture has not happened yet
+// simply renders as text rather than a broken frame.
+const shots = Object.fromEntries(
+  Object.entries(
+    import.meta.glob<string>('../../../../assets/labs/**/*.{png,jpg,webp}', {
+      eager: true,
+      query: '?url',
+      import: 'default',
+    })
+  ).map(([path, url]) => [path.split('/').pop()!.replace(/\.\w+$/, ''), url])
+);
+---
+
+<Base lang={lang} path={`/program/labs/${mod.id}/`} axis={false} title={copy.name}>
+  <section id="guide" class="section guide">
+    <div class="shell">
+      <p class="crumb">
+        <a class="crumb__back" href={localePath(lang, '/program/labs/')}>
+          <span aria-hidden="true">←</span>
+          {l.navLabel}
+        </a>
+        <span class="crumb__name">{l.eyebrow}</span>
+      </p>
+
+      <SectionHead
+        as="h1"
+        eyebrow={`${t.capabilities[mod.id]} · ${mod.data.minutes} ${l.minutesLabel}`}
+        title={copy.name}
+        lede={copy.objective}
+        measure="wide"
+      />
+
+      <dl class="guide__facts">
+        <div>
+          <dt>{l.teachesLabel}</dt>
+          <dd>{copy.teaches}</dd>
+        </div>
+        <div>
+          <dt>{l.buildLabel}</dt>
+          <dd>{copy.build}</dd>
+        </div>
+        {
+          mod.data.requires.length > 0 && (
+            <div>
+              <dt>{l.afterLabel}</dt>
+              <dd>
+                {mod.data.requires.map((r, i) => (
+                  <>
+                    {i > 0 && ' · '}
+                    <a href={localePath(lang, `/program/labs/${r}/`)}>{t.capabilities[r]}</a>
+                  </>
+                ))}
+              </dd>
+            </div>
+          )
+        }
+      </dl>
+
+      <!-- The pre-flight, read before anyone opens a laptop. -->
+      <div class="block">
+        <p class="meta-label">{p.needsLabel}</p>
+        <div class="needs">
+          <div>
+            <p class="needs__label">{p.skillsLabel}</p>
+            <ul class="ticks">{copy.needs.skills.map((x) => <li>{x}</li>)}</ul>
+          </div>
+          <div>
+            <p class="needs__label">{p.toolsLabel}</p>
+            <ul class="ticks">{copy.needs.tools.map((x) => <li>{x}</li>)}</ul>
+          </div>
+          <div>
+            <p class="needs__label">{p.materialsLabel}</p>
+            <ul class="ticks">{copy.needs.materials.map((x) => <li>{x}</li>)}</ul>
+          </div>
+        </div>
+      </div>
+
+      <!-- The map: what the hour is, before the territory. -->
+      <div class="block">
+        <p class="meta-label">{p.stepsLabel}</p>
+        <ol class="steps">
+          {
+            copy.steps.map((step, i) => (
+              <li class="step">
+                <span class="step__index display" aria-hidden="true">
+                  {String(i + 1).padStart(2, '0')}
+                </span>
+                <span class="step__body">{step}</span>
+              </li>
+            ))
+          }
+        </ol>
+      </div>
+
+      <!-- The territory. -->
+      {
+        walkthrough.length > 0 && (
+          <div class="block">
+            <p class="meta-label">{l.guideLabel}</p>
+            <ol class="walk">
+              {walkthrough.map((step, i) => {
+                const s = step[lang];
+                const shot = step.shot ? (shots[step.shot] ?? null) : null;
+                return (
+                  <li class="walk__step">
+                    <p class="walk__num meta-label">{`${i + 1} / ${walkthrough.length}`}</p>
+                    <h2 class="walk__act">{s.act}</h2>
+
+                    <p class="walk__where">
+                      <span class="walk__label">{p.whereLabel}</span>
+                      <span>{s.where}</span>
+                    </p>
+
+                    <p class="walk__do">{s.do}</p>
+
+                    {s.type && (
+                      <div class="walk__type">
+                        <p class="walk__label">{p.typeLabel}</p>
+                        <pre>{s.type}</pre>
+                      </div>
+                    )}
+
+                    {shot && <img class="walk__shot" src={shot} alt={s.act} loading="lazy" />}
+
+                    <p class="walk__see">
+                      <span class="walk__label">{p.seeLabel}</span>
+                      <span>{s.see}</span>
+                    </p>
+
+                    {s.note && <p class="walk__note">{s.note}</p>}
+                  </li>
+                );
+              })}
+            </ol>
+          </div>
+        )
+      }
+
+      <p class="guide__summary">
+        <span class="meta-label">{p.summaryLabel}</span>
+        <span class="guide__summary-body">{copy.summary}</span>
+      </p>
+
+      <div class="labs__foot">
+        <a class="btn btn--quiet" href={localePath(lang, '/program/labs/library/')}>{l.libraryOpen}</a>
+        <a class="btn btn--gold" href={localePath(lang, '/program/labs/')}>{l.navLabel}</a>
+      </div>
+    </div>
+  </section>
+</Base>
+
+<style>
+  /* --- Where this module sits, and the way back ------------------------ */
+  .crumb {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: baseline;
+    gap: 0.5rem 0.9rem;
+    margin: 0 0 clamp(0.75rem, 0.5rem + 1vw, 1.25rem);
+    font-size: var(--text-micro);
+  }
+
+  .crumb__back {
+    display: inline-flex;
+    align-items: baseline;
+    gap: 0.35rem;
+    text-transform: uppercase;
+    letter-spacing: 0.12em;
+    color: var(--color-muted);
+    text-decoration: none;
+  }
+
+  .crumb__back:hover,
+  .crumb__back:focus-visible {
+    color: var(--color-gold);
+  }
+
+  .crumb__name {
+    color: var(--color-ink);
+    font-weight: 600;
+  }
+
+  .crumb__name::before {
+    content: '\00b7';
+    margin-inline-end: 0.7rem;
+    color: var(--color-muted);
+    font-weight: 400;
+  }
+
+  .guide__facts {
+    display: grid;
+    gap: 1rem clamp(1.5rem, 1rem + 2vw, 3rem);
+    grid-template-columns: repeat(auto-fit, minmax(16rem, 1fr));
+    margin: clamp(1.75rem, 1.2rem + 2vw, 2.75rem) 0 0;
+    padding-block-end: clamp(1rem, 0.8rem + 0.9vw, 1.4rem);
+    border-block-end: 1px solid color-mix(in srgb, var(--color-ink) 12%, transparent);
+  }
+
+  .guide__facts dt {
+    margin-block-end: 0.35rem;
+    font-family: var(--font-display);
+    font-size: var(--text-tiny);
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: color-mix(in srgb, var(--color-ink) 55%, transparent);
+  }
+
+  .guide__facts dd {
+    margin: 0;
+    font-size: var(--text-small);
+    line-height: 1.6;
+  }
+
+  .block {
+    margin-block-start: clamp(2rem, 1.4rem + 2.4vw, 3.25rem);
+  }
+
+  .needs {
+    display: grid;
+    gap: 1.2rem clamp(1.5rem, 1rem + 2vw, 3rem);
+    grid-template-columns: repeat(auto-fit, minmax(15rem, 1fr));
+    margin-block-start: 0.9rem;
+  }
+
+  .needs__label {
+    margin: 0 0 0.4rem;
+    font-size: var(--text-small);
+    font-weight: 600;
+    color: var(--color-ink);
+  }
+
+  /* `.steps` and `.ticks` are page-scoped everywhere they appear; matched here
+     rather than lifted to global, which would leak two very generic names. */
+  .ticks {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: grid;
+    gap: 0.5rem;
+  }
+
+  .ticks li {
+    position: relative;
+    padding-inline-start: 1.1rem;
+    font-size: var(--text-small);
+    line-height: 1.45;
+    color: color-mix(in srgb, var(--color-ink) 84%, transparent);
+  }
+
+  .ticks li::before {
+    content: '';
+    position: absolute;
+    inset-inline-start: 0;
+    inset-block-start: 0.55em;
+    inline-size: 0.45rem;
+    block-size: 0.45rem;
+    background: var(--color-gold);
+    transform: rotate(45deg);
+  }
+
+  .steps {
+    list-style: none;
+    margin: 0.8rem 0 0;
+    padding: 0;
+    display: grid;
+    gap: clamp(0.8rem, 0.6rem + 0.6vw, 1.2rem);
+    max-inline-size: 62rem;
+  }
+
+  .step {
+    display: grid;
+    grid-template-columns: auto minmax(0, 1fr);
+    gap: 1rem;
+    align-items: baseline;
+  }
+
+  .step__index {
+    font-size: var(--text-h3);
+    line-height: 1;
+    color: color-mix(in srgb, var(--color-gold) 75%, var(--color-parchment));
+  }
+
+  .step__body {
+    font-size: var(--text-small);
+    line-height: 1.6;
+    color: var(--color-ink);
+  }
+
+  /* --- The walkthrough --------------------------------------------------- */
+  .walk {
+    list-style: none;
+    margin: 0.9rem 0 0;
+    padding: 0;
+    counter-reset: none;
+  }
+
+  .walk__step {
+    max-inline-size: 62rem;
+    margin-block-start: clamp(1.5rem, 1.1rem + 1.6vw, 2.4rem);
+    padding: clamp(1.1rem, 0.9rem + 1vw, 1.6rem);
+    background: color-mix(in srgb, var(--color-parchment-deep) 45%, transparent);
+    border-inline-start: 3px solid color-mix(in srgb, var(--color-gold) 55%, transparent);
+  }
+
+  .walk__num {
+    margin: 0 0 0.3rem;
+  }
+
+  .walk__act {
+    margin: 0;
+    font-family: var(--font-display);
+    font-size: var(--text-h3);
+    line-height: 1.25;
+    color: var(--color-ink-deep);
+  }
+
+  .walk__where,
+  .walk__see {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.2rem 0.6rem;
+    margin: 0.7rem 0 0;
+    font-size: var(--text-small);
+    line-height: 1.6;
+  }
+
+  .walk__label {
+    flex: none;
+    font-family: var(--font-display);
+    font-size: var(--text-tiny);
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: color-mix(in srgb, var(--color-ink) 55%, transparent);
+  }
+
+  .walk__do {
+    margin: 0.7rem 0 0;
+    font-size: var(--text-small);
+    line-height: 1.7;
+  }
+
+  .walk__type {
+    margin-block-start: 0.8rem;
+  }
+
+  .walk__type pre {
+    margin: 0.3rem 0 0;
+    padding: 0.8rem 1rem;
+    overflow-x: auto;
+    background: color-mix(in srgb, var(--color-ink-deep) 6%, transparent);
+    border-inline-start: 2px solid color-mix(in srgb, var(--color-ink) 25%, transparent);
+    font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+    font-size: var(--text-tiny);
+    line-height: 1.7;
+    white-space: pre-wrap;
+  }
+
+  .walk__shot {
+    display: block;
+    inline-size: 100%;
+    height: auto;
+    margin-block-start: 0.9rem;
+    border: 1px solid color-mix(in srgb, var(--color-ink) 15%, transparent);
+  }
+
+  .walk__note {
+    margin: 0.8rem 0 0;
+    padding-inline-start: 0.9rem;
+    border-inline-start: 2px solid color-mix(in srgb, var(--color-ink) 20%, transparent);
+    font-size: var(--text-small);
+    line-height: 1.7;
+    font-style: italic;
+    color: color-mix(in srgb, var(--color-ink) 78%, transparent);
+  }
+
+  .guide__summary {
+    display: flex;
+    flex-direction: column;
+    gap: 0.35rem;
+    max-inline-size: 58rem;
+    margin: clamp(2rem, 1.4rem + 2.4vw, 3.25rem) 0 0;
+    padding-block-start: clamp(1rem, 0.8rem + 0.9vw, 1.4rem);
+    border-block-start: 1px solid color-mix(in srgb, var(--color-ink) 12%, transparent);
+  }
+
+  .guide__summary-body {
+    font-size: var(--text-body);
+    line-height: 1.65;
+    color: var(--color-ink-deep);
+  }
+
+  .labs__foot {
+    margin-block-start: clamp(2rem, 1.4rem + 2.4vw, 3.25rem);
+  }
+</style>

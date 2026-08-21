@@ -118,11 +118,14 @@ export interface ProgramSession {
   scoring: ScoreCard[];
   top3: string[];
 
+  /** Labs explicitly added from the library, beyond scenario-derived needs. */
+  manualLabs: string[];
+
   /** Stages 04–05 — BUILD & LEARN, ADOPT & SCALE. */
   gates: GateStatus[];
 }
 
-export const SESSION_VERSION = 1;
+export const SESSION_VERSION = 2;
 
 export function createSession(partial: Partial<ProgramSession> = {}): ProgramSession {
   const now = new Date().toISOString();
@@ -139,6 +142,7 @@ export function createSession(partial: Partial<ProgramSession> = {}): ProgramSes
     scenarios: [],
     scoring: [],
     top3: [],
+    manualLabs: [],
     gates: GATES.map((gate) => ({ gate, state: 'open' as const })),
     ...partial,
   };
@@ -303,6 +307,7 @@ function migrate(raw: unknown): ProgramSession {
     ...s,
     scenarios,
     checklist: s.checklist ?? {},
+    manualLabs: s.manualLabs ?? [],
     version: SESSION_VERSION,
   });
 }

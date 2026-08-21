@@ -44,6 +44,8 @@ const bootstrap = {
   modules: modules.map((m) => ({ id: m.id, requires: m.data.requires, order: m.data.order, minutes: m.data.minutes })),
   // Taken scenarios are titled from here so the path reads in this edition.
   exampleTitles: Object.fromEntries(examples.map((e) => [e.id, e.data[lang].title])),
+  // Base- and locale-prefixed on the server; the client only substitutes the id.
+  guideHref: localePath(lang, '/program/labs/{id}/'),
   strings: {
     composedTitle: l.composedTitle,
     composedNote: l.composedNote,
@@ -56,6 +58,10 @@ const bootstrap = {
     minutesLabel: l.minutesLabel,
     duration: t.present.duration,
     buildStepLabel: l.buildStepLabel,
+    agendaTitle: l.agendaTitle,
+    agendaNote: l.agendaNote,
+    sessionTitle: l.sessionTitle,
+    manualReason: l.libraryManualReason,
   },
   departments: t.intake.departments,
 };
@@ -100,6 +106,12 @@ const bootstrap = {
         <ol class="order__list" data-order-list hidden></ol>
         <ol class="composed__list" data-path hidden></ol>
 
+        <section class="agenda" data-agenda hidden>
+          <h2 class="agenda__title display">{l.agendaTitle}</h2>
+          <p class="agenda__note">{l.agendaNote}</p>
+          <ol class="agenda__sessions" data-agenda-sessions></ol>
+        </section>
+
         <p class="answer__rest" data-rest hidden></p>
 
         <div class="order__prompt" data-order-prompt hidden>
@@ -112,14 +124,16 @@ const bootstrap = {
         <p class="answer__foot" data-answer-foot hidden>{l.notYetNote}</p>
       </section>
 
-      <!-- Reference, not part of the answer. -->
-      <details class="shelf">
-        <summary class="shelf__summary">
-          {l.shelfSummary.replace('{n}', String(modules.length))}
-        </summary>
-        <p class="shelf__note">{l.shelfNote}</p>
+      <aside class="library-callout">
+        <div>
+          <p class="library-callout__eyebrow meta-label">{l.libraryTitle}</p>
+          <p class="library-callout__note">{l.shelfNote}</p>
+        </div>
+        <a class="btn btn--quiet" href={localePath(lang, '/program/labs/library/')}>{l.libraryOpen}</a>
+      </aside>
 
-        <ul class="shelf__list">
+      <!-- The unranked path clones these cards; the visible collection lives in the Library. -->
+      <ul data-module-templates hidden>
           {
             modules.map((mod) => {
               const copy = mod.data[lang];
@@ -128,7 +142,9 @@ const bootstrap = {
                   <p class="mod__meta meta-label">
                     {t.capabilities[mod.id]} · {mod.data.minutes} {l.minutesLabel}
                   </p>
-                  <h3 class="mod__name">{copy.name}</h3>
+                  <h3 class="mod__name">
+                    <a class="mod__link" href={localePath(lang, `/program/labs/${mod.id}/`)}>{copy.name}</a>
+                  </h3>
 
                   <p class="mod__line">
                     <span class="mod__label">{l.teachesLabel}</span>
@@ -149,8 +165,7 @@ const bootstrap = {
               );
             })
           }
-        </ul>
-      </details>
+      </ul>
 
       <div class="labs__foot">
         <a class="btn btn--quiet" href={localePath(lang, '/program/scenarios/')}>{l.emptyCta}</a>
@@ -165,6 +180,7 @@ const bootstrap = {
 <script>
   import { LocalSessionStore, openActiveSession } from '../../../../lib/session';
   import { formatDuration, packSessions } from '../../../../lib/duration';
+  import { resolveLabPath } from '../../../../lib/lab-path';
 
   const boot = document.querySelector('[data-labs-bootstrap]');
 
@@ -179,8 +195,6 @@ const bootstrap = {
       order: number;
       minutes: number;
     }
-    const byId = new Map<string, Mod>(cfg.modules.map((m: Mod) => [m.id, m]));
-
     // Which collected scenarios asked for each capability — the reason a module
     // is in the path is as useful as the module.
     const askedBy = new Map<string, string[]>();
@@ -193,50 +207,8 @@ const bootstrap = {
       }
     }
 
-    // Close over prerequisites: a module can pull in one nobody asked for, and
-    // that one still has to be in the path or the path cannot be walked.
-    function closure(seeds: Iterable<string>) {
-      const needed = new Set(seeds);
-      const queue = [...needed];
-      while (queue.length) {
-        const current = byId.get(queue.pop()!);
-        for (const req of current?.requires ?? []) {
-          if (!needed.has(req)) {
-            needed.add(req);
-            queue.push(req);
-          }
-        }
-      }
-      return needed;
-    }
-
-    /**
-     * Topological order, tie-broken by the shelf's own order so two independent
-     * modules always appear in the same sequence.
-     */
-    function order(needed: Set<string>): Mod[] {
-      const ordered: Mod[] = [];
-      const placed = new Set<string>();
-      const pending = [...needed]
-        .map((id) => byId.get(id))
-        .filter((m): m is Mod => !!m)
-        .sort((a, b) => a.order - b.order);
-
-      while (pending.length) {
-        const next = pending.findIndex((m) =>
-          m.requires.every((r) => !needed.has(r) || placed.has(r))
-        );
-        // A cycle would strand everything; take the lowest-order module instead
-        // of looping forever, so a bad edge degrades to a wrong order not a hang.
-        const [taken] = pending.splice(next === -1 ? 0 : next, 1);
-        ordered.push(taken);
-        placed.add(taken.id);
-      }
-      return ordered;
-    }
-
-    const needed = closure(askedBy.keys());
-    const ordered = order(needed);
+    const manualLabs = new Set(session.manualLabs ?? []);
+    const allPath = resolveLabPath<Mod>(cfg.modules, [...askedBy.keys(), ...manualLabs]);
 
     const emptyBox = document.querySelector<HTMLElement>('[data-empty]')!;
     const answer = document.querySelector<HTMLElement>('[data-answer]')!;
@@ -248,30 +220,45 @@ const bootstrap = {
           .filter((s): s is NonNullable<typeof s> => !!s)
       : [];
 
-    if (!ordered.length) {
+    if (!allPath.length) {
       emptyBox.hidden = false;
     } else {
       tally.hidden = false;
       answer.hidden = false;
-      renderTally(ordered);
 
       const title = document.querySelector<HTMLElement>('[data-answer-title]')!;
       const note = document.querySelector<HTMLElement>('[data-answer-note]')!;
 
       if (top.length) {
+        const agendaAskedBy = requestsFor(top);
+        const agendaPath = resolveLabPath<Mod>(cfg.modules, [...agendaAskedBy.keys(), ...manualLabs]);
+        renderTally(agendaPath);
         title.textContent = cfg.strings.buildOrderTitle;
         note.textContent = cfg.strings.buildOrderNote;
         renderBuildOrder(top);
-        renderRest(top, ordered);
-        // Only a ranked list is a sequence to run; before that the note would
-        // be telling the room to follow an order that does not exist yet.
+        renderAgenda(agendaPath, agendaAskedBy, manualLabs);
+        renderRest(top, allPath);
         document.querySelector<HTMLElement>('[data-answer-foot]')!.hidden = false;
       } else {
+        renderTally(allPath);
         title.textContent = cfg.strings.composedTitle;
         note.textContent = cfg.strings.composedNote;
-        renderPath(ordered);
+        renderPath(allPath);
         document.querySelector<HTMLElement>('[data-order-prompt]')!.hidden = false;
       }
+    }
+
+    function requestsFor(scenarios: typeof top) {
+      const requests = new Map<string, string[]>();
+      for (const scenario of scenarios) {
+        const title = scenario.sourceId
+          ? (cfg.exampleTitles[scenario.sourceId] ?? scenario.title)
+          : scenario.title;
+        for (const capability of scenario.capabilities ?? []) {
+          requests.set(capability, [...(requests.get(capability) ?? []), title]);
+        }
+      }
+      return requests;
     }
 
     /** Size of the engagement, in the same sittings the room deck will use. */
@@ -293,7 +280,12 @@ const bootstrap = {
      * old "composed path" section was actually contributing once ranked.
      */
     function renderRest(top: { capabilities?: string[] }[], path: Mod[]) {
-      const covered = closure(top.flatMap((s) => s.capabilities ?? []));
+      const covered = new Set(
+        resolveLabPath<Mod>(
+          cfg.modules,
+          [...top.flatMap((s) => s.capabilities ?? []), ...manualLabs]
+        ).map((m) => m.id)
+      );
       const rest = path.filter((m) => !covered.has(m.id));
       const el = document.querySelector<HTMLElement>('[data-rest]')!;
       el.textContent = rest.length
@@ -315,7 +307,7 @@ const bootstrap = {
       list.textContent = '';
 
       top.forEach((scenario, index) => {
-        const modules = order(closure(scenario.capabilities ?? []));
+        const modules = resolveLabPath<Mod>(cfg.modules, scenario.capabilities ?? []);
         const minutes = modules.reduce((sum, m) => sum + m.minutes, 0);
 
         const li = document.createElement('li');
@@ -352,12 +344,73 @@ const bootstrap = {
         for (const mod of modules) {
           const step = document.createElement('li');
           step.className = 'build__step';
-          step.textContent = cfg.capabilities[mod.id] ?? mod.id;
+          const link = document.createElement('a');
+          link.className = 'mod__link mod__link--step';
+          link.href = cfg.guideHref.replace('{id}', mod.id);
+          link.textContent = cfg.capabilities[mod.id] ?? mod.id;
+          step.append(link);
           steps.append(step);
         }
         li.append(steps);
         list.append(li);
       });
+    }
+
+    function renderAgenda(
+      path: Mod[],
+      requestedBy: Map<string, string[]>,
+      manuallySelected: Set<string>
+    ) {
+      const agenda = document.querySelector<HTMLElement>('[data-agenda]')!;
+      const list = document.querySelector<HTMLOListElement>('[data-agenda-sessions]')!;
+      const sessions = packSessions(path);
+      list.textContent = '';
+
+      sessions.forEach((group, sessionIndex) => {
+        const sitting = document.createElement('li');
+        sitting.className = 'agenda__session';
+
+        const head = document.createElement('div');
+        head.className = 'agenda__head';
+        const heading = document.createElement('h3');
+        heading.className = 'agenda__session-title display';
+        heading.textContent = cfg.strings.sessionTitle
+          .replace('{n}', String(sessionIndex + 1))
+          .replace('{total}', String(sessions.length));
+        const duration = document.createElement('p');
+        duration.className = 'agenda__duration';
+        duration.textContent = formatDuration(
+          group.reduce((sum, module) => sum + module.minutes, 0),
+          cfg.strings.duration
+        );
+        head.append(heading, duration);
+
+        const modules = document.createElement('ol');
+        modules.className = 'agenda__modules';
+        group.forEach((module) => {
+          const item = document.createElement('li');
+          item.className = 'agenda__module';
+          const link = document.createElement('a');
+          link.className = 'mod__link agenda__module-link';
+          link.href = cfg.guideHref.replace('{id}', module.id);
+          link.textContent = cfg.capabilities[module.id] ?? module.id;
+          const reason = document.createElement('span');
+          reason.className = 'agenda__reason';
+          const scenarios = requestedBy.get(module.id);
+          reason.textContent = scenarios?.length
+            ? `${cfg.strings.fromLabel}: ${[...new Set(scenarios)].join(' · ')}`
+            : manuallySelected.has(module.id)
+              ? cfg.strings.manualReason
+            : cfg.strings.prereqNote;
+          item.append(link, reason);
+          modules.append(item);
+        });
+
+        sitting.append(head, modules);
+        list.append(sitting);
+      });
+
+      agenda.hidden = false;
     }
 
     function renderPath(path: Mod[]) {
@@ -570,6 +623,110 @@ const bootstrap = {
     font-weight: 600;
   }
 
+  .agenda {
+    margin-block-start: clamp(2rem, 1.4rem + 2vw, 3rem);
+    padding-block-start: clamp(1.2rem, 0.9rem + 1.2vw, 1.8rem);
+    border-block-start: 2px solid var(--color-gold);
+  }
+
+  .agenda__title {
+    margin: 0;
+    font-size: var(--text-h3);
+    color: var(--color-ink);
+  }
+
+  .agenda__note {
+    margin: 0.45rem 0 0;
+    max-inline-size: 66ch;
+    font-size: var(--text-small);
+    line-height: 1.6;
+    color: var(--color-muted);
+  }
+
+  .agenda__sessions {
+    list-style: none;
+    display: grid;
+    gap: clamp(0.9rem, 0.7rem + 0.8vw, 1.3rem);
+    margin: clamp(1.2rem, 0.9rem + 1.2vw, 1.8rem) 0 0;
+    padding: 0;
+  }
+
+  .agenda :global(.agenda__session) {
+    padding: clamp(1rem, 0.8rem + 0.9vw, 1.4rem);
+    background: #fff;
+    border: 1px solid color-mix(in srgb, var(--color-ink) 12%, transparent);
+    border-inline-start: 3px solid var(--color-gold);
+  }
+
+  .agenda :global(.agenda__head) {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: 0.4rem 1.5rem;
+    padding-block-end: 0.7rem;
+    border-block-end: 1px solid color-mix(in srgb, var(--color-ink) 12%, transparent);
+  }
+
+  .agenda :global(.agenda__session-title) {
+    margin: 0;
+    font-size: var(--text-lede);
+    color: var(--color-ink);
+  }
+
+  .agenda :global(.agenda__duration) {
+    margin: 0;
+    font-family: var(--font-display);
+    font-size: var(--text-lede);
+    color: var(--color-gold);
+    white-space: nowrap;
+  }
+
+  .agenda :global(.agenda__modules) {
+    list-style: none;
+    counter-reset: agenda-module;
+    display: grid;
+    gap: 0;
+    margin: 0;
+    padding: 0;
+  }
+
+  .agenda :global(.agenda__module) {
+    position: relative;
+    counter-increment: agenda-module;
+    display: grid;
+    gap: 0.1rem;
+    padding: 0.75rem 0 0.75rem 2.1rem;
+    border-block-end: 1px solid color-mix(in srgb, var(--color-ink) 9%, transparent);
+  }
+
+  .agenda :global(.agenda__module:last-child) {
+    padding-block-end: 0;
+    border-block-end: 0;
+  }
+
+  .agenda :global(.agenda__module)::before {
+    content: counter(agenda-module, decimal-leading-zero);
+    position: absolute;
+    inset-block-start: 0.78rem;
+    inset-inline-start: 0;
+    font-family: var(--font-display);
+    color: var(--color-gold);
+  }
+
+  .agenda :global(.agenda__module-link) {
+    inline-size: fit-content;
+    font-family: var(--font-display);
+    font-size: var(--text-body);
+    line-height: 1.35;
+  }
+
+  .agenda :global(.agenda__reason) {
+    font-size: var(--text-micro);
+    line-height: 1.5;
+    color: var(--color-muted);
+  }
+
   .composed__list {
     list-style: none;
     counter-reset: step;
@@ -579,38 +736,34 @@ const bootstrap = {
     gap: clamp(0.9rem, 0.7rem + 0.8vw, 1.3rem);
   }
 
-  .shelf {
+  .library-callout {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem 2rem;
     margin-block-start: clamp(2.5rem, 1.6rem + 3vw, 4rem);
     max-inline-size: 68rem;
-    border-block-start: 1px solid color-mix(in srgb, var(--color-ink) 14%, transparent);
-    padding-block-start: clamp(1rem, 0.8rem + 0.9vw, 1.4rem);
+    padding: clamp(1rem, 0.8rem + 0.9vw, 1.4rem);
+    border-inline-start: 3px solid var(--color-gold);
+    background: color-mix(in srgb, var(--color-parchment-deep) 56%, transparent);
   }
 
-  .shelf__summary {
-    cursor: pointer;
-    font-family: var(--font-display);
-    font-size: var(--text-lede);
-    color: var(--color-ink);
+  .library-callout > div {
+    flex: 1 1 32rem;
   }
 
-  .shelf__summary::marker {
+  .library-callout__eyebrow {
+    margin: 0;
     color: var(--color-gold);
   }
 
-  .shelf__note {
-    margin: 0.45rem 0 0;
+  .library-callout__note {
+    margin: 0.35rem 0 0;
     max-inline-size: 62ch;
     font-size: var(--text-small);
     line-height: 1.6;
     color: var(--color-muted);
-  }
-
-  .shelf__list {
-    list-style: none;
-    margin: clamp(1.2rem, 0.9rem + 1.2vw, 1.8rem) 0 0;
-    padding: 0;
-    display: grid;
-    gap: clamp(0.9rem, 0.7rem + 0.8vw, 1.3rem);
   }
 
   .mod {
@@ -708,6 +861,31 @@ const bootstrap = {
     text-wrap: pretty;
   }
 
+  .mod__link {
+    color: inherit;
+    text-decoration-line: underline;
+    text-decoration-color: color-mix(in srgb, var(--color-gold) 68%, transparent);
+    text-decoration-thickness: 1px;
+    text-underline-offset: 0.14em;
+    transition:
+      color var(--duration-quick) ease,
+      text-decoration-color var(--duration-quick) ease;
+  }
+
+  .mod__link:hover,
+  .mod__link:focus-visible {
+    color: var(--color-gold);
+    text-decoration-color: var(--color-gold);
+  }
+
+  .order__list :global(.build__step .mod__link) {
+    font-weight: 600;
+  }
+
+  .order__list :global(.build__step .mod__link:focus-visible) {
+    outline-offset: 2px;
+  }
+
   .mod__line {
     display: grid;
     gap: 0.1rem;
@@ -745,9 +923,4 @@ const bootstrap = {
     border-block-start: 1px solid color-mix(in srgb, var(--color-gold) 45%, transparent);
   }
 
-  @media (min-width: 62rem) {
-    .shelf__list {
-      grid-template-columns: repeat(2, minmax(0, 1fr));
-    }
-  }
 </style>

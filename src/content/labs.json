@@ -1,9 +1,162 @@
 [
   {
-    "id": "agent-instructions",
+    "id": "agent-anatomy",
     "order": 1,
-    "minutes": 30,
+    "minutes": 60,
+    "products": ["Copilot Studio"],
+    "features": ["Agent configuration", "Instructions", "Knowledge", "Activity map", "Preview"],
     "requires": [],
+    "en": {
+      "name": "See what an agent is made of",
+      "teaches": "The parts an agent is assembled from, where each one lives, and how to read any answer back to the part that produced it.",
+      "build": "A map of the build surface, and the habit of asking which part said that — plus the one process every later module will be applied to.",
+      "objective": "Take any answer an agent gives and say which part of it — instruction, knowledge or tool — produced that sentence.",
+      "needs": {
+        "skills": ["None — this is the first hour"],
+        "tools": ["Copilot Studio, signed in", "A finished agent to open — ours, or one of your own"],
+        "materials": ["One process from your own work. Every module after this is applied to it, so pick one you actually own"]
+      },
+      "steps": [
+        "Use it as a user first: ask a finished agent three questions without looking behind it.",
+        "Open the build surface and attribute each of those three answers to a part — instruction, knowledge, or tool.",
+        "Read the activity trace on one answer: what it loaded, what it called, and in what order.",
+        "Remove its knowledge source, ask the same question again, and watch what the answer falls back to.",
+        "Name each part on the rail in one sentence — model, instructions, knowledge, tools, connected agents, memory.",
+        "Write down the one process from your own work that every later module will be applied to."
+      ],
+      "summary": "An agent has stopped being a black box: every sentence it produces, you can trace to the part that produced it — and you have the case you will build for the rest of the programme."
+    },
+    "zh": {
+      "name": "看清楚一个 agent 是由什么装起来的",
+      "teaches": "一个 agent 由哪几件东西构成、每一件在界面的什么位置、以及怎么把任何一句回答倒推回产生它的那一件。",
+      "build": "一张构建界面的地图，和「这句话是哪一部分说的」这个习惯——外加一条贯穿后面所有模块的自家业务。",
+      "objective": "拿到 agent 的任何一句回答，都能说出这句是指令、是知识、还是工具产生的。",
+      "needs": {
+        "skills": ["无——这是第一节课"],
+        "tools": ["能登录的 Copilot Studio", "一个已经建好的 agent：我们的，或你们自己的"],
+        "materials": ["你自己工作里的一条业务。后面每一个模块都作用在它上面，所以挑一条你真管得着的"]
+      },
+      "steps": [
+        "先当用户：对着一个建好的 agent 问三个问题，不许看后台。",
+        "打开构建界面，把刚才那三个回答分别归位——哪句来自指令、哪句来自知识、哪句来自工具。",
+        "挑一个回答读它的活动轨迹：加载了什么、调用了什么、按什么顺序。",
+        "把知识源撤掉，同一个问题再问一遍，看它退回到哪里去了。",
+        "把右栏每一件东西用一句话说清楚：模型、指令、知识、工具、连接的 agent、记忆。",
+        "写下你自己工作里那条业务——后面每一个模块都作用在它上面。"
+      ],
+      "summary": "agent 不再是黑盒：它说的每一句你都能倒推回产生它的那一部分——而且你手上有了一条要在整个课程里建下去的业务。"
+    },
+    "walkthrough": [
+      {
+        "shot": "01-agents-list",
+        "en": {
+          "act": "Use it as a user, before you look behind it",
+          "where": "Agents → open a published agent → Preview tab → End user preview",
+          "do": "Ask three questions and nothing else: one squarely inside its job, one plainly outside it, one genuinely ambiguous.",
+          "see": "Three different shapes of answer. Only one of them carries citations, and one is markedly shorter than the rest. In the agent list itself, note the Powered by column — the new agents say GitHub Copilot, the older ones say Standard.",
+          "note": "Do this first. Once you have read the instructions you cannot un-read them, and you lose the only chance you get to judge it the way your users will."
+        },
+        "zh": {
+          "act": "先当用户用一遍，别急着看后台",
+          "where": "Agents → 打开一个已发布的 agent → Preview 页签 → End user preview",
+          "do": "只问三个问题：一个正在它职责里、一个明显不归它管、一个真的模棱两可。",
+          "see": "三种形状不一样的回答。只有一个带引用，还有一个明显比别的短。回到 agent 列表，顺便看一眼 Powered by 那一列——新形态的写着 GitHub Copilot，旧的写着 Standard。",
+          "note": "这一步必须放最前面。看过说明之后你就回不去了，而这是你唯一一次能像用户那样判断它的机会。"
+        }
+      },
+      {
+        "shot": "02-attribute",
+        "en": {
+          "act": "Attribute each answer to a part",
+          "where": "Build tab — the Instructions box, and the Knowledge list on the right",
+          "do": "Read the instructions, then the knowledge entries. For each of your three answers, say out loud which part produced it.",
+          "see": "The refusal traces to one sentence in Instructions. The cited answer traces to a Knowledge entry. Whatever neither explains came from the model itself.",
+          "note": "This is the whole skill of the hour. Every later module is a variation on the same question — which part said that?"
+        },
+        "zh": {
+          "act": "把每个回答归位到某一部分",
+          "where": "Build 页签——中间的 Instructions 框，以及右侧的 Knowledge 列表",
+          "do": "先读说明，再读知识条目。对刚才那三个回答，逐个说出是哪一部分产生的。",
+          "see": "那句拒绝对应说明里的某一句话；带引用的那个对应某条知识；两边都解释不了的，就是模型自己的。",
+          "note": "这一小时的全部功夫就在这里。后面每一个模块，问的都是同一句话——这句是哪一部分说的？"
+        }
+      },
+      {
+        "en": {
+          "act": "Read the reasoning, not the answer",
+          "where": "Preview tab, the trace shown above an answer",
+          "do": "Ask the in-scope question again with End user preview off, and open the reasoning above the reply.",
+          "see": "Which skill it loaded, which tools it called and in what order — all of it decided before the first word of the answer was written.",
+          "note": "Your users never see this. You will spend the rest of the programme reading it, so get used to looking up before you look down."
+        },
+        "zh": {
+          "act": "读推理过程，不是读回答",
+          "where": "Preview 页签，回答上方的推理轨迹",
+          "do": "关掉 End user preview，把那个范围内的问题再问一遍，展开回答上方的推理。",
+          "see": "它加载了什么技能、调用了哪些工具、按什么顺序——全都发生在答案的第一个字之前。",
+          "note": "用户永远看不到这一段。而你在整个课程里都要读它，所以先养成「先往上看再往下看」的习惯。"
+        }
+      },
+      {
+        "en": {
+          "act": "Take the knowledge away and ask again",
+          "where": "Build → Knowledge → Remove on the entry, then Save",
+          "do": "Remove the knowledge source, save, start a new chat and ask the same grounded question.",
+          "see": "The same question now answers from the public web, or declines. The answer moved and not one word of the instructions changed.",
+          "note": "Put it back when you are done. The point was the contrast — grounding is a thing you add, and it is invisible until you remove it."
+        },
+        "zh": {
+          "act": "把知识撤掉，再问一次",
+          "where": "Build → Knowledge → 条目上的 Remove，然后 Save",
+          "do": "移除知识源、保存、新开一段对话，问刚才那个有依据的问题。",
+          "see": "同一个问题，现在改成引公开网页，或者干脆不答了。回答变了，而说明一个字都没动。",
+          "note": "做完记得加回去。要的是这个对比——接地是你加上去的东西，不撤掉它你看不见它。"
+        }
+      },
+      {
+        "shot": "05-the-rail",
+        "en": {
+          "act": "Name every part on the rail",
+          "where": "Build → the Agent configuration panel on the right",
+          "do": "Go down it aloud in one sentence each: Model, Skills, Tools, Knowledge, Connected agents, Memory.",
+          "see": "Six things — and every one of them is a place an answer can come from.",
+          "note": "That rail is the entire product surface. Anyone who cannot name all six will not make the later modules stick."
+        },
+        "zh": {
+          "act": "把右栏每一件东西都叫出名字",
+          "where": "Build → 右侧的 Agent configuration 面板",
+          "do": "从上往下每样用一句话说清楚：Model、Skills、Tools、Knowledge、Connected agents、Memory。",
+          "see": "六样东西——而且每一样都可能是某句回答的来源。",
+          "note": "这一栏就是整个产品的全部台面。六样叫不全的人，后面的模块学不牢。"
+        }
+      },
+      {
+        "en": {
+          "act": "Write down the process you will carry",
+          "where": "On paper, before you close the laptop",
+          "do": "Name one process from your own work in a single line: who does it today, how often, and what a mistake costs.",
+          "see": "One line. If it takes a paragraph, the process is too big to be a first agent.",
+          "note": "Every module after this is applied to that line. Pick one you actually own — you will be asked for its documents, its systems and its numbers."
+        },
+        "zh": {
+          "act": "写下你要一路带下去的那条业务",
+          "where": "合上电脑之前，写在纸上",
+          "do": "用一行字写清你自己工作里的一条业务：现在谁在做、多久一次、做错了代价是什么。",
+          "see": "一行。要写成一段，说明这条业务太大，不适合当第一个 agent。",
+          "note": "后面每一个模块都作用在这一行上。挑一条你真管得着的——之后会跟你要它的文档、它的系统和它的数。"
+        }
+      }
+    ]
+  },
+  {
+    "id": "agent-instructions",
+    "order": 2,
+    "minutes": 30,
+    "products": ["Copilot Studio"],
+    "features": ["Instructions", "Preview", "Publish"],
+    "requires": [
+      "agent-anatomy"
+    ],
     "en": {
       "name": "Build and test your first agent",
       "teaches": "Creating an agent, writing instructions that hold, and using the test pane to see why it answered the way it did.",
@@ -171,8 +324,10 @@
   },
   {
     "id": "knowledge-grounding",
-    "order": 2,
+    "order": 3,
     "minutes": 45,
+    "products": ["Copilot Studio", "SharePoint", "Microsoft Teams"],
+    "features": ["Knowledge", "Indexing", "Citations"],
     "requires": [
       "agent-instructions"
     ],
@@ -324,16 +479,18 @@
   },
   {
     "id": "deterministic-dialogue",
-    "order": 3,
+    "order": 4,
     "minutes": 40,
+    "products": ["Copilot Studio"],
+    "features": ["Instructions", "Skills", "Workflows"],
     "requires": [
       "agent-instructions"
     ],
     "en": {
-      "name": "Pin the paths that must be deterministic",
-      "teaches": "Topics and trigger phrases, and where a scripted path beats letting the model decide.",
-      "build": "One conversation that always goes the same way — the one your compliance people would ask about.",
-      "objective": "Pin the parts of a conversation that must never vary, and tell the difference between what the model may decide and what it must not.",
+      "name": "Make it behave the same way every time",
+      "teaches": "Holding a behaviour with instructions and a named skill instead of a scripted dialog tree, and recognising the step that should not be held in conversation at all.",
+      "build": "One exchange that runs identically every time, held by structured instructions rather than a branching script — plus a written line for what has to be handed to a workflow instead.",
+      "objective": "Pin the behaviour that must not vary, and tell the difference between what a model can be made to hold and what has to be guaranteed elsewhere.",
       "needs": {
         "skills": [
           "Agent instructions"
@@ -346,19 +503,20 @@
         ]
       },
       "steps": [
-        "Pick the exchange your compliance people would ask about first.",
-        "Build it as a topic with explicit trigger phrases.",
-        "Force it down the scripted path and confirm it cannot be talked out of it.",
-        "Add a fallback for when the trigger is missed entirely.",
-        "Re-test the generative path to confirm the topic did not swallow unrelated questions."
+        "Take the case the model kept getting wrong, and write in one sentence what correct looks like.",
+        "Pin it in the instructions first: the condition, the order that must be kept, and what must never be skipped.",
+        "Promote it to a named skill once the instruction stops holding on its own.",
+        "Run the same case ten times, phrased differently each time, and count how often it holds.",
+        "Anything that must be identical rather than merely reliable — a write, a calculation, a record — take out of the conversation and give to a workflow.",
+        "Re-test the unrelated questions, and confirm the pinned behaviour has not started capturing those too."
       ],
-      "summary": "One conversation now behaves identically every time, and you have a rule for deciding which others need the same."
+      "summary": "One exchange behaves the same way every time, and you can say which part of it a model may hold and which part had to be guaranteed elsewhere."
     },
     "zh": {
-      "name": "把必须确定的路径钉死",
-      "teaches": "Topics 与触发短语，以及什么地方「写死的流程」优于「让模型自己决定」。",
-      "build": "一段永远走同一条路的对话——就是合规同事一定会问的那一段。",
-      "objective": "能把对话中绝不允许变的部分钉死，并分清哪些能交给模型判断、哪些绝对不能。",
+      "name": "让它每次都一样",
+      "teaches": "用指令和一个具名技能把行为钉住，而不是画一棵对话树；以及认出哪一步根本就不该由对话来保证。",
+      "build": "一段每次都一样的对话，靠的是结构化指令而不是分支脚本——外加一条写下来的界线：什么必须交给工作流。",
+      "objective": "能把不允许变的行为钉住，并分清哪些能让模型稳住、哪些必须换个地方去保证。",
       "needs": {
         "skills": [
           "Agent 指令设计"
@@ -371,109 +529,145 @@
         ]
       },
       "steps": [
-        "挑出合规同事最先会追问的那一段。",
-        "把它做成一个 Topic，写明确的触发短语。",
-        "逼它走写死的流程，确认它不会被话术带偷。",
-        "为「触发词没命中」加一条兵底路径。",
-        "重测生成式那条路，确认这个 Topic 没把无关问题也吞了。"
+        "拿出那个模型总是弄错的情况，用一句话写清「对」是什么样。",
+        "先在指令里钉：什么条件下、必须按什么顺序、什么绝不能省。",
+        "等指令自己撑不住了，再把它提升成一个具名技能。",
+        "同一个情况换十种说法各跑一次，数它稳住了几次。",
+        "凡是「必须一模一样」而不只是「大致可靠」的——写入、计算、留痕——一律从对话里拿出来，交给工作流。",
+        "回头再测那些不相干的问题，确认钉住的行为没有把它们也一并吞了。"
       ],
-      "summary": "你有了一段每次表现一致的对话，以及一条判断「还有哪些也该这么处理」的标准。"
+      "summary": "一段对话每次表现一致，而且你说得出其中哪一部分可以由模型稳住、哪一部分必须换个地方保证。"
     },
     "walkthrough": [
       {
         "en": {
-          "act": "Choose the exchange that must not vary",
+          "act": "Say what correct means, in one sentence",
           "where": "On the whiteboard, before you touch the product",
-          "do": "Ask the room which single exchange their compliance people would ask about first. Write it down before building anything.",
-          "see": "Usually a disagreement. That disagreement is the useful output of this step.",
-          "note": "Skipping this and building a topic you invented is how labs produce something nobody needed."
+          "do": "Take the case the model kept getting wrong. Write down the condition, the order that has to be kept, and the thing that must never be skipped.",
+          "see": "Usually a disagreement about the order. That disagreement is the useful output of this step.",
+          "note": "Pin nothing you have not first written down. A behaviour you cannot state in a sentence cannot be tested either."
         },
         "zh": {
-          "act": "选出那段不允许变的对话",
+          "act": "用一句话说清「对」是什么",
           "where": "先在白板上，先别碰产品",
-          "do": "问全场：合规的人最先会追问哪一段对话？先把它写下来，再开始建。",
-          "see": "通常会吵起来。这个分歧就是这一步真正的产出。",
-          "note": "跳过这一步、直接建一个自己想的 topic，就是 Lab 做出一堆没人需要的东西的原因。"
+          "do": "拿出模型总是弄错的那个情况，写清楚：什么条件、必须按什么顺序、什么绝对不能省。",
+          "see": "通常会在顺序上吵起来。这个分歧就是这一步真正的产出。",
+          "note": "没写下来的行为不要钉。一句话说不清的行为，也测不了。"
         }
       },
       {
         "en": {
-          "act": "Build it as a topic",
-          "where": "Your agent → Topics → Add a topic → From blank",
-          "do": "Add trigger phrases in the words your users actually use, not the words the policy uses.",
-          "type": "how do I claim mileage\nmileage claim\nclaim for driving\npetrol money",
-          "see": "The topic saves with its trigger phrases listed, and an empty conversation canvas below.",
-          "note": "Users do not say 'mileage reimbursement request'. Trigger phrases written in policy language never fire."
+          "act": "Pin it in the instructions first",
+          "where": "Build → Instructions",
+          "do": "Write it as a rule with a condition, not as a paragraph of advice. Save, then put the case to it in Preview.",
+          "type": "When a request involves a monetary limit, always state the limit and where it comes from before you say whether something is allowed. Never state one without the other.",
+          "see": "It holds — for now. On a short instruction set, a well-written rule usually is enough.",
+          "note": "Start here every single time. A rule in the instructions costs nothing to change; everything further up the ladder costs a rebuild."
         },
         "zh": {
-          "act": "把它建成一个 topic",
-          "where": "你的 agent → Topics → Add a topic → From blank",
-          "do": "触发词用用户真会说的话写，不是用制度文件里的话写。",
-          "type": "how do I claim mileage\nmileage claim\nclaim for driving\npetrol money",
-          "see": "topic 保存后列出触发词，下面是一块空的对话画布。",
-          "note": "用户不会说「里程费报销申请」。用制度语言写的触发词永远触发不了。"
+          "act": "先在指令里钉",
+          "where": "Build → Instructions",
+          "do": "写成带条件的规则，不要写成一段建议。保存，然后在 Preview 里把那个情况丢给它。",
+          "type": "When a request involves a monetary limit, always state the limit and where it comes from before you say whether something is allowed. Never state one without the other.",
+          "see": "它稳住了——暂时。指令还不长的时候，一条写得好的规则通常就够了。",
+          "note": "每次都从这里开始。写在指令里的规则改起来不要钱；再往上一级，改一次就是重做。"
         }
       },
       {
+        "shot": "03-add-skill",
         "en": {
-          "act": "Force it down the scripted path",
-          "where": "Test pane",
-          "do": "Trigger the topic, then try to talk it out of the script mid-way.",
-          "type": "actually never mind, just tell me the limit",
-          "see": "It should hold the path. If it wanders back to generative answering, the topic is not doing its job.",
-          "note": "This is the whole point of a topic: the parts a regulator asks about must not be improvised."
+          "act": "Promote it to a skill when the instruction stops holding",
+          "where": "Build → Skills → Add skill",
+          "do": "Three ways in: upload a SKILL.md file, generate one with AI, or create from blank. Take Create from blank the first time so you see every field.",
+          "see": "An uploaded skill is literally a SKILL.md — name and description in YAML, the behaviour in markdown below it.",
+          "note": "That file format is the point. A skill is a portable document, not a drawing on a canvas — it can be reviewed, versioned and moved between agents."
         },
         "zh": {
-          "act": "把它按在脚本路径上",
-          "where": "测试面板",
-          "do": "触发这个 topic，然后在中途试图把它从脚本里带出去。",
-          "type": "actually never mind, just tell me the limit",
-          "see": "它应该守住路径。如果又滑回生成式回答，说明这个 topic 没起到作用。",
-          "note": "这就是 topic 存在的意义：监管会追问的部分，不允许即兴发挥。"
+          "act": "指令撑不住了，就把它提升成技能",
+          "where": "Build → Skills → Add skill",
+          "do": "三种入口：上传一个 SKILL.md、用 AI 生成、或者从空白创建。第一次走「从空白创建」，把每个字段都看一遍。",
+          "see": "上传的技能就是一份 SKILL.md——名称和描述写在 YAML 里，行为写在下面的 markdown 里。",
+          "note": "这个文件格式才是重点。技能是一份可携带的文档，不是画布上的一张图——它能被评审、能进版本库、能在 agent 之间搬。"
         }
       },
       {
+        "shot": "04-skill-blank",
         "en": {
-          "act": "Handle the trigger being missed",
-          "where": "Topics → your topic → add a fallback branch",
-          "do": "Phrase the same request in a way you did not anticipate, then add a route for it.",
-          "type": "i drove to the client site last tuesday, what now",
-          "see": "Before the fallback, it answers generatively — confidently, and outside the script.",
-          "note": "Every topic leaks. The question is whether it leaks into something safe."
+          "act": "Write the skill: name, description, behaviour",
+          "where": "Add skill → Create from blank",
+          "do": "Name it for the behaviour. Write the description as when to use it. The instructions box is markdown and arrives with a scaffold — steps, guidelines, examples, notes.",
+          "type": "When this skill is activated:\n1. State the limit and where it comes from.\n2. Only then say whether the request is allowed.\n\n## Guidelines\n- Never state an allowance without its source.\n- If no limit can be found, say so and stop.",
+          "see": "Name capped at 64 characters, description at 1024. Create stays disabled until all three are filled.",
+          "note": "The description is read by the model to decide whether to load the skill at all. Write it as a trigger condition, exactly as you would a tool description."
         },
         "zh": {
-          "act": "处理「没触发上」的情况",
-          "where": "Topics → 你的 topic → 加一个兑底分支",
-          "do": "用一个你没预料到的说法提同一件事，然后为它加一条路。",
-          "type": "i drove to the client site last tuesday, what now",
-          "see": "加兑底之前，它会用生成式回答——语气笃定，并且在脚本之外。",
-          "note": "每个 topic 都会漏。问题只在于它漏到的地方安不安全。"
+          "act": "把技能写出来：名称、描述、行为",
+          "where": "Add skill → Create from blank",
+          "do": "名字按行为起。描述写「什么时候用它」。指令框是 markdown，自带脚手架——步骤、准则、示例、备注。",
+          "type": "When this skill is activated:\n1. State the limit and where it comes from.\n2. Only then say whether the request is allowed.\n\n## Guidelines\n- Never state an allowance without its source.\n- If no limit can be found, say so and stop.",
+          "see": "名称上限 64 字符，描述 1024。三项没填完，Create 一直是灰的。",
+          "note": "描述是给模型读的，用来判断要不要加载这个技能。所以要写成触发条件，跟写工具描述完全一样。"
         }
       },
       {
         "en": {
-          "act": "Confirm it did not swallow everything else",
-          "where": "Test pane",
-          "do": "Ask an unrelated question that shares a word with your trigger phrases.",
+          "act": "Run it ten times, phrased ten ways",
+          "where": "Preview tab, a new chat each time",
+          "do": "Put the same case in the words ten different people would use, and count how many times the behaviour holds.",
+          "see": "A hold rate. Nine out of ten is a number; 'it worked when I tried it' is not.",
+          "note": "New chat every time. Repeating it inside one conversation measures what it remembers, not what the rule does."
+        },
+        "zh": {
+          "act": "换十种说法，跑十次",
+          "where": "Preview 页签，每次都新开一段对话",
+          "do": "用十个不同的人会用的说法，把同一个情况问十遍，数它稳住了几次。",
+          "see": "一个稳定率。「十次里九次」是个数；「我试的时候是好的」不是。",
+          "note": "每次都要新开对话。在同一段对话里重复问，量的是它记住了什么，不是这条规则管不管用。"
+        }
+      },
+      {
+        "shot": "05-workflows",
+        "en": {
+          "act": "Hand the guaranteed part to a workflow",
+          "where": "Build → Tools → Add tool → Workflows",
+          "do": "Take the step that must be identical rather than merely reliable — the write, the calculation, the record — out of the conversation entirely.",
+          "see": "Only workflows built with the ‘When an agent calls the workflow’ trigger appear here. Classic Power Automate cloud flows are not offered at all.",
+          "note": "This is the real boundary of the module. A model can be made reliable; only a workflow can be made guaranteed. Never spend a week wording an instruction to do a workflow's job."
+        },
+        "zh": {
+          "act": "必须有保证的那部分，交给工作流",
+          "where": "Build → Tools → Add tool → Workflows",
+          "do": "把那个「必须一模一样」而不只是「大致可靠」的步骤——写入、计算、留痕——整个从对话里拿出去。",
+          "see": "这里只列出用「When an agent calls the workflow」触发器建的工作流。经典的 Power Automate 云端流根本不在选项里。",
+          "note": "这才是这一课真正的分界线。模型可以被调到可靠，但只有工作流能被做到有保证。别花一周去抠一句指令，干工作流该干的活。"
+        }
+      },
+      {
+        "en": {
+          "act": "Confirm it has not started capturing everything",
+          "where": "Preview tab",
+          "do": "Ask an unrelated question that happens to share vocabulary with the pinned case.",
           "type": "can I claim a taxi?",
-          "see": "It should answer generatively, not drop into the mileage script.",
-          "note": "Over-broad triggers are the most common defect, and the one nobody tests for."
+          "see": "It should answer normally, without applying the pinned behaviour.",
+          "note": "Over-broad pinning is the most common defect and the one nobody tests for. A rule that fires everywhere is worth the same as no rule."
         },
         "zh": {
-          "act": "确认它没把别的都吐吞了",
-          "where": "测试面板",
-          "do": "问一个不相干、但和触发词共用某个词的问题。",
+          "act": "确认它没把别的也一并吞了",
+          "where": "Preview 页签",
+          "do": "问一个不相干、但恰好和钉住那件事共用了某些词的问题。",
           "type": "can I claim a taxi?",
-          "see": "它应该用生成式回答，而不是掉进里程费那个脚本。",
-          "note": "触发词范围过宽是最常见的缺陷，也是最没人去测的。"
+          "see": "它应该正常回答，而不是把钉住的行为套上去。",
+          "note": "钉得过宽是最常见的缺陷，也是最没人去测的。一条到处都触发的规则，和没有规则一样。"
         }
       }
     ]
   },
   {
     "id": "tool-orchestration",
-    "order": 4,
+    "order": 5,
     "minutes": 45,
+    "products": ["Copilot Studio"],
+    "features": ["Generative orchestration", "Tools", "Tool descriptions"],
     "requires": [
       "agent-instructions",
       "knowledge-grounding"
@@ -500,7 +694,7 @@
         "Ask something that clearly belongs to one tool and confirm the choice.",
         "Ask something ambiguous and watch which one it reaches for.",
         "Rewrite the losing description until the choice flips.",
-        "Write down the cases it still gets wrong — those are your topic candidates."
+        "Write down the cases it still gets wrong — those are the ones to pin with a skill, or to hand to a workflow."
       ],
       "summary": "You know how much of the decision to hand to the model, and where to take it back."
     },
@@ -526,15 +720,117 @@
         "问一个明显属于某个工具的问题，确认它选对了。",
         "再问一个模棱两可的，看它伸手去拿哪个。",
         "改写没被选中那个的描述，直到选择翻转。",
-        "把它依然选错的情况记下来——那些就是该做成 Topic 的候选。"
+        "把它依然选错的情况记下来——那些就是要用技能钉住、或者干脆交给工作流的。"
       ],
       "summary": "你清楚了多少判断可以交给模型，以及从哪里开始得收回来。"
-    }
+    },
+    "walkthrough": [
+      {
+        "en": {
+          "act": "Give it more than one thing it could do",
+          "where": "Build → Tools → Add tool",
+          "do": "Add a second tool whose scope deliberately overlaps the first. Two tools that could both plausibly answer the same question is the whole point of the exercise.",
+          "see": "Both sit in the Tools list with nothing telling them apart except their descriptions.",
+          "note": "One tool teaches nothing here. The lesson only exists when there is a choice to get wrong."
+        },
+        "zh": {
+          "act": "先给它两件都能干的活",
+          "where": "Build → Tools → Add tool",
+          "do": "再加一个职责故意和第一个重叠的工具。两个工具都像是能答同一个问题——这正是这一课要的局面。",
+          "see": "两个工具并排躺在 Tools 里，除了描述之外没有任何东西能把它们区分开。",
+          "note": "只有一个工具的话这一课不成立。得有一个「可能选错」的选择，才有得学。"
+        }
+      },
+      {
+        "en": {
+          "act": "Describe each tool by when, not by what",
+          "where": "Build → Tools → the tool's description field",
+          "do": "Rewrite both descriptions as trigger conditions. Say what the tool is for, and say explicitly what it is not for.",
+          "type": "Use this when the user asks about the status of an order that already exists. Do not use it to create an order, and do not use it for stock levels.",
+          "see": "The description reads like an instruction to a colleague rather than a line from an API catalogue.",
+          "note": "The description is not documentation. It is the prompt the model uses to choose, and it is the only lever you have here."
+        },
+        "zh": {
+          "act": "工具描述写「什么时候用」，不写「它是什么」",
+          "where": "Build → Tools → 工具的描述字段",
+          "do": "把两个描述都改写成触发条件。写清楚什么情况下该用它，并且明确写出什么情况下不要用它。",
+          "type": "Use this when the user asks about the status of an order that already exists. Do not use it to create an order, and do not use it for stock levels.",
+          "see": "这段描述读起来像是在交代一位同事，而不是像从接口文档里抄的一行。",
+          "note": "描述不是文档。它就是模型用来做选择的提示词，也是你在这一课里唯一能拧的旋钮。"
+        }
+      },
+      {
+        "en": {
+          "act": "Ask the clear-cut one",
+          "where": "Preview tab",
+          "do": "Ask a question that plainly belongs to one of the two, then open the reasoning above the answer.",
+          "see": "Exactly one tool called, named in the trace, with the values it was given.",
+          "note": "Check the trace even when the answer is right. A right answer from the wrong tool is the failure that survives to production."
+        },
+        "zh": {
+          "act": "先问那个界限分明的",
+          "where": "Preview 页签",
+          "do": "问一个明显只属于其中一个工具的问题，然后展开回答上方的推理。",
+          "see": "只调了一个工具，轨迹里写着它的名字和传进去的值。",
+          "note": "哪怕答对了也要看轨迹。「用错工具但答对了」这种失败最容易一路活到生产环境。"
+        }
+      },
+      {
+        "en": {
+          "act": "Ask the ambiguous one and let it choose badly",
+          "where": "Preview tab, same conversation",
+          "do": "Ask something either tool could arguably serve. Do not help it.",
+          "see": "It commits to one. The trace shows which, and the answer inherits whatever that tool could not do.",
+          "note": "This is the moment worth staging for the room. The model is not confused — it is confident and wrong, which is harder to catch."
+        },
+        "zh": {
+          "act": "再问那个模棱两可的，让它选错一次",
+          "where": "Preview 页签，同一段对话",
+          "do": "问一个两个工具都说得过去的问题。不要给它提示。",
+          "see": "它会挑一个下手。轨迹里写着挑了谁，回答里也带着那个工具办不到的部分。",
+          "note": "这一下值得当众演。模型不是迷糊了——它是笃定地错了，这种错更难被发现。"
+        }
+      },
+      {
+        "en": {
+          "act": "Rewrite the losing description until the choice flips",
+          "where": "Build → Tools → the description that lost",
+          "do": "Add the boundary that was missing, save, and ask the same ambiguous question in a new chat.",
+          "see": "The other tool is chosen this time, from a description change alone. No code, no logic, no rules engine.",
+          "note": "Always retest in a new chat. Judging a description change inside the old conversation tells you about the history, not the change."
+        },
+        "zh": {
+          "act": "改写落选那个的描述，直到选择翻转",
+          "where": "Build → Tools → 落选那个工具的描述",
+          "do": "把缺的那条边界补上，保存，然后新开一段对话问同一个模棱两可的问题。",
+          "see": "这次换成另一个工具被选中了——只改了一段描述。没写代码、没加逻辑、没有规则引擎。",
+          "note": "一定要新开对话再测。在旧对话里判断描述改动，测出来的是历史，不是改动。"
+        }
+      },
+      {
+        "en": {
+          "act": "Write down what it still gets wrong",
+          "where": "On paper",
+          "do": "List the cases where no description you tried made the choice reliable.",
+          "see": "A short list — usually two or three cases, and usually the ones with a consequence attached.",
+          "note": "That list is the input to the next module. Those are the paths you stop negotiating with the model about and pin down instead."
+        },
+        "zh": {
+          "act": "把它还是选错的情况记下来",
+          "where": "记在纸上",
+          "do": "列出那些无论你怎么改描述都稳不下来的情况。",
+          "see": "一张很短的单子——通常两三条，而且通常都是「答错了有后果」的那几条。",
+          "note": "这张单子就是下一个模块的输入。这些路径不再跟模型商量，直接钉死。"
+        }
+      }
+    ]
   },
   {
     "id": "system-actions",
-    "order": 5,
+    "order": 6,
     "minutes": 50,
+    "products": ["Copilot Studio", "Power Platform connectors"],
+    "features": ["Tools", "Connectors", "Error handling"],
     "requires": [
       "agent-instructions"
     ],
@@ -589,72 +885,397 @@
         "记下系统直接宕机时，用户会看到什么。"
       ],
       "summary": "agent 碰到了真实系统，而且它出错的样子是你敢给用户看的。"
-    }
+    },
+    "walkthrough": [
+      {
+        "en": {
+          "act": "Make one read call with the value hard-coded",
+          "where": "Build → Tools → Add tool → a connector for a system you can reach",
+          "do": "Add the connector, sign in with the test account, and pin the input to a value you know exists. Run it once from the tool's own test.",
+          "see": "Real data from a real system, and a connection now listed under your name.",
+          "note": "Hard-code first. If this fails you are debugging a connection; if you let the agent fill it in first you will be debugging two things at once."
+        },
+        "zh": {
+          "act": "先用写死的值调一次读接口",
+          "where": "Build → Tools → Add tool → 选一个你连得上的系统的连接器",
+          "do": "加上连接器，用测试账号登录，把入参钉在一个你确定存在的值上。先用工具自带的测试跑一次。",
+          "see": "真实系统里的真实数据，以及一条挂在你名下的连接。",
+          "note": "一定先写死。这一步失败就是连接问题；要是一上来让 agent 填参数，你就得同时排查两件事。"
+        }
+      },
+      {
+        "en": {
+          "act": "Let the agent fill the parameter",
+          "where": "Build → Tools → the tool's input, switched to be filled dynamically",
+          "do": "Replace the fixed value with one the agent takes from the conversation, and describe that input in the words a user would use.",
+          "see": "In Preview the agent now asks for the missing value if you do not offer it, then calls with what you gave.",
+          "note": "Describe the input as a person would say it, not as the API names it. The model is matching your description against the sentence, not against the schema."
+        },
+        "zh": {
+          "act": "把参数交给 agent 去填",
+          "where": "Build → Tools → 工具的入参，切成由 agent 动态填充",
+          "do": "把写死的值换成 agent 从对话里取的值，并且用用户会说的话去描述这个入参。",
+          "see": "在 Preview 里，你不给这个值它会主动问；给了它就照着调。",
+          "note": "入参描述要按人话写，不要照抄接口字段名。模型是拿你的描述去对用户那句话，不是去对 schema。"
+        }
+      },
+      {
+        "en": {
+          "act": "Make it answer in its own words",
+          "where": "Build → Instructions",
+          "do": "Add a line about how a result should be reported, then ask again and compare with the raw output you saw in step one.",
+          "type": "When a tool returns a record, answer in one or two sentences using only the fields the user asked about. Never paste the raw result.",
+          "see": "A sentence a colleague would write, instead of a block of fields nobody reads.",
+          "note": "Raw output is the fastest way to make a working agent feel broken. Users read it as an error even when it is correct."
+        },
+        "zh": {
+          "act": "让它用自己的话把结果说出来",
+          "where": "Build → Instructions",
+          "do": "加一句「结果该怎么说」的规则，再问一遍，和第一步看到的原始输出比一比。",
+          "type": "When a tool returns a record, answer in one or two sentences using only the fields the user asked about. Never paste the raw result.",
+          "see": "一句同事会写出来的话，而不是一坨没人看的字段。",
+          "note": "直接抛原始输出是让一个好用的 agent 显得坏掉的最快方式。哪怕内容是对的，用户也会当成报错。"
+        }
+      },
+      {
+        "en": {
+          "act": "Break it on purpose",
+          "where": "Preview tab",
+          "do": "Ask for a record that does not exist, then ask for one the test account is not allowed to see.",
+          "see": "Two different failures. One is empty, one is refused — and if the agent describes them the same way, that is your bug.",
+          "note": "'Not found' and 'not allowed' must never collapse into the same sentence. One is a typo, the other is a security answer."
+        },
+        "zh": {
+          "act": "故意把它弄坏",
+          "where": "Preview 页签",
+          "do": "先查一条不存在的记录，再查一条测试账号无权看的记录。",
+          "see": "两种不同的失败：一种是空，一种是被拒。如果 agent 把两者说成同一句话，那就是你的 bug。",
+          "note": "「查不到」和「没权限」绝不能塌成同一句话。前者是打错字，后者是安全结论。"
+        }
+      },
+      {
+        "en": {
+          "act": "Note what a user sees when the system is simply down",
+          "where": "Preview tab — disconnect the connection, or point it at an unreachable host",
+          "do": "Force the call to fail at the transport level and read the answer as a user would.",
+          "see": "Usually a long apology that does not say what to do next, and never says who to contact.",
+          "note": "Write the outage sentence yourself, in Instructions. Whatever the platform says by default is the message your users will remember."
+        },
+        "zh": {
+          "act": "记下系统直接宕机时用户看到什么",
+          "where": "Preview 页签——断开连接，或把它指到一个不可达的地址",
+          "do": "让这次调用在网络层就失败，然后用用户的眼睛读那句回答。",
+          "see": "通常是一长段道歉，既没说接下来该干什么，也没说该找谁。",
+          "note": "这句「系统挂了」的话你自己在 Instructions 里写。平台默认那句，才是用户会记住的那句。"
+        }
+      }
+    ]
   },
   {
     "id": "deterministic-automation",
-    "order": 7,
+    "order": 8,
     "minutes": 45,
+    "products": ["Copilot Studio", "Power Automate"],
+    "features": ["Workflows", "Agent triggers", "Error handling"],
     "requires": [
       "system-actions"
     ],
     "en": {
-      "name": "Put the deterministic steps in a flow",
-      "teaches": "Calling Power Automate from an agent, and drawing the line between what the model decides and what the flow guarantees.",
-      "build": "A flow the agent calls, doing the part that must happen the same way every time.",
-      "objective": "Move the steps that must be identical every time out of the model and into a flow the agent calls.",
+      "name": "Put the deterministic steps in a workflow",
+      "teaches": "Calling a workflow from an agent, and drawing the line between what the model decides and what the workflow guarantees.",
+      "build": "A workflow the agent calls, doing the part that must happen the same way every time.",
+      "objective": "Move the steps that must be identical every time out of the model and into a workflow the agent calls.",
       "needs": {
         "skills": [
           "System actions"
         ],
         "tools": [
-          "Power Automate",
-          "Copilot Studio"
+          "Copilot Studio — Workflows",
+          "A workflow built with the ‘When an agent calls the workflow’ trigger"
         ],
         "materials": [
           "One process with a step that must not vary"
         ]
       },
       "steps": [
-        "Draw the line: list what the model may decide, and what the flow must guarantee.",
-        "Build the flow standalone and test it with fixed inputs first.",
+        "Draw the line: list what the model may decide, and what the workflow must guarantee.",
+        "Build the workflow standalone — with the ‘When an agent calls the workflow’ trigger — and test it with fixed inputs first.",
         "Call it from the agent, passing the values the agent gathered.",
-        "Handle the flow returning an error, not only a result.",
+        "Handle the workflow returning an error, not only a result.",
         "Confirm the deterministic part is identical across five runs."
       ],
       "summary": "The unreliable part and the guaranteed part are separate, which is what makes the whole thing auditable."
     },
     "zh": {
-      "name": "把确定性步骤放进流",
-      "teaches": "从 agent 调用 Power Automate，以及划清「模型决定什么」和「流保证什么」的界线。",
-      "build": "一条被 agent 调用的流，负责那些每次都必须一模一样的步骤。",
-      "objective": "把必须每次一致的步骤从模型里拿出来，放进一条 agent 调用的流。",
+      "name": "把确定性步骤放进工作流",
+      "teaches": "从 agent 调用工作流，以及划清「模型决定什么」和「工作流保证什么」的界线。",
+      "build": "一条被 agent 调用的工作流，负责那些每次都必须一模一样的步骤。",
+      "objective": "把必须每次一致的步骤从模型里拿出来，放进一条 agent 调用的工作流。",
       "needs": {
         "skills": [
           "系统动作"
         ],
         "tools": [
-          "Power Automate",
-          "Copilot Studio"
+          "Copilot Studio — Workflows",
+          "一条用「When an agent calls the workflow」触发器建的工作流"
         ],
         "materials": [
           "一个含有「不允许变」步骤的流程"
         ]
       },
       "steps": [
-        "先划线：列清楚哪些交给模型判断、哪些必须由流保证。",
-        "先把流单独建好，用固定输入测通。",
+        "先划线：列清楚哪些交给模型判断、哪些必须由工作流保证。",
+        "先把工作流单独建好——触发器选「When an agent calls the workflow」——用固定输入测通。",
         "从 agent 调用它，把 agent 收集到的值传进去。",
-        "处理流返回错误的情况，而不只是返回结果。",
+        "处理工作流返回错误的情况，而不只是返回结果。",
         "跑五次，确认确定性那部分每次完全一致。"
       ],
       "summary": "不可靠的部分和有保证的部分分开了——这正是整件事能被审计的前提。"
-    }
+    },
+    "walkthrough": [
+      {
+        "en": {
+          "act": "Draw the line before you build anything",
+          "where": "On paper, two columns",
+          "do": "List what the model may decide on the left, and what must happen identically every time on the right.",
+          "see": "The right-hand column is almost always shorter than people expect, and always contains the steps with a consequence.",
+          "note": "If a step appears in both columns you have not finished thinking. Pick one, and it is usually the right-hand side."
+        },
+        "zh": {
+          "act": "动手之前先把线画出来",
+          "where": "纸上，分两栏",
+          "do": "左边写哪些交给模型判断，右边写哪些必须每次一模一样。",
+          "see": "右边那栏往往比大家以为的短，而且里面装的都是「错了有后果」的步骤。",
+          "note": "有一步两栏都出现，说明你还没想清楚。选一边，而且通常选右边。"
+        }
+      },
+      {
+        "shot": "02-workflows",
+        "en": {
+          "act": "Build the workflow standalone and test it with fixed inputs",
+          "where": "Copilot Studio → Workflows — a new workflow using the ‘When an agent calls the workflow’ trigger",
+          "do": "Build only the right-hand column. Run it with values you type in yourself until it is boring.",
+          "see": "Identical output every run, and a run history you can point at.",
+          "note": "Do not connect it to the agent yet. A flow that is not reliable on fixed inputs will not become reliable by adding a language model in front of it."
+        },
+        "zh": {
+          "act": "先把流单独建好，用固定输入测通",
+          "where": "Copilot Studio → Workflows——新建一条，触发器选「When an agent calls the workflow」",
+          "do": "只建右边那栏的东西。自己手输值反复跑，跑到无聊为止。",
+          "see": "每次输出完全一致，而且有一份可以指给别人看的运行历史。",
+          "note": "先别接 agent。一条固定输入都不稳的流，不会因为前面挂了个大模型就变稳。"
+        }
+      },
+      {
+        "en": {
+          "act": "Call it from the agent",
+          "where": "Build → Tools → Add tool → your flow",
+          "do": "Add the flow as a tool, map its inputs to values the agent gathers, and describe it by when to run it.",
+          "see": "The agent collects the values in conversation, then hands them over and waits.",
+          "note": "Everything the agent gathered is now an input to something that will really happen. This is where a demo becomes a system."
+        },
+        "zh": {
+          "act": "从 agent 调用它",
+          "where": "Build → Tools → Add tool → 选你那条流",
+          "do": "把流挂成工具，入参映射到 agent 收集的值，描述写「什么时候该跑它」。",
+          "see": "agent 在对话里把值凑齐，然后交给流，并等在那里。",
+          "note": "agent 收集的东西从现在起会真的发生作用。演示就是在这一步变成系统的。"
+        }
+      },
+      {
+        "en": {
+          "act": "Make the flow fail and see what the agent says",
+          "where": "Preview tab, with the flow forced into its error path",
+          "do": "Return an error from the flow deliberately — a missing record, a rejected write — and read the agent's reply.",
+          "see": "Very often a cheerful confirmation that the thing was done. It was not.",
+          "note": "A flow that only returns success teaches the agent to lie. The error path is not an edge case here, it is half the contract."
+        },
+        "zh": {
+          "act": "让流失败一次，看 agent 怎么说",
+          "where": "Preview 页签，把流逐到错误分支上",
+          "do": "故意让流返回一个错误——记录不存在、写入被拒——然后读 agent 的回复。",
+          "see": "很多时候它会兴高采烈地告诉你「已经办好了」。它没办。",
+          "note": "一条只会返回成功的流，等于在教 agent 擒谎。错误分支在这里不是边界情况，它是一半的契约。"
+        }
+      },
+      {
+        "en": {
+          "act": "Run it five times and compare",
+          "where": "Copilot Studio → Workflows → the workflow's run history",
+          "do": "Put the same request through five times, phrased differently each time, and diff the deterministic part of the output.",
+          "see": "The wording of the agent's replies varies. The part the flow guarantees does not vary at all.",
+          "note": "That difference is the whole point, and it is what makes the process auditable. Show this run history to whoever owns the process."
+        },
+        "zh": {
+          "act": "跑五次，把结果对一对",
+          "where": "Copilot Studio → Workflows → 这条工作流的运行历史",
+          "do": "同一个诉求换五种说法各跑一次，把确定性那部分的输出逐字对比。",
+          "see": "agent 的措辞每次都不一样；流保证的那部分一字不差。",
+          "note": "这个差别就是这一课的全部意义，也是这个流程能被审计的原因。把这份运行历史给流程负责人看。"
+        }
+      }
+    ]
+  },
+  {
+    "id": "event-driven-workflows",
+    "order": 9,
+    "minutes": 45,
+    "products": ["Copilot Studio", "Microsoft Teams", "Outlook"],
+    "features": ["Workflows", "Scheduled triggers", "Event triggers", "Approvals", "AI actions", "Flow checker"],
+    "requires": ["deterministic-automation"],
+    "en": {
+      "name": "Run the work when nobody asks",
+      "teaches": "Building a workflow that starts itself — on a schedule or an event — and telling which of the three ways a process starts actually needs a conversation.",
+      "build": "A published workflow that runs on its own trigger, with an approval and an AI step inside it.",
+      "objective": "Build a workflow that starts on a schedule or an event, and say which parts of your process never needed a chat window at all.",
+      "needs": {
+        "skills": ["Deterministic automation"],
+        "tools": [
+          "Copilot Studio — the Workflows page",
+          "One connector you can actually reach: Outlook, Teams or SharePoint"
+        ],
+        "materials": ["One recurring task that runs to a clock or an inbox rather than to a question"]
+      },
+      "steps": [
+        "Write your process three times — started by a question, by an event, by the clock — and circle the starts that happen with nobody there.",
+        "Create it on the Workflows page rather than inside an agent, and describe it to Copilot as ‘When X happens, do Y’.",
+        "Open it in the designer and check every parameter and connection it guessed.",
+        "Add the two things a chat cannot do: an approval before anything irreversible, and an AI action that writes the message.",
+        "Clear Flow checker, test it in the designer, publish, and look at what Version history recorded.",
+        "Say the capacity rule out loud before anyone schedules it every five minutes."
+      ],
+      "summary": "Most of what people ask an agent to do never needed a conversation — it needed a trigger."
+    },
+    "zh": {
+      "name": "没人开口，它也照做",
+      "teaches": "建一个自己就会启动的工作流——按计划或按事件——并分得清一条业务的三种起点里，到底哪一种才真的需要对话。",
+      "build": "一个已发布、由自身触发器驱动的工作流，里面带一个审批和一个 AI 步骤。",
+      "objective": "建出一个按计划或按事件启动的工作流，并说得清你这条业务里哪些部分根本不需要聊天窗口。",
+      "needs": {
+        "skills": ["确定性自动化"],
+        "tools": [
+          "Copilot Studio —— Workflows 页面",
+          "一个你真能连上的连接器：Outlook、Teams 或 SharePoint"
+        ],
+        "materials": ["一件反复发生、跟着时钟或收件箱走而不是跟着提问走的活儿"]
+      },
+      "steps": [
+        "把同一条业务写三遍——有人问触发、事件触发、时间触发——把没人在场也会发生的那几种圈出来。",
+        "在 Workflows 页面里建，而不是在某个 agent 里面建；用「当 X 发生时，做 Y」把它讲给 Copilot 听。",
+        "在设计器里打开，逐个核对它替你猜的参数和连接。",
+        "补上聊天窗口做不到的两件事：不可逆动作前的审批，以及一个负责写正文的 AI 动作。",
+        "清掉 Flow checker 里的所有错误，在设计器里测一遍，发布，然后看 Version history 记下了什么。",
+        "在有人把它设成每五分钟跑一次之前，把用量规则当众念一遍。"
+      ],
+      "summary": "人们让 agent 做的事，大部分从来就不需要一场对话——它需要的是一个触发器。"
+    },
+    "walkthrough": [
+      {
+        "en": {
+          "act": "Write the same process three ways",
+          "where": "On paper, before you open anything",
+          "do": "Write your process three times: started by someone asking, started by an event, started by the clock. Circle the starts that happen when nobody is watching.",
+          "see": "Usually only one of the three is a conversation. The other two have been running on somebody's memory.",
+          "note": "This is the module in one page. An agent that answers well is worth less than a workflow that never had to be asked."
+        },
+        "zh": {
+          "act": "把同一条业务写三遍",
+          "where": "打开任何工具之前，先写在纸上",
+          "do": "把你的业务写三遍：有人来问、某个事件发生、时间到了。把没人盯着也会发生的那几种起点圈出来。",
+          "see": "三种里通常只有一种是对话。另外两种一直靠某个人记得。",
+          "note": "整节课就是这一页。一个答得好的 agent，价值比不上一条根本不用别人来问的工作流。"
+        }
+      },
+      {
+        "en": {
+          "act": "Create it where workflows live, not inside an agent",
+          "where": "Copilot Studio → Flows → the Workflows page → New agent flow",
+          "do": "Create it here rather than from inside one agent, so it has a life of its own and can be started by something other than a question.",
+          "see": "A workflow listed in its own right, not buried in one agent's tools.",
+          "note": "If a Power Automate cloud flow already does this, you can convert it instead — it has to be in a solution, and the conversion is one-way because the billing changes."
+        },
+        "zh": {
+          "act": "在工作流该待的地方建，而不是在 agent 里面建",
+          "where": "Copilot Studio → Flows → Workflows 页面 → New agent flow",
+          "do": "在这里建，而不是从某个 agent 内部建——它要有自己的生命，能被「提问」以外的东西启动。",
+          "see": "一条独立列出来的工作流，而不是埋在某个 agent 的工具列表里。",
+          "note": "如果已经有一条 Power Automate 云端流在干这件事，可以直接转换：前提是它在解决方案里，而且转换不可逆——因为计费方式变了。"
+        }
+      },
+      {
+        "en": {
+          "act": "Describe it as ‘When X happens, do Y’",
+          "where": "The Copilot chat panel on the Workflows page",
+          "do": "Name the trigger, the connector, the action and the exact channel in one sentence. Read the plan it proposes before you accept it, and correct it in chat.",
+          "type": "When an email with an invoice attached arrives in the finance mailbox, post the sender and subject to the Finance Approvals channel in Teams.",
+          "see": "A generated plan with a trigger and its actions, which you refine by saying ‘post to Announcements instead’ rather than by editing anything.",
+          "note": "Once you open it in the designer the chat panel can no longer change it. Get the plan right while it is still a conversation."
+        },
+        "zh": {
+          "act": "用「当 X 发生时，做 Y」把它说出来",
+          "where": "Workflows 页面上的 Copilot 对话面板",
+          "do": "一句话里说清触发器、连接器、动作，以及具体是哪个频道。先读它给出的方案，再决定接不接受；要改就在对话里改。",
+          "type": "当财务邮箱收到带发票附件的邮件时，把发件人和主题发到 Teams 的 Finance Approvals 频道。",
+          "see": "一份带触发器和动作的方案。改它靠说「改发到 Announcements」，不靠手动编辑。",
+          "note": "一旦在设计器里打开，对话面板就再也改不动它了。趁它还是一场对话，先把方案谈对。"
+        }
+      },
+      {
+        "en": {
+          "act": "Check every parameter it guessed",
+          "where": "The designer → select a card → Parameters",
+          "do": "Open each card and confirm the connection, the mailbox, the channel, the list.",
+          "see": "At least one parameter pointing at the wrong channel, list or account — that is the normal result, not a sign of a bad prompt.",
+          "note": "Copilot configures; it does not verify. Whoever publishes the flow owns every value in it."
+        },
+        "zh": {
+          "act": "逐个核对它替你猜的参数",
+          "where": "设计器 → 点开某个卡片 → Parameters",
+          "do": "逐个卡片打开，确认连接、邮箱、频道、列表都是你要的那个。",
+          "see": "至少会有一个参数指错了频道、列表或账号——这是正常结果，不代表你提示词写得不好。",
+          "note": "Copilot 负责配置，不负责核对。谁发布这条流，谁就为里面每一个值负责。"
+        }
+      },
+      {
+        "en": {
+          "act": "Add the two things a chat window cannot do",
+          "where": "Insert a new action → Human in the loop, then AI capabilities",
+          "do": "Put an approval in front of anything irreversible, and use an AI action to write the message in your own words instead of a fixed template.",
+          "see": "A flow that stops and waits for a person, and still writes like one.",
+          "note": "Here the model is a step inside the process rather than the thing running it. That inversion is what makes an unattended workflow safe to leave switched on."
+        },
+        "zh": {
+          "act": "补上聊天窗口做不到的两件事",
+          "where": "Insert a new action → Human in the loop，然后是 AI capabilities",
+          "do": "在任何不可逆的动作前放一个审批；用一个 AI 动作把正文写成人话，而不是套固定模板。",
+          "see": "一条会停下来等人的流程，而且写出来的东西仍然像人写的。",
+          "note": "在这里，模型是流程里的一步，而不是跑这条流程的那个东西。正是这个反转，让一条无人值守的工作流敢一直开着。"
+        }
+      },
+      {
+        "en": {
+          "act": "Flow checker, test, publish — then read the meter",
+          "where": "Top of the canvas → Flow checker, Test, Publish, Version history",
+          "do": "Clear every error, test it manually and read the output of each action, then publish and open Version history.",
+          "see": "A green check per action, a published version in the history, and a workflow that now runs whether or not anyone opens Copilot Studio.",
+          "note": "A flow with errors cannot be published at all. Designer and test-chat runs are free; every action in a published run consumes Copilot Studio capacity — which is the sentence to say before somebody schedules it every five minutes."
+        },
+        "zh": {
+          "act": "Flow checker、测试、发布——然后看一眼计量表",
+          "where": "画布顶部 → Flow checker、Test、Publish、Version history",
+          "do": "清掉所有错误，手动测一遍并逐个动作看输出，然后发布，再打开 Version history。",
+          "see": "每个动作一个绿色对勾、历史里多出一个已发布版本，以及一条不管有没有人打开 Copilot Studio 都会照跑的工作流。",
+          "note": "有错误的流根本发布不了。设计器和测试对话里跑不计费；已发布运行里的每一个动作都消耗 Copilot Studio 用量——这句话要赶在有人把它设成每五分钟一次之前说。"
+        }
+      }
+    ]
   },
   {
     "id": "document-extraction",
-    "order": 8,
+    "order": 10,
     "minutes": 50,
+    "products": ["Power Automate", "AI Builder"],
+    "features": ["Document processing", "Confidence threshold", "Exception routing"],
     "requires": [
       "deterministic-automation"
     ],
@@ -709,12 +1330,96 @@
         "在全量样本上算准确率，不是只算干净的那一半。"
       ],
       "summary": "你拿到了「多大比例需要人介入」这个数——也就是整个投产比的命根子。"
-    }
+    },
+    "walkthrough": [
+      {
+        "en": {
+          "act": "Extract from a clean document and check every field by hand",
+          "where": "Power Automate → your flow → the extraction action",
+          "do": "Run one tidy document through and compare each returned field against the paper.",
+          "see": "Values plus a confidence score per field. The scores matter more than the values here.",
+          "note": "Check every field, including the ones you assume are trivial. Dates and totals are where it quietly goes wrong."
+        },
+        "zh": {
+          "act": "先跑一份干净的，逐个字段人工核对",
+          "where": "Power Automate → 你的流 → 抽取动作",
+          "do": "拿一份干净单据跑一遍，把返回的每个字段和原件对一遍。",
+          "see": "返回的不只是值，每个字段还带置信度。在这一课里，置信度比值重要。",
+          "note": "每个字段都要核，包括你觉得不会错的那些。日期和金额合计恰恰是您默默出错的地方。"
+        }
+      },
+      {
+        "en": {
+          "act": "Run the worst document you have",
+          "where": "The same flow, a scanned, stamped, handwritten or foreign-language original",
+          "do": "Feed it the document nobody wanted to include in the sample, and write down exactly which fields broke.",
+          "see": "Some fields are wrong with high confidence. Those are the dangerous ones.",
+          "note": "A wrong value with a low score is a workflow problem. A wrong value with a high score is a business risk — count them separately."
+        },
+        "zh": {
+          "act": "再跑你手上最差的那份",
+          "where": "同一条流，换扫描件、盖章的、手写的或外文的原件",
+          "do": "把那份没人想放进样本里的单据嗂进去，把错的字段逐个记下。",
+          "see": "有些字段错了，置信度还很高。这些才是危险的。",
+          "note": "低分且错，是流程问题；高分且错，是业务风险——两者必须分开统计。"
+        }
+      },
+      {
+        "en": {
+          "act": "Set the confidence line and route below it to a person",
+          "where": "Power Automate → a condition on the confidence score",
+          "do": "Pick a threshold, branch on it, and send anything underneath to a human queue.",
+          "see": "Two paths out of one extraction — straight through, and to a person.",
+          "note": "The threshold is a business decision, not a technical one. Whoever carries the cost of a mistake sets the number."
+        },
+        "zh": {
+          "act": "定下置信度那条线，低于它的转人",
+          "where": "Power Automate → 在置信度上加一个条件分支",
+          "do": "定一个阈值，按它分支，低于这条线的全部进人工队列。",
+          "see": "一次抽取，两条出路：直通，和转人。",
+          "note": "阈值是业务决策，不是技术决策。谁承担出错的代价，谁定这个数。"
+        }
+      },
+      {
+        "en": {
+          "act": "Write the exception path from the reviewer's side",
+          "where": "The approval or task the human actually receives",
+          "do": "Show the reviewer the document, the extracted values and the field in doubt, in one place.",
+          "see": "A decision that takes seconds, instead of one that requires opening the source system.",
+          "note": "If the reviewer has to go and look the document up, your exception rate will quietly become your abandonment rate."
+        },
+        "zh": {
+          "act": "站在审核人那一边把异常路径写出来",
+          "where": "人真正收到的那条审批或任务",
+          "do": "把原件、抽出的值、以及可疑的那个字段，放在同一个地方给他看。",
+          "see": "一个几秒钟就能做完的判断，而不是得去开另一个系统才能做的判断。",
+          "note": "审核的人要是得自己去翻单据，你的异常率会您不声不响地变成弃单率。"
+        }
+      },
+      {
+        "en": {
+          "act": "Measure accuracy across the whole sample",
+          "where": "Your 20–30 documents, the messy ones included",
+          "do": "Run the lot, count how many went straight through, and report that percentage.",
+          "see": "A number materially lower than the clean-document run suggested.",
+          "note": "That percentage is the business case. Quoting the clean-half figure is how a pilot gets approved and then fails in month two."
+        },
+        "zh": {
+          "act": "在全量样本上算准确率",
+          "where": "你那 20–30 份单据，包括乱七八糟的那些",
+          "do": "全跑一遍，数清楚有多少是直通的，把这个比例报出来。",
+          "see": "一个明显低于「干净单据那一跑」的数。",
+          "note": "这个比例就是商业论证。拿干净那一半的数去报，项目能批下来，然后在第二个月死掉。"
+        }
+      }
+    ]
   },
   {
     "id": "human-approval",
-    "order": 9,
+    "order": 11,
     "minutes": 35,
+    "products": ["Power Automate", "Microsoft Teams", "Outlook"],
+    "features": ["Approvals", "Timeout handling", "Audit trail"],
     "requires": [
       "deterministic-automation"
     ],
@@ -769,12 +1474,96 @@
         "确认决定、审批人、时间戳都落在了找得到的地方。"
       ],
       "summary": "你有了一道由具体的人负责的闸，以及它被用过的证据。"
-    }
+    },
+    "walkthrough": [
+      {
+        "en": {
+          "act": "Name what the agent may do alone",
+          "where": "On paper, before you touch the flow",
+          "do": "Split the actions into two lists: reversible and cheap on one side, everything else on the other.",
+          "see": "The second list is short, and every entry on it has a name attached to who would be blamed.",
+          "note": "Approve-everything is the same failure as approve-nothing. If every step needs a click, people rubber-stamp and the gate stops meaning anything."
+        },
+        "zh": {
+          "act": "先列清楚哪些 agent 可以自己做",
+          "where": "碰流之前，先写在纸上",
+          "do": "把动作分两列：可撤销且代价小的一列，其余的一列。",
+          "see": "第二列很短，而且每一条背后都能对应到一个「出事了找谁」的名字。",
+          "note": "什么都要审，和什么都不审，是同一种失败。步步要点头，人就变成盖章机，这道闸就不再有意义。"
+        }
+      },
+      {
+        "en": {
+          "act": "Insert the approval before the irreversible step",
+          "where": "Power Automate → an approval action, immediately before the write",
+          "do": "Put the gate in front of the action itself, not in front of the whole flow.",
+          "see": "The run pauses. The agent tells the user it is waiting, and on whom.",
+          "note": "Gate the action, not the conversation. Approving a request before anyone knows what it will do is theatre."
+        },
+        "zh": {
+          "act": "把审批插在不可逆的那一步之前",
+          "where": "Power Automate → 写入动作紧前加一个审批动作",
+          "do": "闸口卡在那个动作前面，不是卡在整条流前面。",
+          "see": "运行停住了。agent 会告诉用户它在等，而且在等谁。",
+          "note": "卡动作，不是卡对话。在还没人知道它要干什么之前先审一道，那是演戏。"
+        }
+      },
+      {
+        "en": {
+          "act": "Give the approver enough to decide without leaving",
+          "where": "The approval card in Teams or Outlook",
+          "do": "Put the request, the values, the amount and who asked into the card itself.",
+          "see": "A decision made from the card, with no other system opened.",
+          "note": "Time the round trip. An approval that needs a second system open is where your process quietly loses its whole saving."
+        },
+        "zh": {
+          "act": "让审批人不用离开就能拍板",
+          "where": "Teams 或 Outlook 里的那张审批卡",
+          "do": "把诉求、具体值、金额、谁发起的，全放到卡上。",
+          "see": "看完卡就能做决定，一个其他系统都不用开。",
+          "note": "给这个来回计个时。需要再开一个系统的审批，就是你这个流程把节省下来的时间全赔回去的地方。"
+        }
+      },
+      {
+        "en": {
+          "act": "Handle rejection and timeout, not only approval",
+          "where": "Power Automate → the branches after the approval",
+          "do": "Reject one request and let another expire. Decide what the agent tells the user in each case.",
+          "see": "Two paths most builds never write, and one of them — timeout — usually leaves the user with no answer at all.",
+          "note": "Timeout is the common one in real life. Approvers go on holiday; nobody rejects, they just never look."
+        },
+        "zh": {
+          "act": "驳回和超时也得处理，不能只处理通过",
+          "where": "Power Automate → 审批之后的各个分支",
+          "do": "驳回一单，再让另一单放到超时。分别想清楚 agent 该怎么告诉用户。",
+          "see": "两条大多数人从来不写的路径；而其中超时那条，通常让用户什么也等不到。",
+          "note": "现实里最常发生的就是超时。审批人休假去了——没人驳回，只是永远没人看。"
+        }
+      },
+      {
+        "en": {
+          "act": "Confirm the record is somewhere findable",
+          "where": "Wherever the decision is written — a table, a log, the run history",
+          "do": "Find one approval you made, and check the decision, the approver and the timestamp are all there.",
+          "see": "Three facts in one place, retrievable by somebody who was not in the room.",
+          "note": "An approval nobody can find later did not happen. This record is the difference between a control and a habit."
+        },
+        "zh": {
+          "act": "确认记录落在了找得到的地方",
+          "where": "决定被写到的地方——数据表、日志、或运行历史",
+          "do": "回头找一条你刚才审批的记录，看决定、审批人、时间戳是不是都在。",
+          "see": "三件事在同一处，而且一个当时不在场的人能自己查出来。",
+          "note": "事后找不到的审批，等于没发生。这条记录就是「控制措施」和「习惯做法」的差别。"
+        }
+      }
+    ]
   },
   {
     "id": "structured-persistence",
-    "order": 10,
+    "order": 12,
     "minutes": 45,
+    "products": ["Dataverse", "Copilot Studio"],
+    "features": ["Tables", "Row-level security", "Record lifecycle"],
     "requires": [
       "system-actions"
     ],
@@ -829,12 +1618,96 @@
         "想清楚：它所属的流程结束后，这条记录怎么办。"
       ],
       "summary": "agent 能跨会话记住事情了，而且这份记忆的权限是明确设的，不是碰巧的。"
-    }
+    },
+    "walkthrough": [
+      {
+        "en": {
+          "act": "Model one table, and only the fields you will query",
+          "where": "Your Dataverse environment → a new table",
+          "do": "Create the table with the columns the agent will read or write. Resist adding the ones you might want later.",
+          "see": "A short table — usually four to six columns for a first build.",
+          "note": "Every unused column is a permission decision you will have to make later, on a field nobody remembers the purpose of."
+        },
+        "zh": {
+          "act": "建一张表，只放你会查的字段",
+          "where": "你的 Dataverse 环境 → 新建表",
+          "do": "只建 agent 会读或写的列。忍住那些「以后可能用得上」的。",
+          "see": "一张很短的表——第一版通常四到六列。",
+          "note": "每多一个用不上的列，以后就多一个权限决策要做——而那时已经没人记得它是干什么的了。"
+        }
+      },
+      {
+        "en": {
+          "act": "Write a record, then read it back in a later conversation",
+          "where": "Build → Tools → the create-row and get-row actions on that table",
+          "do": "Have the agent write something in one chat, then start a fresh chat and ask about it.",
+          "see": "It answers from the table, not from the conversation — which the previous chat could not have done.",
+          "note": "Always test the read in a new chat. Reading it back in the same conversation proves the model remembered, not that anything was stored."
+        },
+        "zh": {
+          "act": "写一条，然后在新对话里读回来",
+          "where": "Build → Tools → 这张表上的新建行与获取行动作",
+          "do": "先在一段对话里让 agent 写一条，再新开一段对话问它。",
+          "see": "它是从表里答的，不是从对话里答的——而上一段对话做不到这件事。",
+          "note": "读回来这一步必须新开对话。在同一段对话里读到，只能证明模型记得，不能证明存下来了。"
+        }
+      },
+      {
+        "en": {
+          "act": "Add a second user and check what they see",
+          "where": "Share the agent with a colleague, then have them ask the same question",
+          "do": "Ask them to query a record that belongs to you.",
+          "see": "Either they see it and should not, or they are refused and the agent explains itself badly. Both are findings.",
+          "note": "Do this with a real second account, not by imagining it. Row-level permission is the single thing a spreadsheet cannot fake."
+        },
+        "zh": {
+          "act": "拉一个第二个用户进来，看他看得到什么",
+          "where": "把 agent 共享给一位同事，让他问同样的问题",
+          "do": "让他去查一条属于你的记录。",
+          "see": "要么他看到了而他不该看到，要么他被拒了但 agent 解释得很糟。两种都是收获。",
+          "note": "必须用真的第二个账号试，不要在脑子里想。行级权限是表格唯一装不出来的那件事。"
+        }
+      },
+      {
+        "en": {
+          "act": "Query by something other than the key",
+          "where": "Preview tab",
+          "do": "Ask a question that needs a filter on a normal column — by status, by date, by owner.",
+          "see": "Either it works, or you discover the table was designed around how you store rather than how people ask.",
+          "note": "People never ask by primary key. If the only fast path is the key, the table is modelled for the database and not for the agent."
+        },
+        "zh": {
+          "act": "用主键以外的条件查一次",
+          "where": "Preview 页签",
+          "do": "问一个需要按普通列筛选的问题——按状态、按日期、按负责人。",
+          "see": "要么顺利，要么你会发现这张表是按「怎么存」设计的，不是按「人怎么问」设计的。",
+          "note": "没有人会按主键提问。如果只有主键路径跑得动，这张表建给数据库看的，不是建给 agent 用的。"
+        }
+      },
+      {
+        "en": {
+          "act": "Decide what happens to the record at the end",
+          "where": "On paper, with whoever owns the process",
+          "do": "Say how long it is kept, who may delete it, and what happens when the person it refers to leaves.",
+          "see": "Usually an uncomfortable silence, and then a policy nobody had written down.",
+          "note": "An agent that writes records has created a retention obligation. Ask this now, not the first time somebody asks to be forgotten."
+        },
+        "zh": {
+          "act": "想清楚这条记录最后怎么办",
+          "where": "和流程负责人一起，写在纸上",
+          "do": "说清楚存多久、谁能删、以及记录里那个人离职了怎么办。",
+          "see": "通常先是一阵尴尬的沉默，然后出来一条没人写下来过的规定。",
+          "note": "一个会写记录的 agent，就已经制造了一份保存义务。现在问，不要等到第一个人来要求删除自己的数据。"
+        }
+      }
+    ]
   },
   {
     "id": "deployment-channels",
-    "order": 13,
+    "order": 16,
     "minutes": 30,
+    "products": ["Copilot Studio", "Microsoft Teams"],
+    "features": ["Channels", "Publish", "Consent prompts"],
     "requires": [
       "agent-instructions"
     ],
@@ -889,18 +1762,103 @@
         "发布一次修改，确认他什么都不用做就能拿到。"
       ],
       "summary": "agent 现在是别人的工具了——这是它能产生价值的第一个时刻。"
-    }
+    },
+    "walkthrough": [
+      {
+        "en": {
+          "act": "Publish, and wait for it to finish",
+          "where": "The agent toolbar → Publish",
+          "do": "Publish and let it complete before you touch anything else.",
+          "see": "A published version. Until now everything you built existed only for you.",
+          "note": "Saving and publishing are different acts. Every later confusion in this module comes from someone testing a change they never published."
+        },
+        "zh": {
+          "act": "发布，并等它真的完成",
+          "where": "agent 工具栏 → Publish",
+          "do": "发布，等它跑完，其间什么都别改。",
+          "see": "一个已发布的版本。在这之前，你建的一切只存在于你自己眼前。",
+          "note": "保存和发布是两回事。这一课后面所有的困惑，都来自有人在测一个他从没发布过的改动。"
+        }
+      },
+      {
+        "shot": "02-channels",
+        "en": {
+          "act": "Put it where the work already happens",
+          "where": "Customize publish channels",
+          "do": "Pick the channel your users are already in: a shareable demo website link, an embedded web app, or Teams and Microsoft 365.",
+          "see": "The published state and the time of the last publish, with each channel listed as a separate decision.",
+          "note": "A channel is a decision about adoption, not a technical step. An agent that lives behind a bookmark gets used for a fortnight."
+        },
+        "zh": {
+          "act": "把它放到活本来就发生的地方",
+          "where": "Customize publish channels",
+          "do": "选用户本来就在的那个渠道：可分享的演示网站链接、嵌进网站的 Web app、或者 Teams 与 Microsoft 365。",
+          "see": "顶上写着发布状态和最后一次发布时间，每个渠道各占一条，各是一个独立决定。",
+          "note": "选渠道是采纳决策，不是技术步骤。藏在一个书签后面的 agent，顶多被用两周。"
+        }
+      },
+      {
+        "en": {
+          "act": "Share it with one person and watch them open it",
+          "where": "Share → one colleague who has not seen it before",
+          "do": "Send it with no instructions at all, and watch over their shoulder without helping.",
+          "see": "Where they hesitate, what they type first, and how far their first question is from your test questions.",
+          "note": "Say nothing. The urge to explain is the strongest signal you have that something needs fixing rather than explaining."
+        },
+        "zh": {
+          "act": "发给一个人，看着他打开",
+          "where": "Share → 一位没见过它的同事",
+          "do": "一句说明也不给就发过去，站在他后面看，不插手。",
+          "see": "他在哪一步犹豫、第一句打了什么、以及那句话离你的测试问题有多远。",
+          "note": "忍住别说话。你想解释的那一刻，就是那地方该改而不是该解释的最强信号。"
+        }
+      },
+      {
+        "en": {
+          "act": "Note every consent prompt they hit",
+          "where": "Their screen, not yours",
+          "do": "Write down each permission or connection prompt, and who would have to approve it at scale.",
+          "see": "Prompts you never saw, because you had already consented weeks ago.",
+          "note": "This is the most commonly missed step in the whole programme. The builder's account is the worst possible test of what a user experiences."
+        },
+        "zh": {
+          "act": "把他碰到的每个授权弹窗记下来",
+          "where": "看他的屏幕，不是你的",
+          "do": "逐个记下权限或连接弹窗，并写下规模化之后这些该由谁批。",
+          "see": "一堆你从来没见过的弹窗——因为你几周前就已经同意过了。",
+          "note": "这是整个课程里最容易漏掉的一步。用建设者的账号去判断用户体验，是最差的测法。"
+        }
+      },
+      {
+        "en": {
+          "act": "Publish a change and confirm it arrives on its own",
+          "where": "Build → make one visible change → Publish",
+          "do": "Change something they will notice, publish, and ask them to look again without reinstalling anything.",
+          "see": "The change is simply there.",
+          "note": "Prove this once, in front of them. It is the difference between something you maintain and something they have to be re-onboarded onto."
+        },
+        "zh": {
+          "act": "发布一次修改，确认它自己就到了",
+          "where": "Build → 改一处看得见的地方 → Publish",
+          "do": "改一个他会注意到的地方，发布，让他什么都不重装地再看一眼。",
+          "see": "改动就在那儿了。",
+          "note": "当着他的面验一次。这就是「你维护的东西」和「每次都要重新培训一遍的东西」之间的差别。"
+        }
+      }
+    ]
   },
   {
     "id": "governance-guardrails",
-    "order": 14,
+    "order": 17,
     "minutes": 40,
+    "products": ["Power Platform admin center"],
+    "features": ["Environments", "DLP policies", "Connector governance", "MCP governance"],
     "requires": [],
     "en": {
       "name": "Keep it inside the guardrails",
-      "teaches": "Environments, DLP policy and roles: where an agent is allowed to live and which connectors it may touch.",
+      "teaches": "Environments, data policy and the agent-specific controls: where an agent is allowed to live, which connectors and MCP servers it may touch, and which knowledge and skills its makers may use.",
       "build": "A clear answer to \"where does this run, and who decided it could\" — before someone from security asks.",
-      "objective": "Be able to say where an agent is allowed to live, which connectors it may touch, and who decided that.",
+      "objective": "Be able to say where an agent is allowed to live, which connectors and MCP servers it may touch, which knowledge and skills its makers may use, and who decided all of that.",
       "needs": {
         "skills": [
           "None — this one is a conversation with whoever owns policy"
@@ -909,23 +1867,24 @@
           "Power Platform admin centre"
         ],
         "materials": [
-          "Your environment list and the DLP policy that applies"
+          "Your environment list, and the data policy that applies"
         ]
       },
       "steps": [
         "Find out which environments exist and what each one is for.",
-        "Read the DLP policy that applies to the environment you build in.",
-        "List the connectors your scenario needs and check each against it.",
-        "Agree who approves a new connector, and how long that takes.",
+        "Read the data policy that applies to the environment you build in.",
+        "Check the connectors and MCP servers your scenario needs against it, one by one.",
+        "Check the two agent-specific switches: which knowledge sources makers may attach, and which kinds of skill an agent may reference.",
+        "Agree who approves a new connector or MCP server, and how long that takes.",
         "Write down where this agent runs, and who signed off."
       ],
       "summary": "You can answer the security question before it is asked — usually what decides whether the thing ships at all."
     },
     "zh": {
       "name": "让它待在护栏里",
-      "teaches": "环境、DLP 策略与角色：agent 允许待在哪、能碰哪些连接器。",
+      "teaches": "环境、数据策略，以及针对 agent 的那几个开关：agent 允许待在哪、能碰哪些连接器与 MCP server、制作者能用哪些知识和技能。",
       "build": "对「这东西跑在哪、谁批准的」有个明确答案——赶在安全同事来问之前。",
-      "objective": "能说清楚 agent 允许待在哪、能碰哪些连接器、以及这是谁定的。",
+      "objective": "能说清楚 agent 允许待在哪、能碰哪些连接器与 MCP server、制作者能用哪些知识和技能、以及这些都是谁定的。",
       "needs": {
         "skills": [
           "无——这一课是和管策略的人聊一次"
@@ -934,23 +1893,109 @@
           "Power Platform 管理中心"
         ],
         "materials": [
-          "你们的环境清单，以及适用的 DLP 策略"
+          "你们的环境清单，以及适用的数据策略"
         ]
       },
       "steps": [
         "搞清楚现在有哪些环境，各自是干什么的。",
-        "读一遍你要建的那个环境适用的 DLP 策略。",
-        "列出你的场景需要的连接器，逐个对照策略检查。",
-        "谈定：新连接器由谁批、大概要多久。",
+        "读一遍你要建的那个环境适用的数据策略。",
+        "把场景需要的连接器和 MCP server 逐个对照策略检查。",
+        "把两个针对 agent 的开关也看了：制作者能接哪类知识源、agent 能引用哪类技能。",
+        "谈定：新连接器或新 MCP server 由谁批、大概要多久。",
         "把「这个 agent 跑在哪、谁签的字」写下来。"
       ],
       "summary": "安全的问题你能在被问之前就答上——而这通常就决定了东西能不能上线。"
-    }
+    },
+    "walkthrough": [
+      {
+        "en": {
+          "act": "Find out which environments exist and what each is for",
+          "where": "Power Platform admin centre → Manage → Environments",
+          "do": "List them with their type and purpose, and mark the one you have been building in.",
+          "see": "Often more environments than anyone expected, and at least one nobody can account for.",
+          "note": "Building in the default environment is the single most common governance mistake. It usually has the loosest policy and the widest audience."
+        },
+        "zh": {
+          "act": "先搞清楚有哪些环境、各自干什么",
+          "where": "Power Platform 管理中心 → 环境",
+          "do": "把环境连同类型和用途列出来，并标出你一直在哪个里面建。",
+          "see": "环境往往比大家以为的多，而且至少有一个没人说得清是干嘛的。",
+          "note": "在默认环境里建，是最常见的治理错误。那里通常策略最松、人最多。"
+        }
+      },
+      {
+        "shot": "02-dlp",
+        "en": {
+          "act": "Read the data policy that applies to you",
+          "where": "Power Platform admin centre → Security → Data and privacy",
+          "do": "Open Data policy and read which group each connector sits in. Then read the three controls next to it — advanced connector policies, knowledge sources for agents, and skills in Copilot Studio.",
+          "see": "Connectors sorted into business, non-business and blocked — and separate switches deciding which MCP servers may be called, which knowledge sources makers may attach, and which kinds of skill an agent may reference.",
+          "note": "Those last three are the new-agent controls, and most governance conversations have not caught up with them yet. A connector policy alone no longer describes what your agents can reach."
+        },
+        "zh": {
+          "act": "把适用于你的数据策略读一遍",
+          "where": "Power Platform 管理中心 → Security → Data and privacy",
+          "do": "打开 Data policy，看清每个连接器被分在哪一组。然后把旁边三个开关也读了——高级连接器策略、agent 的知识源、以及 Copilot Studio 中的技能。",
+          "see": "连接器被分成业务、非业务、禁用三类；旁边另有开关分别决定：能调哪些 MCP server、制作者能接哪类知识源、agent 能引用哪类技能。",
+          "note": "后面那三个才是新形态 agent 的管控点，而大多数治理讨论还停在连接器上。只看连接器策略，已经描述不了你的 agent 能碰到什么。"
+        }
+      },
+      {
+        "en": {
+          "act": "Check your scenario's connectors and MCP servers against it, one by one",
+          "where": "Your build, alongside the policy",
+          "do": "List every connector, MCP server and knowledge source your agent and its workflows use, and find each one in the policy.",
+          "see": "Usually one that sits in the wrong group, and it is usually the one carrying the customer data.",
+          "note": "Do this while the build is small. Discovering a blocked connector after the pilot is a re-architecture, not a ticket."
+        },
+        "zh": {
+          "act": "把你场景里的连接器和 MCP server 逐个对照一遍",
+          "where": "你的方案，对着策略看",
+          "do": "把 agent 和它的工作流用到的每一个连接器、MCP server 和知识源列出来，在策略里逐个找到。",
+          "see": "总会有一个分错了组，而且通常就是拉着客户数据的那个。",
+          "note": "趁方案还小就做。试点之后才发现连接器被禁，那是重构，不是报个工单。"
+        }
+      },
+      {
+        "en": {
+          "act": "Agree who approves a new connector, and how long it takes",
+          "where": "With whoever owns the policy",
+          "do": "Get a name and a lead time. Both, in writing.",
+          "see": "Frequently a lead time longer than the pilot you just planned.",
+          "note": "That lead time belongs on your plan, not in your head. It is the most common reason a technically finished agent does not ship."
+        },
+        "zh": {
+          "act": "谈定新连接器由谁批、要多久",
+          "where": "和管策略的人一起",
+          "do": "要到一个名字和一个时长。两样都要，要写下来的。",
+          "see": "很多时候那个时长比你刚排的整个试点还长。",
+          "note": "这个时长要进计划表，不能只在你脑子里。它是「技术上已经做完了却上不了线」最常见的原因。"
+        }
+      },
+      {
+        "en": {
+          "act": "Write down where this agent runs and who signed it off",
+          "where": "One line, kept with the build",
+          "do": "Record the environment, the policy it falls under, and the person who approved it.",
+          "see": "One sentence you can produce on demand.",
+          "note": "Write it now, while you still remember. Nobody has ever reconstructed this six months later without a very unpleasant meeting."
+        },
+        "zh": {
+          "act": "把「跑在哪、谁签的字」写下来",
+          "where": "一行字，和方案放在一起",
+          "do": "记下环境、适用的策略、以及批准的人。",
+          "see": "一句随时能拿出来的话。",
+          "note": "现在就写，趁还记得。六个月后重建这一句话的人，没有一个是不开一场难堆的会就搞定的。"
+        }
+      }
+    ]
   },
   {
     "id": "operational-measurement",
-    "order": 15,
+    "order": 18,
     "minutes": 35,
+    "products": ["Copilot Studio"],
+    "features": ["Analytics", "Session transcripts", "Baseline metrics"],
     "requires": [
       "agent-instructions"
     ],
@@ -1003,12 +2048,97 @@
         "报数字的时候，把前提和局限写在同一句话里。"
       ],
       "summary": "你有了一个在闸门上站得住的数字，以及支撑它的原始记录。"
-    }
+    },
+    "walkthrough": [
+      {
+        "en": {
+          "act": "Confirm you have a before-number",
+          "where": "Your own records, not the product",
+          "do": "Find what this process cost before the agent existed: time per case, volume, or error rate.",
+          "see": "Either a number, or the realisation that nobody measured.",
+          "note": "No baseline, no module. Stop here and go and measure the manual process for a week — that is a better use of the session than any dashboard."
+        },
+        "zh": {
+          "act": "先确认你有「改之前」的数",
+          "where": "看你们自己的记录，不是看产品",
+          "do": "找出 agent 出现之前这个流程的代价：单件耗时、量、或出错率。",
+          "see": "要么拿到一个数，要么意识到根本没人量过。",
+          "note": "没有基线就不要上这课。停在这里，先把人工流程量一周——那比任何看板都有用。"
+        }
+      },
+      {
+        "en": {
+          "act": "Pick the two measures that would move",
+          "where": "On paper",
+          "do": "Choose one measure of value and one of trust — something saved, and something like escalation or abandonment.",
+          "see": "Two numbers. Not eight.",
+          "note": "Volume of conversations is not one of them. It measures curiosity in week one and nothing at all by week six."
+        },
+        "zh": {
+          "act": "选两个「真有用就会动」的指标",
+          "where": "写在纸上",
+          "do": "一个算价值，一个算信任——前者是省下了什么，后者像转人率或弃用率。",
+          "see": "两个数。不是八个。",
+          "note": "会话量不算。它第一周量的是好奇心，到第六周什么也量不到。"
+        }
+      },
+      {
+        "shot": "03-monitor",
+        "en": {
+          "act": "Read the transcripts, not only the counts",
+          "where": "Monitor tab",
+          "do": "Set the time range, then use Download Sessions and read twenty real conversations end to end, including the short ones.",
+          "see": "Conversation sessions, reactions, average DAU, credits consumed, and tool use — all of which are counts. The sessions themselves are the part worth your hour.",
+          "note": "An hour of transcripts beats a month of dashboards. The short abandoned sessions are the most informative and the easiest to skip."
+        },
+        "zh": {
+          "act": "读会话原文，不要只看计数",
+          "where": "Monitor 页签",
+          "do": "先选时间范围，然后用 Download Sessions 把会话导出，完整读二十段，包括那些很短的。",
+          "see": "会话数、反馈数、日活、消耗的 credits、工具调用——都是计数。值得花一小时的是会话本身。",
+          "note": "读一小时原文胜过看一个月报表。那些短短的、中途跑掉的会话信息量最大，也最容易被跳过。"
+        }
+      },
+      {
+        "en": {
+          "act": "Classify what it answered badly",
+          "where": "The transcripts you just read",
+          "do": "Sort the bad answers into missing knowledge, wrong tool, or out of scope.",
+          "see": "Three piles of very different sizes, and each points at a different module.",
+          "note": "Do not fix them as you go. Classify first — one pile is usually most of the volume, and it is rarely the one you were about to fix."
+        },
+        "zh": {
+          "act": "把答得差的分好类",
+          "where": "你刚读的那批原文",
+          "do": "把差回答分三堆：知识缺失、工具选错、本来就不归它管。",
+          "see": "三堆大小差很多，而且每一堆指向一个不同的模块。",
+          "note": "别边看边修。先分类——总有一堆占了大部分量，而那往往不是你正要动手修的那一堆。"
+        }
+      },
+      {
+        "en": {
+          "act": "Report the number and its caveat in one sentence",
+          "where": "Whatever you take to the gate",
+          "do": "State the movement against the baseline, the sample it rests on, and what it does not cover — together.",
+          "see": "One sentence that survives being challenged.",
+          "note": "Splitting the caveat into a later slide is how credibility is lost. Someone always finds it, and then the number goes with it."
+        },
+        "zh": {
+          "act": "数字和前提写在同一句话里",
+          "where": "你要拿到闸门上的东西",
+          "do": "把相对基线的变化、样本量、以及它盖不住什么，一次说完。",
+          "see": "一句经得起追问的话。",
+          "note": "把前提拆到后面的页去说，是丢掉可信度的典型方式。总会有人翻到那一页，然后那个数字也一并没了。"
+        }
+      }
+    ]
   },
   {
     "id": "structured-data-query",
-    "order": 6,
+    "order": 7,
     "minutes": 50,
+    "products": ["Copilot Studio", "Dataverse", "Excel"],
+    "features": ["Tools", "Connectors", "Query filters"],
     "requires": [
       "system-actions"
     ],
@@ -1063,12 +2193,96 @@
         "写下这个场景里「电子表格不再站得住」的那个临界点。"
       ],
       "summary": "agent 依据记录作答而不是依据文字描述，而且你说得出这个场景该落在哪种存储上、为什么。"
-    }
+    },
+    "walkthrough": [
+      {
+        "en": {
+          "act": "Make the spreadsheet queryable at all",
+          "where": "Your extract in OneDrive or SharePoint",
+          "do": "Format the range as a named table and give it one column that is unique per row. Save and close the file before you go anywhere near the agent.",
+          "see": "A named table with a key column — the connector cannot see a loose range at all.",
+          "note": "Nine out of ten failures in this module are here, and they do not look like this step. They look like the agent returning nothing."
+        },
+        "zh": {
+          "act": "先把表格变成能被查的东西",
+          "where": "你放在 OneDrive 或 SharePoint 上的那份数据",
+          "do": "把区域套成具名表格，并给它一列每行唯一的值。碰 agent 之前先把文件保存并关掉。",
+          "see": "一张有名字、有唯一键的表——散散的单元格区域连接器根本看不见。",
+          "note": "这一课十次失败九次卡在这一步，而且它不长得像这一步——它长得像「agent 什么都没查到」。"
+        }
+      },
+      {
+        "en": {
+          "act": "Query it with a value the agent extracted",
+          "where": "Build → Tools → Add tool → the spreadsheet connector's list-rows action",
+          "do": "Filter on the key column, and take the filter value from the conversation rather than hard-coding it.",
+          "see": "In Preview, a question phrased in business language comes back as one row of real data.",
+          "note": "Ask a colleague to phrase the same question their own way. Yours works because you wrote both halves."
+        },
+        "zh": {
+          "act": "用 agent 提取出来的值去查",
+          "where": "Build → Tools → Add tool → 表格连接器的列行动作",
+          "do": "按唯一键列做筛选，筛选值从对话里取，不要写死。",
+          "see": "在 Preview 里，一句业务话问进去，一行真实数据回来。",
+          "note": "让旁边的同事用他自己的说法问同一件事。你能跑通，是因为问题和工具都是你写的。"
+        }
+      },
+      {
+        "en": {
+          "act": "Handle nothing, and handle far too much",
+          "where": "Preview tab",
+          "do": "Ask for a key that does not exist, then ask something that matches hundreds of rows.",
+          "see": "An empty result, and a reply that is either truncated silently or unreadably long.",
+          "note": "Both cases need a written rule before the happy path counts as finished. Silent truncation is the one that reaches production undetected."
+        },
+        "zh": {
+          "act": "把「查不到」和「查出太多」都跑一遍",
+          "where": "Preview 页签",
+          "do": "先查一个不存在的键，再问一个能命中几百行的条件。",
+          "see": "一个空结果；以及一个要么默默被截断、要么长得没法读的回答。",
+          "note": "这两种情况都得有明确规则，正常路径才算做完。默默截断那个最容易神不知鬼不觉地上了生产。"
+        }
+      },
+      {
+        "en": {
+          "act": "Move the same query onto a table or a view",
+          "where": "Build → Tools → the equivalent action on Dataverse or your database",
+          "do": "Point the identical question at a proper table or a database view, and run it as a second user with fewer rights.",
+          "see": "The same answer for you, a different answer for them — which the spreadsheet could not do at all.",
+          "note": "This is the argument, and it is not about speed. A spreadsheet has one permission: whoever holds the connection sees everything."
+        },
+        "zh": {
+          "act": "把同一个查询搬到数据表或视图上",
+          "where": "Build → Tools → Dataverse 或你的数据库上的同类动作",
+          "do": "把一模一样的问题指到正规数据表或数据库视图，并用一个权限更少的第二个人再跑一次。",
+          "see": "你看到的和他看到的不一样——而这件事表格根本做不到。",
+          "note": "论据在这里，不在速度。表格只有一种权限：拿到连接的人看到全部。"
+        }
+      },
+      {
+        "en": {
+          "act": "Write down where the spreadsheet stops being defensible",
+          "where": "On paper",
+          "do": "State the threshold for this case: number of rows, number of readers, or the first field somebody must not see.",
+          "see": "One sentence you could defend to an auditor.",
+          "note": "Write it now, while the pilot is small. Nobody migrates a spreadsheet after it becomes load-bearing — they just stop asking who can see it."
+        },
+        "zh": {
+          "act": "写下表格从哪里开始站不住",
+          "where": "记在纸上",
+          "do": "把这个场景的临界点写清楚：多少行、多少个人要看、或者第一个不能给别人看的字段是哪个。",
+          "see": "一句能在审计面前说得出口的话。",
+          "note": "趁试点还小现在就写。一张表格一旦成了承重结构，就没人会迁了——只会没人再问它给谁看。"
+        }
+      }
+    ]
   },
   {
     "id": "custom-tool-extension",
-    "order": 11,
+    "order": 13,
     "minutes": 55,
+    "products": ["Copilot Studio", "Power Platform connectors"],
+    "features": ["Custom connectors", "REST API", "MCP", "Idempotency"],
     "requires": [
       "system-actions"
     ],
@@ -1093,7 +2307,7 @@
         "Name the thing no prebuilt connector reaches. If one does reach it, stop here and use it.",
         "Take the lowest rung that works: custom connector, then REST or MCP, then a second agent.",
         "Write the input and output contract before wiring anything, including what an error looks like.",
-        "Decide whether the model may call this freely, or only a topic may invoke it.",
+        "Decide whether the model may call this freely, or only a named skill or a workflow may invoke it.",
         "Make the write path idempotent, or make it confirm before it can act twice."
       ],
       "summary": "You have a capability the platform did not ship with, and a rule for how far up the ladder to climb next time."
@@ -1119,16 +2333,118 @@
         "先说清楚哪件事是预建连接器够不到的。如果其实够得到，就到此为止，直接用。",
         "取能解决问题的最低一级：自定义连接器 → REST/MCP → 第二个 agent。",
         "动手接之前先把输入输出契约写下来，包括「出错长什么样」。",
-        "决定这个工具是让模型自由调用，还是只能由某个 topic 显式调用。",
+        "决定这个工具是让模型自由调用，还是只能由某个具名技能或工作流调用。",
         "写操作要做成幂等的，否则就必须在可能重复执行前先确认。"
       ],
       "summary": "你有了一个平台没自带的能力，也有了一条「下次该爬到第几级」的判断标准。"
-    }
+    },
+    "walkthrough": [
+      {
+        "en": {
+          "act": "Prove no prebuilt connector reaches it",
+          "where": "Build → Tools → Add tool → Connectors",
+          "do": "Search the connector list for your system, and for the vendor's name, before you accept that you need to build anything.",
+          "see": "Either it is there — in which case this module is over, use it — or the search comes back empty.",
+          "note": "Half the custom connectors in the world exist because nobody searched. The ladder only starts where this search fails."
+        },
+        "zh": {
+          "act": "先证明确实没有现成连接器",
+          "where": "Build → Tools → Add tool → Connectors",
+          "do": "先拿系统名搜一遍，再拿厂商名搜一遍，再下「得自己做」这个结论。",
+          "see": "要么它就在那儿——那这一课到此结束，直接用；要么搜出来是空的。",
+          "note": "世上一半的自定义连接器都是因为没人搜一下。能力阶梯从这次搜索失败才开始。"
+        }
+      },
+      {
+        "shot": "02-add-tool-ladder",
+        "en": {
+          "act": "Take the lowest rung that actually gets there",
+          "where": "Build → Tools → Add tool — Featured, Model Context Protocol (MCP), Connectors, Workflows",
+          "do": "Choose deliberately and say why out loud: a workflow, a connector, an MCP server, or a second agent.",
+          "see": "Four categories, and they are four different long-term commitments rather than four ways to do the same thing.",
+          "note": "Every rung up is something your organisation owns forever. Climbing one rung too high is the most expensive decision in this module."
+        },
+        "zh": {
+          "act": "取能解决问题的最低一级",
+          "where": "Build → Tools → Add tool——Featured、Model Context Protocol (MCP)、Connectors、Workflows",
+          "do": "有意识地选，并当场说出理由：一条工作流、一个连接器、一个 MCP server，还是第二个 agent。",
+          "see": "四个分类——而它们不是四种做同一件事的方式，是四种不同的长期承诺。",
+          "note": "每往上爬一级，都是你们公司要养一辈子的东西。多爬一级，是这一课里最贵的决定。"
+        }
+      },
+      {
+        "shot": "03-mcp",
+        "en": {
+          "act": "Look in the MCP catalogue before you build anything",
+          "where": "Add a tool → Model Context Protocol (MCP)",
+          "do": "Read the list. Dataverse, the Dynamics 365 apps, Azure Data Explorer, Microsoft Learn Docs and the Microsoft 365 servers are all already there.",
+          "see": "Servers, not individual actions — one entry brings a whole tool surface with it.",
+          "note": "This is the rung most teams skip straight past on their way to writing a custom connector nobody will maintain. Check it first, every time."
+        },
+        "zh": {
+          "act": "动手建之前，先翻一遍 MCP 目录",
+          "where": "Add a tool → Model Context Protocol (MCP)",
+          "do": "把列表读一遍。Dataverse、各个 Dynamics 365 应用、Azure Data Explorer、Microsoft Learn Docs 以及 Microsoft 365 那几个 server，都已经在里面了。",
+          "see": "列的是 server，不是单个动作——加一条，带进来的是一整块工具面。",
+          "note": "大多数团队就是跳过这一级，直接去写一个后来没人维护的自定义连接器。每次都先看这里。"
+        }
+      },
+      {
+        "en": {
+          "act": "Write the contract before you wire anything",
+          "where": "On paper",
+          "do": "Write down the inputs with their types, the output shape, and what an error looks like coming back.",
+          "see": "Three short lists. The error one is the one everybody forgets and the one that decides how this behaves in production.",
+          "note": "Do this before the connection exists. Once something returns data, nobody goes back and defines what failure means."
+        },
+        "zh": {
+          "act": "接线之前先把契约写下来",
+          "where": "写在纸上",
+          "do": "把入参及其类型、返回结构、以及「出错时回来的东西长什么样」全写下来。",
+          "see": "三张短单子。其中错误那张最容易被忘，却决定了这东西在生产环境里的表现。",
+          "note": "必须在连接存在之前写。一旦能返回数据了，就再也没人回头定义失败是什么。"
+        }
+      },
+      {
+        "en": {
+          "act": "Decide who may call it",
+          "where": "Build → Tools → the new tool",
+          "do": "Choose whether the model may reach for this freely, or only a named skill or workflow may invoke it, and write the description accordingly.",
+          "see": "A tool the agent either picks up on its own, or one that sits there until a specific path calls it.",
+          "note": "Anything that writes, spends or notifies should be the second kind until you have watched it choose correctly a hundred times."
+        },
+        "zh": {
+          "act": "定下谁能调它",
+          "where": "Build → Tools → 新加的那个工具",
+          "do": "决定是让模型自由取用，还是只允许某个具名技能或工作流调用，并按这个决定写描述。",
+          "see": "要么是一个 agent 会自己伸手去拿的工具，要么是一个没人叫就不动的工具。",
+          "note": "凡是会写入、会花钱、会发通知的，先一律归后一类——直到你亲眼看它选对一百次。"
+        }
+      },
+      {
+        "en": {
+          "act": "Run the write twice",
+          "where": "Preview tab",
+          "do": "Trigger the same write action twice in a row, exactly as an impatient user would.",
+          "see": "Either one record and a sensible message, or two records and nobody the wiser.",
+          "note": "Users double-send. If a second identical call creates a second record, you do not have a tool — you have a duplicate generator with a confirmation dialog for a fig leaf."
+        },
+        "zh": {
+          "act": "把写操作连跑两次",
+          "where": "Preview 页签",
+          "do": "把同一个写动作连着触发两次，就像一个没耐心的用户那样。",
+          "see": "要么只多了一条记录加一句得体的提示，要么两条记录且没人发现。",
+          "note": "用户就是会双击。第二次一模一样的调用又建了一条，那你做的不是工具，是一台带确认弹窗的重单机。"
+        }
+      }
+    ]
   },
   {
     "id": "test-evaluation",
-    "order": 12,
+    "order": 15,
     "minutes": 45,
+    "products": ["Copilot Studio"],
+    "features": ["Evaluations", "Test sets", "Activity map"],
     "requires": [
       "agent-instructions"
     ],
@@ -1181,6 +2497,404 @@
         "失败时去读活动轨迹，找出到底是哪一步断的，而不是对着提示词猜。"
       ],
       "summary": "「能不能上」从此是对着一条线做判断，而不是对着一次演示凭感觉。"
-    }
+    },
+    "walkthrough": [
+      {
+        "en": {
+          "act": "Write the test set before you tune anything",
+          "where": "Evaluate → Evaluation → New evaluation → Data source, using the CSV template",
+          "do": "Download the template and fill it in with real questions and the answers the business agrees are correct.",
+          "see": "A file, not a list in your head — which means somebody else can run it after you leave.",
+          "note": "Write it first. Tests written after tuning are a record of what the agent already does, dressed up as a standard."
+        },
+        "zh": {
+          "act": "调优之前先把测试集写完",
+          "where": "Evaluate → Evaluation → New evaluation → Data source，用那份 CSV 模板",
+          "do": "把模板下下来，填上真实问题，以及业务方认可的标准答案。",
+          "see": "一个文件，而不是一份存在你脑子里的清单——也就意味着你走了以后别人还能跑。",
+          "note": "先写。调优之后才补的测试，只是把「agent 现在能干什么」换个标准的名字写一遍。"
+        }
+      },
+      {
+        "en": {
+          "act": "Cover five kinds, not five phrasings of one",
+          "where": "Your test file",
+          "do": "Include the normal case, the edge, the out-of-scope, the unauthorised, and one multi-turn exchange.",
+          "see": "A set where at least two rows expect a refusal rather than an answer.",
+          "note": "A test set with no expected refusals is not a test set. It is a demo script with a spreadsheet around it."
+        },
+        "zh": {
+          "act": "覆盖五类，而不是同一类的五种问法",
+          "where": "你那份测试文件",
+          "do": "正常、边界、范围外、越权、一段多轮对话——一类不能少。",
+          "see": "至少有两行的预期结果是「应该拒绝」，而不是「应该回答」。",
+          "note": "一份没有预期拒绝的测试集不是测试集。那是套了个表格壳的演示脚本。"
+        }
+      },
+      {
+        "shot": "03-new-evaluation",
+        "en": {
+          "act": "Load it and run the first pass",
+          "where": "Evaluate → New evaluation → drag the CSV in",
+          "do": "Run the set and record the pass rate before you change a single thing.",
+          "see": "A number, and a list of which rows failed.",
+          "note": "There is also a Quick conversation set that generates ten conversations from the agent's own instructions. Useful for a first look, useless as a gate — it tests the agent against itself."
+        },
+        "zh": {
+          "act": "导进去，跑第一遍",
+          "where": "Evaluate → New evaluation → 把 CSV 拖进去",
+          "do": "跑完整一套，在改任何东西之前先把通过率记下来。",
+          "see": "一个数，以及一张「哪几行没过」的单子。",
+          "note": "旁边还有个 Quick conversation set，能根据 agent 自己的说明生成十段对话。初看可以，当闸门不行——它是拿 agent 考 agent 自己。"
+        }
+      },
+      {
+        "en": {
+          "act": "Agree the pass threshold in writing",
+          "where": "With whoever owns the process, before you tune",
+          "do": "Get a number: what pass rate makes this fit to pilot, and which rows must never fail regardless of the average.",
+          "see": "One number and a short must-pass list, both with a name against them.",
+          "note": "Agree it before you know your score. Thresholds set afterwards are always just above whatever you happened to get."
+        },
+        "zh": {
+          "act": "把通过线白纸黑字定下来",
+          "where": "调优之前，和流程负责人一起定",
+          "do": "要一个数：通过率到多少算能试点；以及哪几行不管均值多好都不允许失败。",
+          "see": "一个数加一张必过清单，两者后面都签了名字。",
+          "note": "必须在知道分数之前定。事后定的线，永远刚好卡在你这次考了多少分上面一点点。"
+        }
+      },
+      {
+        "en": {
+          "act": "Change one thing and re-run everything",
+          "where": "Build → Instructions or a tool description, then Evaluate again",
+          "do": "Make one change, re-run the whole set, and compare row by row against the first pass.",
+          "see": "The row you were fixing now passes — and one or two you were not thinking about have moved.",
+          "note": "Never re-run only the failures. Instructions are global; the damage always shows up somewhere you were not looking."
+        },
+        "zh": {
+          "act": "只改一处，整套重跑",
+          "where": "Build → Instructions 或某个工具描述，改完再回 Evaluate",
+          "do": "改一处，把整套重跑，和第一遍逐行对比。",
+          "see": "你要修的那行过了——同时有一两行你根本没想过的跟着动了。",
+          "note": "绝不要只重跑失败的那几行。说明是全局的，损伤总是出现在你没看的地方。"
+        }
+      },
+      {
+        "en": {
+          "act": "On a failure, read the trace before you touch the prompt",
+          "where": "The failing row → its activity trace",
+          "do": "Work out which step broke: retrieval, tool choice, the tool itself, or the wording of the answer.",
+          "see": "Usually not the step you assumed. Wrong-tool failures read exactly like instruction failures from the outside.",
+          "note": "Editing the instructions is the most common wrong fix in this whole programme. It changes the symptom and leaves the cause."
+        },
+        "zh": {
+          "act": "失败时先读轨迹，别碰提示词",
+          "where": "失败的那一行 → 它的活动轨迹",
+          "do": "定位到底是哪一步断的：检索、选工具、工具本身，还是措辞。",
+          "see": "通常不是你以为的那一步。选错工具从外面看，和说明写得不好一模一样。",
+          "note": "上来就改说明，是整个课程里最常见的错误修法。它只换掉了症状，病因还在。"
+        }
+      }
+    ]
+  },
+  {
+    "id": "multi-agent-routing",
+    "order": 14,
+    "minutes": 55,
+    "products": ["Copilot Studio"],
+    "features": ["Connected agents", "Handoff", "Context passing"],
+    "requires": [
+      "tool-orchestration"
+    ],
+    "en": {
+      "name": "Hand the work to a second agent",
+      "teaches": "When to split an agent instead of adding another tool, how the routing decision is described, and what actually crosses the boundary at the handover.",
+      "build": "A refusal turned into a handoff, with the context that may cross the boundary decided rather than assumed.",
+      "objective": "Route a request your agent should not answer to one that should, and say exactly what went across with it.",
+      "needs": {
+        "skills": ["Tool orchestration"],
+        "tools": ["Copilot Studio", "A second agent you may connect to — build a small one if you have none"],
+        "materials": ["The question your agent currently refuses, and whoever owns the answer to it"]
+      },
+      "steps": [
+        "Take the question your agent refuses today, and decide honestly: another tool, or another agent?",
+        "State the second agent's job in one sentence. If it takes two, you are splitting in the wrong place.",
+        "Connect it, and describe the route by when to hand over — not by what the other agent is.",
+        "Ask the clear-cut case and confirm the handoff; then ask one that spans both and watch how it splits the work.",
+        "Check what crossed: every field of context that went over, and whether it was allowed to.",
+        "Find the handoff in the activity trace and confirm an auditor could follow it without your help."
+      ],
+      "summary": "Work leaves your agent for another one on purpose, and you can say what went with it — which is the question security will ask first."
+    },
+    "zh": {
+      "name": "把活交给第二个 agent",
+      "teaches": "什么时候该拆一个 agent 而不是再加一个工具、路由的判断怎么描述、以及交接那一刻到底有什么越过了边界。",
+      "build": "把一次「不归我管」变成一次交接，并且过界的上下文是定下来的，不是默认过去的。",
+      "objective": "能把本该别人答的请求路由给该答的那个 agent，并说清楚跟着过去的是什么。",
+      "needs": {
+        "skills": ["工具编排"],
+        "tools": ["Copilot Studio", "一个你可以连的第二个 agent——没有就现场建一个小的"],
+        "materials": ["你的 agent 现在会拒绝的那个问题，以及那个问题该谁答"]
+      },
+      "steps": [
+        "拿出你的 agent 今天会拒绝的那个问题，老实判断一次：是再加个工具，还是该拆个 agent？",
+        "用一句话说清第二个 agent 的职责。要说两句才说得清，就说明你拆错地方了。",
+        "连上它，路由描述写「什么时候该转过去」，不要写「那个 agent 是什么」。",
+        "先问一个界限分明的，确认转对了；再问一个跨两边的，看它怎么把活拆开。",
+        "检查过界的东西：传过去的每一个上下文字段，以及它到底该不该过去。",
+        "在活动轨迹里找到这次交接，确认审计的人不用你帮忙也追得下去。"
+      ],
+      "summary": "活是有意识地被交出去的，而且你说得出跟着过去的是什么——这正是安全同事会先问的那一句。"
+    },
+    "walkthrough": [
+      {
+        "en": {
+          "act": "Find the refusal you are going to convert",
+          "where": "Preview tab",
+          "do": "Ask your agent the out-of-scope question it currently declines, and read the refusal carefully.",
+          "see": "A polite dead end. Correct behaviour, and a bad experience — the user still has the problem they arrived with.",
+          "note": "This is the seam. Everything in this module is about turning a correct refusal into a useful outcome."
+        },
+        "zh": {
+          "act": "找到你要改造的那句拒绝",
+          "where": "Preview 页签",
+          "do": "把那个它现在会拒绝的、范围外的问题问一遍，把拒绝语仔细读一遍。",
+          "see": "一个很客气的死胡同。行为是对的，体验是差的——用户带来的问题还在那里。",
+          "note": "接口就在这里。这一课干的就是把一句正确的拒绝，变成一个有用的结果。"
+        }
+      },
+      {
+        "en": {
+          "act": "Decide honestly: another tool, or another agent?",
+          "where": "On paper",
+          "do": "State the second agent's job in one sentence. If it needs two sentences, you are splitting in the wrong place.",
+          "see": "One clean sentence, with an owner who is not you.",
+          "note": "A different job with a different owner is an agent. The same job with an extra data source is a tool. Getting this backwards is how organisations end up with forty agents and no owners."
+        },
+        "zh": {
+          "act": "老实判断：再加个工具，还是拆个 agent？",
+          "where": "写在纸上",
+          "do": "用一句话写出第二个 agent 的职责。要两句才说得清，就是拆错地方了。",
+          "see": "一句干净的话，背后站着一个不是你的负责人。",
+          "note": "不同的活、不同的主人，那是 agent；同一件活多一个数据源，那是工具。这两个搞反了，公司最后会有四十个 agent 而没有一个主人。"
+        }
+      },
+      {
+        "shot": "03-connected-agents",
+        "en": {
+          "act": "Connect the second agent",
+          "where": "Build → Connected agents → Add multi agent",
+          "do": "Publish the second agent first, then connect it and describe the route by when to hand over — not by what the other agent is.",
+          "type": "Hand over to this agent when the question is about leave, payroll or benefits. Do not hand over expense questions, even when they mention a salary figure.",
+          "see": "Only published agents can be selected. Drafts are listed but greyed out, with a line telling you to publish them first.",
+          "note": "That publish requirement catches every room. Build the second agent, publish it, and only then come back here — otherwise you will spend ten minutes wondering why the list is dead."
+        },
+        "zh": {
+          "act": "把第二个 agent 接上",
+          "where": "Build → Connected agents → Add multi agent",
+          "do": "先把第二个 agent 发布，再回来接；路由描述写「什么时候该转过去」，不要写「那个 agent 是什么」。",
+          "type": "Hand over to this agent when the question is about leave, payroll or benefits. Do not hand over expense questions, even when they mention a salary figure.",
+          "see": "只有已发布的 agent 能选。草稿会列出来但是灰的，旁边一行字告诉你先去发布。",
+          "note": "这个「必须先发布」每一场都会卡人。先建、先发布，再回这里——否则你会对着一个点不动的列表发十分钟呆。"
+        }
+      },
+      {
+        "en": {
+          "act": "Ask the clear case, then the one that spans both",
+          "where": "Preview tab",
+          "do": "Ask the question that plainly belongs to the second agent. Then ask one that genuinely needs both.",
+          "see": "The first hands over cleanly. The second either splits the work sensibly or picks a side and hides the fact.",
+          "note": "The spanning question is the real test. Handing over cleanly is easy; knowing that half a question was dropped is not."
+        },
+        "zh": {
+          "act": "先问界限分明的，再问跨两边的",
+          "where": "Preview 页签",
+          "do": "先问一个明显属于第二个 agent 的，再问一个真的两边都需要的。",
+          "see": "第一个干干净净地转了；第二个要么把活拆得很合理，要么选了一边并且不告诉你。",
+          "note": "跨两边那个才是真正的考题。转得干净不难，难的是知道有一半问题被丢了。"
+        }
+      },
+      {
+        "en": {
+          "act": "Check what actually crossed the boundary",
+          "where": "Preview tab → the reasoning trace on the handover",
+          "do": "Read every field of context that went across, and ask whether the receiving team is allowed to hold it.",
+          "see": "Usually more than you expected — conversation history travels with the request unless you decided otherwise.",
+          "note": "This is the question security asks first, and the one nobody prepares for. Answer it here, not in a review meeting."
+        },
+        "zh": {
+          "act": "看清楚到底有什么越过了边界",
+          "where": "Preview 页签 → 交接那一步的推理轨迹",
+          "do": "把传过去的上下文逐个字段读一遍，问一句：接收那边有没有资格拿着它。",
+          "see": "通常比你以为的多——你不特意处理的话，对话历史是跟着请求一起走的。",
+          "note": "这是安全会先问的那一句，也是没人提前准备的那一句。在这里把它答了，别等到评审会上。"
+        }
+      },
+      {
+        "en": {
+          "act": "Confirm an auditor could follow it without you",
+          "where": "The trace, and the Monitor tab afterwards",
+          "do": "Find the handover again from the record alone, as somebody who was not in the conversation.",
+          "see": "Which agent was called, with what, and what came back.",
+          "note": "Two agents is where responsibility starts getting passed around. If the trail breaks at the handover, so does the accountability."
+        },
+        "zh": {
+          "act": "确认审计的人不靠你也追得下去",
+          "where": "推理轨迹，以及事后的 Monitor 页签",
+          "do": "把自己当成一个当时不在场的人，只靠记录把那次交接重新找出来。",
+          "see": "调了哪个 agent、传了什么、回来了什么。",
+          "note": "一到两个 agent，责任就开始互相推了。轨迹在交接处断了，责任也就断在那里。"
+        }
+      }
+    ]
+  },
+  {
+    "id": "handover-demo",
+    "order": 19,
+    "minutes": 60,
+    "products": ["Copilot Studio"],
+    "features": ["Demo", "Evaluations", "Handover"],
+    "requires": [
+      "agent-instructions"
+    ],
+    "en": {
+      "name": "Show it, then hand it over",
+      "teaches": "Presenting a build as a business case rather than a feature tour, and closing out what an owner needs in order to keep it alive.",
+      "build": "Five minutes a sponsor can act on, and a named owner for whatever happens next.",
+      "objective": "Present what you built so a sponsor can decide, and hand it to someone who can keep it running.",
+      "needs": {
+        "skills": ["Agent instructions"],
+        "tools": ["Whatever you built"],
+        "materials": ["Your before-baseline, your test results, and the name of the person who will own this afterwards"]
+      },
+      "steps": [
+        "Structure it in three: how the work is done today, what changes, and the evidence.",
+        "Demonstrate live, and include one failure or refusal — a run where nothing goes wrong proves nothing.",
+        "Show the pass rate and the baseline together, and say aloud what those numbers do not cover.",
+        "Take one challenge from the room on where this would break in production, and answer it without defending.",
+        "Close the handover: who owns it, what they may change alone, and what happens the day it starts answering badly.",
+        "Write the shortest honest verdict — pilot, rebuild, or stop — and put a name against it."
+      ],
+      "summary": "Somebody with authority can now make a decision about this, and somebody with a name is responsible for it afterwards."
+    },
+    "zh": {
+      "name": "演示出来，然后交出去",
+      "teaches": "把一次建设讲成一件业务上成立的事，而不是功能巡演；以及收尾时接手的人到底需要什么才能把它养下去。",
+      "build": "五分钟，讲完出资方能拍板；以及一个写了名字的负责人。",
+      "objective": "能把成果讲到出资方可以做决定，并把它交到一个能把它养下去的人手里。",
+      "needs": {
+        "skills": ["Agent 指令设计"],
+        "tools": ["你建出来的那个东西"],
+        "materials": ["改之前的基线、测试结果、以及之后由谁负责的那个人名"]
+      },
+      "steps": [
+        "按三段搭：这活现在怎么干、之后变成什么样、证据是什么。",
+        "现场演示，并且必须演一次失败或拒绝——全程顺利的演示什么也证明不了。",
+        "把通过率和基线放在一起给，并当场说清这些数字盖不住哪些情况。",
+        "接住现场一个「这东西上生产会在哪垮」的质疑，正面回答，不要辩护。",
+        "把交接收掉：谁负责、他可以自己改哪些、以及它开始乱答的那天该怎么办。",
+        "写下最短的那句实话——试点、重做、还是停——并在后面签上名字。"
+      ],
+      "summary": "有决定权的人现在能对它做决定了，而且之后有一个具体的人对它负责。"
+    },
+    "walkthrough": [
+      {
+        "en": {
+          "act": "Structure it in three, and time it",
+          "where": "Before the room fills up",
+          "do": "How the work is done today, what changes, and the evidence. Rehearse once against a clock.",
+          "see": "Five minutes is shorter than everyone assumes — usually about nine sentences.",
+          "note": "No architecture slide. Nobody in the room is deciding whether your topology is elegant; they are deciding whether to fund the next step."
+        },
+        "zh": {
+          "act": "按三段搭，并且计个时",
+          "where": "人还没到齐之前",
+          "do": "这活现在怎么干、之后变成什么样、证据是什么。对着表过一遍。",
+          "see": "五分钟比所有人以为的短——大概就九句话。",
+          "note": "不要放架构图。在场没有人在判断你的拓扑漂不漂亮，他们在判断要不要给下一步掉钱。"
+        }
+      },
+      {
+        "en": {
+          "act": "Demonstrate live, including one failure",
+          "where": "The published agent, in the channel real users use",
+          "do": "Run the normal case, then deliberately run one it refuses or cannot do.",
+          "see": "The room relaxes at exactly the moment you show the failure. That is not a coincidence.",
+          "note": "A demo where nothing goes wrong proves nothing and everyone knows it. Showing the boundary is what makes the rest believable."
+        },
+        "zh": {
+          "act": "现场演，并且必须演一次失败",
+          "where": "已发布的 agent，在真用户用的那个渠道里",
+          "do": "先跑正常情况，再故意跑一个它会拒绝或办不到的。",
+          "see": "你演到失败那一刻，屋子里的人反而松了口气。这不是巧合。",
+          "note": "全程顺利的演示什么也证明不了，而且大家心里都清楚。把边界演出来，剩下的才有人信。"
+        }
+      },
+      {
+        "en": {
+          "act": "Show the pass rate and the baseline together",
+          "where": "One slide, or one sentence",
+          "do": "Give the test pass rate, the before-number, and say aloud what the numbers do not cover.",
+          "see": "Two figures that mean different things: fit to ship, and worth shipping.",
+          "note": "Quoting one without the other is the standard mistake. A 95% pass rate on a process nobody wanted improved is still a no."
+        },
+        "zh": {
+          "act": "通过率和基线一起给",
+          "where": "一页，或一句话",
+          "do": "给出测试通过率、改之前的数，并当场说清这些数盖不住什么。",
+          "see": "两个数回答两件事：能不能上，以及值不值得上。",
+          "note": "只给其中一个是典型错误。一个没人在乎的流程，通过率 95% 也依然是不。"
+        }
+      },
+      {
+        "en": {
+          "act": "Take one challenge without defending",
+          "where": "In the room",
+          "do": "Ask where this would break in production, and write the answer down instead of arguing with it.",
+          "see": "Usually a failure mode you knew about and hoped nobody would raise.",
+          "note": "Whoever raises it has just done your risk assessment for free. Argue and they will stop — and you will find out about it in production instead."
+        },
+        "zh": {
+          "act": "接住一个质疑，不要辩护",
+          "where": "就在会场上",
+          "do": "主动问「这东西上生产会在哪垂」，把回答记下来，而不是反驳它。",
+          "see": "通常是一个你自己也知道、只是希望没人提的坑。",
+          "note": "提出来的那个人刚白帮你做了一次风险评估。你一辩，他就不说了——然后你会在生产环境里知道。"
+        }
+      },
+      {
+        "en": {
+          "act": "Close the handover out loud",
+          "where": "The last minute of the session",
+          "do": "Say who owns it, what they may change alone, and what happens the day it starts answering badly.",
+          "see": "Sometimes an owner. Sometimes a silence that tells you this was never going to production.",
+          "note": "An agent with no named owner is already decommissioned; it just has not noticed yet. Say the name in the room."
+        },
+        "zh": {
+          "act": "当众把交接收掉",
+          "where": "这一节的最后一分钟",
+          "do": "说清楚：谁负责、他可以自己改哪些、以及它开始乱答那天该怎么办。",
+          "see": "有时候会出现一个负责人。有时候是一阵沉默——那就告诉你它本来就上不了生产。",
+          "note": "没有名字负责的 agent 已经死了，只是它自己还不知道。把那个名字当众说出来。"
+        }
+      },
+      {
+        "en": {
+          "act": "Write the shortest honest verdict",
+          "where": "The acceptance sheet",
+          "do": "Pilot, rebuild, or stop. One of the three, with a name against it.",
+          "see": "A line somebody is prepared to sign.",
+          "note": "'Stop' is a successful outcome for this programme. Learning in six weeks that a scenario does not work is the whole point of running a pilot."
+        },
+        "zh": {
+          "act": "写下最短的那句实话",
+          "where": "验收表上",
+          "do": "试点、重做、还是停。三选一，后面签名。",
+          "see": "一行有人愿意签字的字。",
+          "note": "「停」也是这个计划的成功结果。花六周弄清楚一个场景不成立，本来就是试点存在的意义。"
+        }
+      }
+    ]
   }
 ]

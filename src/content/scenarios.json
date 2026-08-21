@@ -3,7 +3,7 @@
     "id": "email-routing",
     "department": "crm",
     "tier": 1,
-    "capabilities": ["agent-instructions", "system-actions", "deterministic-automation", "human-approval"],
+    "capabilities": ["agent-instructions", "system-actions", "deterministic-automation", "event-driven-workflows", "human-approval", "multi-agent-routing"],
     "en": {
       "title": "Email routing and first-reply drafting",
       "pain": "A shared mailbox someone reads every morning, sorting what is urgent from what is routine, and typing the same four answers.",
@@ -19,7 +19,7 @@
     "id": "rfp-response",
     "department": "crm",
     "tier": 2,
-    "capabilities": ["knowledge-grounding", "document-extraction", "tool-orchestration", "human-approval"],
+    "capabilities": ["knowledge-grounding", "document-extraction", "tool-orchestration", "human-approval", "handover-demo"],
     "en": {
       "title": "Bid and RFP response assembly",
       "pain": "Every bid is assembled by hand from previous bids nobody can find, and the deadline decides how much reuse actually happens.",
@@ -35,7 +35,7 @@
     "id": "service-ops-agent",
     "department": "crm",
     "tier": 3,
-    "capabilities": ["tool-orchestration", "system-actions", "custom-tool-extension", "structured-persistence", "test-evaluation", "deployment-channels", "governance-guardrails"],
+    "capabilities": ["tool-orchestration", "system-actions", "custom-tool-extension", "multi-agent-routing", "structured-persistence", "test-evaluation", "deployment-channels", "governance-guardrails", "handover-demo"],
     "en": {
       "title": "Field service operations agent",
       "pain": "Dispatch, parts, history and the engineer's own notes live in four systems, and the person in the van has none of them.",
@@ -52,7 +52,7 @@
     "id": "invoice-recognition",
     "department": "finance",
     "tier": 1,
-    "capabilities": ["document-extraction", "deterministic-automation", "human-approval", "structured-persistence"],
+    "capabilities": ["document-extraction", "deterministic-automation", "human-approval", "structured-persistence", "handover-demo"],
     "en": {
       "title": "Invoice and order recognition",
       "pain": "Someone retypes numbers from a PDF into a form, and the errors surface a month later in a reconciliation.",
@@ -84,7 +84,7 @@
     "id": "close-checklist",
     "department": "finance",
     "tier": 2,
-    "capabilities": ["deterministic-automation", "structured-persistence", "human-approval", "operational-measurement"],
+    "capabilities": ["deterministic-automation", "event-driven-workflows", "structured-persistence", "human-approval", "operational-measurement"],
     "en": {
       "title": "Month-end close chase-up",
       "pain": "Close depends on a dozen submissions arriving, and someone spends the last three days chasing the ones that have not.",
@@ -117,7 +117,7 @@
     "id": "onboarding-runbook",
     "department": "hr",
     "tier": 2,
-    "capabilities": ["deterministic-automation", "system-actions", "structured-persistence", "human-approval"],
+    "capabilities": ["deterministic-automation", "event-driven-workflows", "system-actions", "structured-persistence", "human-approval"],
     "en": {
       "title": "New-joiner onboarding runbook",
       "pain": "Onboarding is a checklist in someone's head, spread across HR, IT and the hiring manager, and every new joiner gets a slightly different version.",
@@ -182,7 +182,7 @@
     "id": "business-system-agent",
     "department": "it",
     "tier": 3,
-    "capabilities": ["system-actions", "tool-orchestration", "structured-data-query", "custom-tool-extension", "structured-persistence", "test-evaluation", "governance-guardrails"],
+    "capabilities": ["system-actions", "tool-orchestration", "structured-data-query", "custom-tool-extension", "multi-agent-routing", "structured-persistence", "test-evaluation", "governance-guardrails", "handover-demo"],
     "en": {
       "title": "Agent over a legacy business system",
       "pain": "A system everyone depends on and nobody wants to change, reachable only by people who know its screens.",
@@ -247,7 +247,7 @@
     "id": "po-chase",
     "department": "supply-chain",
     "tier": 1,
-    "capabilities": ["agent-instructions", "system-actions", "deterministic-automation", "human-approval"],
+    "capabilities": ["agent-instructions", "system-actions", "deterministic-automation", "event-driven-workflows", "human-approval"],
     "en": {
       "title": "Chasing late purchase orders",
       "pain": "A buyer works down a list of overdue lines, emails suppliers one at a time, and pastes whatever comes back into the same spreadsheet.",
@@ -279,7 +279,7 @@
     "id": "supplier-compliance",
     "department": "supply-chain",
     "tier": 2,
-    "capabilities": ["knowledge-grounding", "document-extraction", "deterministic-automation", "structured-persistence"],
+    "capabilities": ["knowledge-grounding", "document-extraction", "deterministic-automation", "event-driven-workflows", "structured-persistence"],
     "en": {
       "title": "Supplier documents and expiry tracking",
       "pain": "Certificates, insurance and bank details are collected over email, and nobody can say which supplier is missing what until an audit asks.",

@@ -4,7 +4,7 @@ export const en: Dictionary = {
   meta: {
     title: 'Agentic AI Innovation Accelerator',
     description:
-      'Turn scattered AI experiments into governed, production-grade Copilot Studio solutions.',
+      'Turn scattered AI experiments into governed, production-grade intelligent business solutions.',
     langToggleLabel: 'Switch to Chinese',
   },
   nav: {
@@ -27,11 +27,11 @@ export const en: Dictionary = {
     certainty: 'Certainty',
   },
   hero: {
-    eyebrow: 'Microsoft Copilot Studio',
+    eyebrow: 'Microsoft Agentic Business Process',
     eyebrowSub: 'Agents · Workflows · Apps',
     titleTop: 'Agentic AI',
     titleBottom: 'Innovation Accelerator',
-    lede: 'Turn scattered AI experiments into governed, production-grade Copilot Studio solutions.',
+    lede: 'Turn scattered AI experiments into governed, production-grade intelligent business solutions.',
     scrollHint: 'Scroll to begin the transmutation',
     imageAlt:
       'An alchemist’s workshop at dawn: gothic windows, warm golden light, flasks and an open manuscript on a carved lectern.',
@@ -679,6 +679,7 @@ export const en: Dictionary = {
   },
 
   capabilities: {
+    'agent-anatomy': 'Agent anatomy',
     'agent-instructions': 'Agent instructions',
     'knowledge-grounding': 'Knowledge grounding',
     'deterministic-dialogue': 'Deterministic dialogue',
@@ -686,14 +687,17 @@ export const en: Dictionary = {
     'system-actions': 'System actions',
     'structured-data-query': 'Structured data query',
     'deterministic-automation': 'Deterministic automation',
+    'event-driven-workflows': 'Event-driven workflows',
     'document-extraction': 'Document extraction',
     'human-approval': 'Human approval',
     'structured-persistence': 'Structured persistence',
     'custom-tool-extension': 'Custom tool extension',
+    'multi-agent-routing': 'Multi-agent routing',
     'test-evaluation': 'Test & evaluation',
     'deployment-channels': 'Deployment & channels',
     'governance-guardrails': 'Governance & guardrails',
     'operational-measurement': 'Operational measurement',
+    'handover-demo': 'Demo & handover',
   },
 
   present: {
@@ -805,11 +809,44 @@ export const en: Dictionary = {
     emptyCta: 'Go to stage 02',
     shelfSummary: 'The whole shelf · {n} modules',
     shelfNote:
-      'One module per capability. A path is a selection from these, in dependency order.',
-    buildOrderTitle: 'Your build order',
+      'One module per capability, and every module works on the same agent — the one process you named in the first hour. Each picks up what the one before it left, so a path is a selection from these in dependency order, not a set of unrelated exercises. Any module can also be run on its own from the reference material.',
+    libraryTitle: 'The Lab Library',
+    libraryLede:
+      'Browse every capability module, open its guide, and add anything useful to the current project. Your scenario requirements stay protected; your own additions join the same dependency-aware agenda.',
+    libraryEyebrow: 'Stage 04 · Browse & curate',
+    libraryOpen: 'Open the Lab Library',
+    libraryBack: 'Back to the Lab agenda',
+    libraryCount: '{selected} manually added · {total} in the library',
+    librarySelected: 'Added to this project',
+    libraryAdd: 'Add to current Labs',
+    libraryRemove: 'Remove from current Labs',
+    libraryRequired: 'Required by your scenarios',
+    libraryPrerequisite: 'Included as a prerequisite',
+    libraryInAgenda: 'Already in the agenda',
+    libraryManualReason: 'Added from the Lab Library',
+    libraryBrowse: 'Browse the collection',
+    libraryBrowseNote:
+      'Open any title for the complete guide. Adding a module also brings its prerequisites into the agenda automatically.',
+    librarySearchLabel: 'Search',
+    librarySearchPlaceholder: 'Title, product or feature',
+    librarySortLabel: 'Order',
+    librarySortSequence: 'Teaching sequence',
+    librarySortShortest: 'Shortest first',
+    librarySortLongest: 'Longest first',
+    librarySortAdded: 'Added to this project first',
+    libraryResults: '{n} of {total} shown',
+    libraryNoResults: 'Nothing here matches that. Clear the search to see the whole collection.',
+    libraryClear: 'Clear',
+    libraryProductsLabel: 'Products',
+    libraryFeaturesLabel: 'Features',
+    buildOrderTitle: 'What the Top 3 scenarios require',
     buildOrderNote:
-      'The three that scored highest, each with the modules that particular build needs. This is the sequence to run in the room.',
+      'The three that scored highest, each with the modules its build needs. Shared modules appear more than once here to make each scenario complete; the agenda below merges and schedules them once.',
     buildStepLabel: 'Build',
+    agendaTitle: 'Your dynamically composed Lab agenda',
+    agendaNote:
+      'The Top 3 requirements are merged, deduplicated, expanded with prerequisites, and placed in dependency order. Each sitting stays within two hours, and every module is delivered once.',
+    sessionTitle: 'Sitting {n} of {total}',
     buildNoScoreNote:
       'Score the list in stage 03 and this becomes a build order — three scenarios, each with the modules its own build calls for.',
     buildNoScoreCta: 'Go to stage 03',
@@ -819,8 +856,9 @@ export const en: Dictionary = {
     buildLabel: 'You leave with',
     afterLabel: 'After',
     minutesLabel: 'min',
+    guideLabel: 'Step by step',
     notYetNote:
-      'Take this order into the room — it is the sequence to run them in. Each module’s step-by-step walkthrough opens from here as it is published.',
+      'Open any agenda module for its step-by-step guide, written to be followed in your own environment as well as demonstrated in the room.',
     backLabel: 'Back to the roadmap',
   },
 

@@ -1,0 +1,661 @@
+---
+/**
+ * The full Lab Library: browse independently, then curate the current project.
+ * Scenario-derived modules stay protected; manual selections are persisted on
+ * the project and join the same prerequisite-aware agenda as the Top 3.
+ */
+import { getCollection } from 'astro:content';
+import { Image } from 'astro:assets';
+import Base from '../../../../../layouts/Base.astro';
+import heroWorkshop from '../../../../../assets/images/hero-workshop.webp';
+import { LANGS, isLang, localePath, type Lang } from '../../../../../i18n/config';
+import { useTranslations } from '../../../../../i18n/content';
+
+export function getStaticPaths() {
+  return LANGS.map((lang) => ({ params: { lang } }));
+}
+
+const { lang: raw } = Astro.params;
+const lang: Lang = isLang(raw) ? raw : 'en';
+const t = useTranslations(lang);
+const l = t.labs;
+const modules = (await getCollection('labs')).sort((a, b) => a.data.order - b.data.order);
+
+const bootstrap = {
+  modules: modules.map((module) => ({
+    id: module.id,
+    order: module.data.order,
+    minutes: module.data.minutes,
+    requires: module.data.requires,
+  })),
+  strings: {
+    count: l.libraryCount,
+    selected: l.librarySelected,
+    add: l.libraryAdd,
+    remove: l.libraryRemove,
+    required: l.libraryRequired,
+    prerequisite: l.libraryPrerequisite,
+    inAgenda: l.libraryInAgenda,
+    results: l.libraryResults,
+  },
+};
+---
+
+<Base lang={lang} path="/program/labs/library/" axis={false} title={l.libraryTitle}>
+  <section class="hero library-hero">
+    <Image
+      class="library-hero__image"
+      src={heroWorkshop}
+      alt=""
+      widths={[900, 1400, 1900, 2400]}
+      sizes="100vw"
+      format="webp"
+      quality={82}
+      loading="eager"
+    />
+    <div class="library-hero__veil" aria-hidden="true"></div>
+    <div class="shell library-hero__content">
+      <p class="eyebrow">{l.libraryEyebrow}</p>
+      <h1 class="display">{l.libraryTitle}</h1>
+      <hr class="rule-gold library-hero__rule" />
+      <p class="library-hero__lede">{l.libraryLede}</p>
+      <a class="library-hero__down" href="#collection">
+        <span>{l.libraryBrowse}</span>
+        <span class="library-hero__down-line" aria-hidden="true"></span>
+      </a>
+    </div>
+  </section>
+
+  <section id="collection" class="section collection">
+    <div class="shell">
+      <header class="collection__head">
+        <p class="eyebrow">{l.libraryBrowse}</p>
+        <h2 class="collection__title display">
+          {l.shelfSummary.replace('{n}', String(modules.length))}
+        </h2>
+        <p class="collection__note">{l.libraryBrowseNote}</p>
+      </header>
+
+      <div class="filters">
+        <div class="filters__field filters__field--search">
+          <label class="filters__label" for="library-search">{l.librarySearchLabel}</label>
+          <input
+            id="library-search"
+            class="filters__input"
+            type="search"
+            autocomplete="off"
+            placeholder={l.librarySearchPlaceholder}
+            data-search
+          />
+        </div>
+
+        <div class="filters__field">
+          <label class="filters__label" for="library-sort">{l.librarySortLabel}</label>
+          <select id="library-sort" class="filters__input filters__input--select" data-sort>
+            <option value="sequence">{l.librarySortSequence}</option>
+            <option value="shortest">{l.librarySortShortest}</option>
+            <option value="longest">{l.librarySortLongest}</option>
+            <option value="added">{l.librarySortAdded}</option>
+          </select>
+        </div>
+
+        <p class="filters__tally">
+          <span data-results></span>
+          <span class="filters__count" data-library-count aria-live="polite"></span>
+        </p>
+      </div>
+
+      <ul class="library-grid">
+        {modules.map((module) => {
+          const copy = module.data[lang];
+          const tags = [...module.data.products, ...module.data.features];
+          return (
+            <li
+              class="book"
+              data-module={module.id}
+              data-order={module.data.order}
+              data-minutes={module.data.minutes}
+              data-search={`${copy.name} ${copy.teaches} ${t.capabilities[module.id]} ${tags.join(' ')}`.toLowerCase()}
+            >
+              <p class="book__meta">
+                <span>{t.capabilities[module.id]}</span>
+                <span class="book__minutes">
+                  {module.data.minutes} {l.minutesLabel}
+                </span>
+              </p>
+
+              <h3 class="book__title">
+                <a href={localePath(lang, `/program/labs/${module.id}/`)}>{copy.name}</a>
+              </h3>
+
+              <p class="book__teaches">{copy.teaches}</p>
+
+              <ul class="book__tags">
+                {module.data.products.map((product) => (
+                  <li class="tag tag--product">{product}</li>
+                ))}
+                {module.data.features.map((feature) => (
+                  <li class="tag">{feature}</li>
+                ))}
+              </ul>
+
+              <div class="book__foot">
+                <span class="book__state" data-state></span>
+                <button class="book__toggle" type="button" data-toggle>
+                  <span data-label>{l.libraryAdd}</span>
+                </button>
+              </div>
+            </li>
+          );
+        })}
+      </ul>
+
+      <p class="collection__empty" data-empty hidden>{l.libraryNoResults}</p>
+
+      <div class="collection__foot">
+        <a class="btn btn--gold" href={localePath(lang, '/program/labs/')}>{l.libraryBack}</a>
+      </div>
+    </div>
+  </section>
+
+  <script type="application/json" data-library-bootstrap set:html={JSON.stringify(bootstrap)} />
+</Base>
+
+<script>
+  import { LocalSessionStore, openActiveSession } from '../../../../../lib/session';
+  import { resolveLabPath } from '../../../../../lib/lab-path';
+
+  const boot = document.querySelector('[data-library-bootstrap]');
+
+  if (boot) {
+    const cfg = JSON.parse(boot.textContent ?? '{}');
+    const store = new LocalSessionStore();
+    const session = await openActiveSession(store);
+
+    interface Mod {
+      id: string;
+      order: number;
+      minutes: number;
+      requires: string[];
+    }
+
+    const modules = cfg.modules as Mod[];
+    const cards = [...document.querySelectorAll<HTMLElement>('[data-module]')];
+    const searchBox = document.querySelector<HTMLInputElement>('[data-search]')!;
+    const sortBox = document.querySelector<HTMLSelectElement>('[data-sort]')!;
+
+    const inScope = session.scoring.length
+      ? session.top3
+          .map((id) => session.scenarios.find((scenario) => scenario.id === id))
+          .filter((scenario): scenario is NonNullable<typeof scenario> => !!scenario)
+      : session.scenarios;
+    const required = new Set(
+      resolveLabPath(
+        modules,
+        inScope.flatMap((scenario) => scenario.capabilities ?? [])
+      ).map((module) => module.id)
+    );
+    const manual = new Set(session.manualLabs ?? []);
+
+    function render() {
+      const included = new Set(
+        resolveLabPath(modules, [...required, ...manual]).map((module) => module.id)
+      );
+      const query = searchBox.value.trim().toLowerCase();
+      const sort = sortBox.value;
+      let shown = 0;
+
+      for (const card of cards) {
+        const id = card.dataset.module!;
+        const isRequired = required.has(id);
+        const isManual = manual.has(id);
+        const isPrerequisite = included.has(id) && !isRequired && !isManual;
+
+        card.dataset.state = isRequired
+          ? 'required'
+          : isManual
+            ? 'selected'
+            : isPrerequisite
+              ? 'prerequisite'
+              : 'available';
+
+        const button = card.querySelector<HTMLButtonElement>('[data-toggle]')!;
+        const label = button.querySelector<HTMLElement>('[data-label]')!;
+        const state = card.querySelector<HTMLElement>('[data-state]')!;
+
+        button.disabled = isRequired || isPrerequisite;
+        button.setAttribute('aria-pressed', String(isManual));
+        label.textContent = isRequired || isPrerequisite
+          ? cfg.strings.inAgenda
+          : isManual
+            ? cfg.strings.remove
+            : cfg.strings.add;
+        state.textContent = isRequired
+          ? cfg.strings.required
+          : isManual
+            ? cfg.strings.selected
+            : isPrerequisite
+              ? cfg.strings.prerequisite
+              : '';
+
+        const matches = !query || (card.dataset.search ?? '').includes(query);
+        card.hidden = !matches;
+        if (matches) shown += 1;
+
+        const minutes = Number(card.dataset.minutes);
+        const order = Number(card.dataset.order);
+        // Ordered by CSS, so re-sorting never re-parents a card mid-interaction.
+        card.style.order = String(
+          sort === 'shortest'
+            ? minutes
+            : sort === 'longest'
+              ? 1000 - minutes
+              : sort === 'added'
+                ? (isManual ? 0 : isRequired ? 100 : 200) + order
+                : order
+        );
+      }
+
+      document.querySelector<HTMLElement>('[data-results]')!.textContent = cfg.strings.results
+        .replace('{n}', String(shown))
+        .replace('{total}', String(cards.length));
+      document.querySelector<HTMLElement>('[data-library-count]')!.textContent = cfg.strings.count
+        .replace('{selected}', String(manual.size))
+        .replace('{total}', String(cards.length));
+      document.querySelector<HTMLElement>('[data-empty]')!.hidden = shown > 0;
+    }
+
+    document.querySelectorAll<HTMLButtonElement>('[data-toggle]').forEach((button) => {
+      button.addEventListener('click', async () => {
+        const id = button.closest<HTMLElement>('[data-module]')!.dataset.module!;
+        if (manual.has(id)) manual.delete(id);
+        else manual.add(id);
+        session.manualLabs = [...manual];
+        await store.save(session);
+        render();
+      });
+    });
+
+    searchBox.addEventListener('input', render);
+    sortBox.addEventListener('change', render);
+
+    render();
+  }
+</script>
+
+<style>
+  /* The way in, borrowed from the story's opening: one picture, held quiet. */
+  .library-hero {
+    position: relative;
+    min-block-size: clamp(34rem, 82svh, 52rem);
+    display: grid;
+    align-items: end;
+    overflow: hidden;
+    isolation: isolate;
+    background: var(--color-ink-deep);
+  }
+
+  .library-hero :global(.library-hero__image),
+  .library-hero__veil {
+    position: absolute;
+    inset: 0;
+    inline-size: 100%;
+    block-size: 100%;
+  }
+
+  .library-hero :global(.library-hero__image) {
+    z-index: 0;
+    object-fit: cover;
+    object-position: center 58%;
+  }
+
+  .library-hero__veil {
+    z-index: 1;
+    background:
+      linear-gradient(
+        to right,
+        var(--color-ink-deep) 0%,
+        color-mix(in srgb, var(--color-ink-deep) 76%, transparent) 52%,
+        color-mix(in srgb, var(--color-ink-deep) 46%, transparent) 100%
+      ),
+      linear-gradient(
+        to bottom,
+        color-mix(in srgb, var(--color-ink-deep) 72%, transparent),
+        color-mix(in srgb, var(--color-ink-deep) 32%, transparent) 42%,
+        var(--color-ink-deep) 100%
+      );
+  }
+
+  .library-hero__content {
+    position: relative;
+    z-index: 2;
+    padding-block: clamp(7rem, 13vh, 10rem) clamp(3.5rem, 8vh, 6rem);
+    color: var(--color-parchment);
+  }
+
+  .library-hero__content .eyebrow {
+    color: var(--color-gold-bright);
+  }
+
+  .library-hero__content h1 {
+    max-inline-size: 12ch;
+    margin: 0.5rem 0 0;
+    font-size: clamp(3.2rem, 1.9rem + 4.6vw, 6.8rem);
+    line-height: 0.95;
+  }
+
+  .library-hero__rule {
+    margin: clamp(1.4rem, 1rem + 1.2vw, 2rem) 0 0;
+  }
+
+  .library-hero__lede {
+    max-inline-size: 54ch;
+    margin: clamp(1.1rem, 0.9rem + 1vw, 1.6rem) 0 0;
+    font-size: var(--text-lede);
+    line-height: 1.6;
+    color: color-mix(in srgb, var(--color-parchment) 82%, transparent);
+  }
+
+  .library-hero__down {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.9rem;
+    margin-block-start: clamp(1.75rem, 1.3rem + 1.6vw, 2.75rem);
+    color: var(--color-gold-bright);
+    font-size: var(--text-small);
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+    text-decoration: none;
+  }
+
+  .library-hero__down-line {
+    inline-size: clamp(3rem, 6vw, 6rem);
+    block-size: 1px;
+    background: currentColor;
+  }
+
+  /* --- The collection ------------------------------------------------- */
+  .collection {
+    background: var(--color-ink-deep);
+    color: var(--color-parchment);
+  }
+
+  .collection .eyebrow {
+    color: var(--color-gold-bright);
+  }
+
+  .collection__title {
+    margin: 0.5rem 0 0;
+    font-size: var(--text-h2);
+  }
+
+  .collection__note {
+    max-inline-size: 64ch;
+    margin: 0.9rem 0 0;
+    font-size: var(--text-small);
+    line-height: 1.65;
+    color: color-mix(in srgb, var(--color-parchment) 66%, transparent);
+  }
+
+  .filters {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: end;
+    gap: 1rem clamp(1.5rem, 1rem + 2vw, 2.75rem);
+    margin-block-start: clamp(2rem, 1.5rem + 2vw, 3.25rem);
+    padding-block-end: clamp(1.1rem, 0.9rem + 1vw, 1.6rem);
+    border-block-end: 1px solid color-mix(in srgb, var(--color-parchment) 20%, transparent);
+  }
+
+  .filters__field {
+    display: grid;
+    gap: 0.4rem;
+    flex: 0 1 16rem;
+  }
+
+  .filters__field--search {
+    flex: 1 1 24rem;
+  }
+
+  .filters__label {
+    font-size: var(--text-micro);
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: var(--color-gold-bright);
+  }
+
+  .filters__input {
+    inline-size: 100%;
+    min-block-size: 2.9rem;
+    padding: 0.5rem 0;
+    font: inherit;
+    font-size: var(--text-small);
+    color: var(--color-parchment);
+    background: transparent;
+    border: 0;
+    border-block-end: 1px solid color-mix(in srgb, var(--color-parchment) 34%, transparent);
+    border-radius: 0;
+  }
+
+  .filters__input::placeholder {
+    color: color-mix(in srgb, var(--color-parchment) 42%, transparent);
+  }
+
+  .filters__input:focus-visible {
+    outline: none;
+    border-block-end-color: var(--color-gold);
+  }
+
+  /* The native menu paints on its own surface, not on this dark band. */
+  .filters__input--select {
+    color-scheme: dark;
+  }
+
+  .filters__tally {
+    display: grid;
+    gap: 0.2rem;
+    margin: 0 0 0 auto;
+    text-align: end;
+    font-size: var(--text-micro);
+    color: color-mix(in srgb, var(--color-parchment) 60%, transparent);
+  }
+
+  .filters__count {
+    color: var(--color-gold-bright);
+  }
+
+  .library-grid {
+    list-style: none;
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(min(100%, 21rem), 1fr));
+    gap: clamp(1rem, 0.8rem + 1vw, 1.6rem);
+    margin: clamp(1.75rem, 1.3rem + 1.6vw, 2.75rem) 0 0;
+    padding: 0;
+  }
+
+  .book {
+    display: flex;
+    flex-direction: column;
+    padding: clamp(1.3rem, 1rem + 1vw, 1.75rem);
+    background: color-mix(in srgb, var(--color-parchment) 5%, transparent);
+    border: 1px solid color-mix(in srgb, var(--color-parchment) 14%, transparent);
+    transition:
+      background-color var(--duration-quick) ease,
+      border-color var(--duration-quick) ease;
+  }
+
+  .book[hidden] {
+    display: none;
+  }
+
+  .book:hover {
+    border-color: color-mix(in srgb, var(--color-gold) 45%, transparent);
+  }
+
+  .book[data-state='selected'] {
+    background: color-mix(in srgb, var(--color-gold) 10%, transparent);
+    border-color: var(--color-gold);
+  }
+
+  .book__meta {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: 1rem;
+    margin: 0;
+    font-size: var(--text-micro);
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: color-mix(in srgb, var(--color-parchment) 58%, transparent);
+  }
+
+  .book__minutes {
+    white-space: nowrap;
+    color: var(--color-gold-bright);
+  }
+
+  /* Clamped so every card's later rows start on the same line. */
+  .book__title {
+    display: -webkit-box;
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 2;
+    line-clamp: 2;
+    overflow: hidden;
+    min-block-size: 2.6em;
+    margin: 0.9rem 0 0;
+    font-family: var(--font-display);
+    font-size: var(--text-h3);
+    font-weight: 400;
+    line-height: 1.3;
+  }
+
+  .book__title a {
+    color: var(--color-parchment);
+    text-decoration-line: underline;
+    text-decoration-color: color-mix(in srgb, var(--color-gold) 55%, transparent);
+    text-decoration-thickness: 1px;
+    text-underline-offset: 0.16em;
+    transition:
+      color var(--duration-quick) ease,
+      text-decoration-color var(--duration-quick) ease;
+  }
+
+  .book__title a:hover,
+  .book__title a:focus-visible {
+    color: var(--color-gold-bright);
+    text-decoration-color: var(--color-gold-bright);
+  }
+
+  .book__teaches {
+    display: -webkit-box;
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 3;
+    line-clamp: 3;
+    overflow: hidden;
+    min-block-size: 4.8em;
+    margin: 0.85rem 0 0;
+    font-size: var(--text-small);
+    line-height: 1.6;
+    color: color-mix(in srgb, var(--color-parchment) 72%, transparent);
+  }
+
+  .book__tags {
+    list-style: none;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.35rem;
+    margin: 1.1rem 0 0;
+    padding: 0;
+  }
+
+  .tag {
+    padding: 0.25em 0.7em;
+    font-size: var(--text-micro);
+    line-height: 1.5;
+    color: color-mix(in srgb, var(--color-parchment) 70%, transparent);
+    background: color-mix(in srgb, var(--color-parchment) 8%, transparent);
+  }
+
+  .tag--product {
+    color: var(--color-gold-bright);
+    background: color-mix(in srgb, var(--color-gold) 14%, transparent);
+  }
+
+  .book__foot {
+    display: grid;
+    gap: 0.5rem;
+    margin-block-start: auto;
+    padding-block-start: 1.2rem;
+  }
+
+  .book__state {
+    min-block-size: 1.35em;
+    font-size: var(--text-micro);
+    color: color-mix(in srgb, var(--color-parchment) 55%, transparent);
+  }
+
+  .book[data-state='selected'] .book__state {
+    color: var(--color-gold-bright);
+  }
+
+  .book__toggle {
+    min-block-size: 2.9rem;
+    padding: 0.6rem 1rem;
+    font: inherit;
+    font-size: var(--text-small);
+    font-weight: 500;
+    letter-spacing: 0.04em;
+    color: var(--color-parchment);
+    background: transparent;
+    border: 1px solid color-mix(in srgb, var(--color-gold) 60%, transparent);
+    cursor: pointer;
+    transition:
+      background-color var(--duration-quick) ease,
+      color var(--duration-quick) ease;
+  }
+
+  .book__toggle:hover:not(:disabled),
+  .book__toggle:focus-visible:not(:disabled) {
+    background: var(--color-gold);
+    color: var(--color-ink-deep);
+  }
+
+  .book[data-state='selected'] .book__toggle {
+    background: var(--color-gold);
+    color: var(--color-ink-deep);
+    border-color: var(--color-gold);
+  }
+
+  .book__toggle:disabled {
+    color: color-mix(in srgb, var(--color-parchment) 48%, transparent);
+    border-color: color-mix(in srgb, var(--color-parchment) 18%, transparent);
+    cursor: default;
+  }
+
+  .collection__empty {
+    margin: clamp(2rem, 1.5rem + 2vw, 3rem) 0 0;
+    font-size: var(--text-small);
+    color: color-mix(in srgb, var(--color-parchment) 66%, transparent);
+  }
+
+  .collection__foot {
+    margin-block-start: clamp(2.5rem, 1.8rem + 2.4vw, 4rem);
+    padding-block-start: clamp(1.4rem, 1.1rem + 1.2vw, 2rem);
+    border-block-start: 1px solid color-mix(in srgb, var(--color-parchment) 20%, transparent);
+  }
+
+  @media (max-width: 40rem) {
+    .library-hero {
+      min-block-size: 38rem;
+    }
+
+    .library-hero :global(.library-hero__image) {
+      object-position: 47% center;
+    }
+
+    .filters__tally {
+      margin-inline-start: 0;
+      text-align: start;
+    }
+  }
+</style>
