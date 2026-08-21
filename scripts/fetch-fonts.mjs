@@ -1,5 +1,5 @@
 /**
- * Regenerates the vendored webfonts in `public/fonts/` and `src/styles/fonts.css`.
+ * Regenerates the vendored webfonts in `src/assets/fonts/` and `src/styles/fonts.css`.
  *
  * Run manually when the type stack changes:  node scripts/fetch-fonts.mjs
  * The site itself never touches the network at build time.
@@ -24,7 +24,7 @@ const UA =
 const css = await (await fetch(CSS_URL, { headers: { 'User-Agent': UA } })).text();
 const blocks = [...css.matchAll(/\/\*\s*([a-z0-9-]+)\s*\*\/\s*(@font-face\s*\{[\s\S]*?\})/g)];
 
-mkdirSync(resolve(ROOT, 'public/fonts'), { recursive: true });
+mkdirSync(resolve(ROOT, 'src/assets/fonts'), { recursive: true });
 
 const faces = [];
 for (const [, subset, block] of blocks) {
@@ -38,9 +38,13 @@ for (const [, subset, block] of blocks) {
 
   const res = await fetch(url, { headers: { 'User-Agent': UA } });
   if (!res.ok) throw new Error(`${url} → ${res.status}`);
-  writeFileSync(resolve(ROOT, 'public/fonts', file), Buffer.from(await res.arrayBuffer()));
+  writeFileSync(resolve(ROOT, 'src/assets/fonts', file), Buffer.from(await res.arrayBuffer()));
 
-  faces.push(`/* ${subset} */\n${block.replace(/url\(https:[^)]+\)/, `url(/fonts/${file})`)}`);
+  // Relative, not root-absolute: it makes Vite own the asset, which is what
+  // gets the deployment base applied in dev as well as in the build.
+  faces.push(
+    `/* ${subset} */\n${block.replace(/url\(https:[^)]+\)/, `url(../assets/fonts/${file})`)}`
+  );
   console.log('vendored', file);
 }
 

@@ -1,0 +1,1030 @@
+---
+/**
+ * PRESENT MODE — the deck the facilitator actually runs in the room.
+ *
+ * The accelerator's failure mode is a beautiful plan nobody can deliver on a
+ * Tuesday morning with eight people and a projector. Everything upstream —
+ * readiness, the scenarios, the Top 3, the composed lab path — exists to
+ * answer "what do we build for these people". This is where that answer is
+ * said out loud.
+ *
+ * Two decisions worth stating, because both are load-bearing.
+ *
+ * It plays, it does not export. A deck exported to PowerPoint is a fork: the
+ * moment the room changes its mind about a scenario, the file on someone's
+ * laptop is wrong and nobody knows it. Here the slides ARE the session, so
+ * re-scoring stage 03 and reopening this produces a different, correct deck.
+ *
+ * Slides are composed, not authored. Lab bodies live once in
+ * src/content/labs.json and are selected by the same capability closure the
+ * labs page uses, so a module written once serves every customer whose work
+ * needs it — and the room sees its own scenarios named on the agenda rather
+ * than a generic course it has to translate.
+ */
+import { getCollection } from 'astro:content';
+import Base from '../../../../layouts/Base.astro';
+import { LANGS, isLang, localePath, type Lang } from '../../../../i18n/config';
+import { useTranslations } from '../../../../i18n/content';
+
+export function getStaticPaths() {
+  return LANGS.map((lang) => ({ params: { lang } }));
+}
+
+const { lang: raw } = Astro.params;
+const lang: Lang = isLang(raw) ? raw : 'en';
+const t = useTranslations(lang);
+const pr = t.present;
+
+const modules = (await getCollection('labs')).sort((a, b) => a.data.order - b.data.order);
+const examples = await getCollection('scenarios');
+
+/**
+ * Screenshots captured against the real product. Routed through Vite so they
+ * are hashed and base-prefixed like every other asset; keyed by the `shot`
+ * name in labs.json, so a step whose capture has not happened yet simply
+ * resolves to nothing and renders as text.
+ */
+const shots = Object.fromEntries(
+  Object.entries(
+    import.meta.glob<string>('../../../../assets/labs/**/*.{png,jpg,webp}', {
+      eager: true,
+      query: '?url',
+      import: 'default',
+    })
+  ).map(([path, url]) => [path.split('/').pop()!.replace(/\.\w+$/, ''), url])
+);
+
+// Whole shelf ships in the page: it is twelve modules, and a deck that has to
+// fetch mid-presentation is a deck that fails in the one room that matters.
+const bootstrap = {
+  strings: pr,
+  capabilities: t.capabilities,
+  modules: modules.map((m) => ({
+    id: m.id,
+    order: m.data.order,
+    minutes: m.data.minutes,
+    requires: m.data.requires,
+    ...m.data[lang],
+    walkthrough: (m.data.walkthrough ?? []).map((step) => ({
+      ...step[lang],
+      shot: step.shot ? (shots[step.shot] ?? null) : null,
+    })),
+  })),
+  exampleTitles: Object.fromEntries(examples.map((e) => [e.id, e.data[lang].title])),
+  minutesLabel: t.labs.minutesLabel,
+  exitHref: localePath(lang, '/program/project/'),
+};
+---
+
+<Base lang={lang} path="/program/present/" axis={false} chrome={false} title={pr.navLabel}>
+  <div class="deck" data-deck>
+    <!-- Default state is the honest one: JS composes the slides, and until it
+         has, there is genuinely nothing to show. -->
+    <section class="slide slide--empty" data-fallback>
+      <div class="slide__inner">
+        <p class="slide__kicker meta-label">{pr.kicker}</p>
+        <h1 class="slide__title display">{pr.emptyTitle}</h1>
+        <p class="slide__lede">{pr.emptyBody}</p>
+        <a class="btn btn--gold" href={localePath(lang, '/program/project/')}>{pr.exitLabel}</a>
+      </div>
+    </section>
+
+    <div class="deck__stage" data-stage hidden></div>
+
+    <nav class="deck__bar" data-bar hidden aria-label={pr.navLabel}>
+      <a class="deck__exit" href={localePath(lang, '/program/project/')}>{pr.exitLabel}</a>
+      <p class="deck__hint">{pr.hint}</p>
+      <div class="deck__nav">
+        <button type="button" class="deck__step" data-prev aria-label="←">←</button>
+        <p class="deck__counter" data-counter></p>
+        <button type="button" class="deck__step" data-next aria-label="→">→</button>
+      </div>
+    </nav>
+  </div>
+
+  <script type="application/json" data-deck-bootstrap set:html={JSON.stringify(bootstrap)} />
+</Base>
+
+<script>
+  import { LocalSessionStore, openActiveSession } from '../../../../lib/session';
+  import { formatDuration, packSessions } from '../../../../lib/duration';
+
+  const boot = document.querySelector('[data-deck-bootstrap]');
+
+  if (boot) {
+    const cfg = JSON.parse(boot.textContent ?? '{}');
+    const s = cfg.strings;
+    const store = new LocalSessionStore();
+    const session = await openActiveSession(store);
+
+    interface Mod {
+      id: string;
+      order: number;
+      minutes: number;
+      requires: string[];
+      name: string;
+      teaches: string;
+      build: string;
+      objective: string;
+      needs: { skills: string[]; tools: string[]; materials: string[] };
+      steps: string[];
+      summary: string;
+      walkthrough: {
+        act: string;
+        where: string;
+        do: string;
+        type?: string;
+        see: string;
+        note?: string;
+        shot: string | null;
+      }[];
+    }
+    const byId = new Map<string, Mod>(cfg.modules.map((m: Mod) => [m.id, m]));
+
+    const titleOf = (sc: { sourceId?: string; title: string }) =>
+      sc.sourceId ? (cfg.exampleTitles[sc.sourceId] ?? sc.title) : sc.title;
+
+    /**
+     * The day's scope. Once stage 03 has run, the Top 3 is the room's own
+     * decision about what matters and the deck must respect it; before that,
+     * everything collected is the best available guess.
+     */
+    const inScope = session.scoring.length
+      ? session.top3
+          .map((id) => session.scenarios.find((sc) => sc.id === id))
+          .filter((sc): sc is NonNullable<typeof sc> => !!sc)
+      : session.scenarios;
+
+    // Which scenarios asked for a module — the evidence that this deck is
+    // about their work and not a syllabus.
+    const askedBy = new Map<string, string[]>();
+    for (const scenario of inScope) {
+      for (const cap of scenario.capabilities ?? []) {
+        askedBy.set(cap, [...(askedBy.get(cap) ?? []), titleOf(scenario)]);
+      }
+    }
+
+    function closure(seeds: Iterable<string>) {
+      const needed = new Set(seeds);
+      const queue = [...needed];
+      while (queue.length) {
+        const current = byId.get(queue.pop()!);
+        for (const req of current?.requires ?? []) {
+          if (!needed.has(req)) {
+            needed.add(req);
+            queue.push(req);
+          }
+        }
+      }
+      return needed;
+    }
+
+    /** Topological, tie-broken by shelf order — the sequence a room can walk. */
+    function order(needed: Set<string>): Mod[] {
+      const ordered: Mod[] = [];
+      const placed = new Set<string>();
+      const pending = [...needed]
+        .map((id) => byId.get(id))
+        .filter((m): m is Mod => !!m)
+        .sort((a, b) => a.order - b.order);
+
+      while (pending.length) {
+        const next = pending.findIndex((m) =>
+          m.requires.every((r) => !needed.has(r) || placed.has(r))
+        );
+        const [taken] = pending.splice(next === -1 ? 0 : next, 1);
+        ordered.push(taken);
+        placed.add(taken.id);
+      }
+      return ordered;
+    }
+
+    const needed = closure(askedBy.keys());
+    const labs = order(needed);
+
+    const stage = document.querySelector<HTMLElement>('[data-stage]')!;
+    const bar = document.querySelector<HTMLElement>('[data-bar]')!;
+    const fallback = document.querySelector<HTMLElement>('[data-fallback]')!;
+
+    // Nobody sits through seven unbroken hours, so the day is cut into
+    // sittings and the deck marks where each one starts.
+    const sessions = packSessions(labs);
+    const minutesOf = (group: Mod[]) => group.reduce((sum, m) => sum + m.minutes, 0);
+    const dur = (minutes: number) => formatDuration(minutes, s.duration);
+    const sessionName = (i: number) => s.sessionShort.replace('{n}', String(i + 1));
+
+    /**
+     * The between-sittings slide. Its job is orientation: what we just did,
+     * what we are about to do, and how much of the day is left.
+     */
+    function divider(current: number) {
+      const el = slide('divider');
+      line(el, 'slide__eyebrow meta-label', s.agendaTitle);
+      line(
+        el,
+        'slide__title display',
+        s.sessionTitle.replace('{n}', String(current + 1)).replace('{total}', String(sessions.length)),
+        'h2'
+      );
+
+      const track = document.createElement('ol');
+      track.className = 'track';
+      sessions.forEach((group, i) => {
+        const li = document.createElement('li');
+        li.className = 'track__row';
+        li.dataset.state = i < current ? 'done' : i === current ? 'now' : 'next';
+
+        line(li, 'track__no display', String(i + 1).padStart(2, '0'));
+        const body = document.createElement('div');
+        line(body, 'track__names', group.map((m) => m.name).join(' · '));
+        li.append(body);
+
+        const right = document.createElement('div');
+        right.className = 'track__right';
+        if (i === current) line(right, 'track__flag meta-label', s.nowLabel);
+        else if (i < current) line(right, 'track__flag track__flag--done meta-label', s.doneLabel);
+        line(right, 'track__mins meta-label', dur(minutesOf(group)));
+        li.append(right);
+
+        track.append(li);
+      });
+      el.append(track);
+    }
+
+    // ——— slide construction ————————————————————————————————————————————
+
+    const slides: HTMLElement[] = [];
+
+    function slide(kind: string) {
+      const el = document.createElement('section');
+      el.className = `slide slide--${kind}`;
+      el.hidden = true;
+      const inner = document.createElement('div');
+      inner.className = 'slide__inner';
+      el.append(inner);
+      stage.append(el);
+      slides.push(el);
+      return inner;
+    }
+
+    function line(parent: HTMLElement, cls: string, text: string, tag = 'p') {
+      const el = document.createElement(tag);
+      el.className = cls;
+      el.textContent = text;
+      parent.append(el);
+      return el;
+    }
+
+    function list(parent: HTMLElement, cls: string, items: string[], ordered = false) {
+      const el = document.createElement(ordered ? 'ol' : 'ul');
+      el.className = cls;
+      for (const item of items) {
+        const li = document.createElement('li');
+        li.textContent = item;
+        el.append(li);
+      }
+      parent.append(el);
+      return el;
+    }
+
+    function build() {
+      // 1 — title
+      const title = slide('title');
+      line(title, 'slide__kicker meta-label', s.kicker);
+      line(title, 'slide__for meta-label', s.forLabel);
+      line(title, 'slide__title display', session.customer?.trim() || s.untitledCustomer, 'h1');
+      line(
+        title,
+        'slide__date',
+        new Intl.DateTimeFormat(document.documentElement.lang, {
+          dateStyle: 'long',
+        }).format(new Date())
+      );
+
+      // 2 — agenda, grouped into sittings. Paginated rather than shrunk: a
+      // crowded agenda is the one slide nobody reads.
+      const AGENDA_PER_PAGE = 4;
+      let counter = 0;
+      for (let from = 0; from < sessions.length; from += AGENDA_PER_PAGE) {
+        const page = sessions.slice(from, from + AGENDA_PER_PAGE);
+        const agenda = slide('agenda');
+        line(agenda, 'slide__eyebrow meta-label', s.kicker);
+        line(agenda, 'slide__title display', s.agendaTitle, 'h2');
+
+        const ol = document.createElement('ol');
+        ol.className = 'agenda';
+        page.forEach((group, gi) => {
+          const block = document.createElement('li');
+          block.className = 'agenda__session';
+
+          const head = document.createElement('div');
+          head.className = 'agenda__session-head';
+          line(head, 'agenda__session-name meta-label', sessionName(from + gi));
+          line(head, 'agenda__session-mins meta-label', dur(minutesOf(group)));
+          block.append(head);
+
+          const inner = document.createElement('ol');
+          inner.className = 'agenda__labs';
+          group.forEach((mod) => {
+            counter += 1;
+            const li = document.createElement('li');
+            li.className = 'agenda__row';
+            line(li, 'agenda__no display', String(counter).padStart(2, '0'));
+            const body = document.createElement('div');
+            line(body, 'agenda__name', mod.name);
+            // Named scenarios are the point: they are why this module is here.
+            const why = askedBy.get(mod.id);
+            line(body, 'agenda__why', why?.length ? why.join(' · ') : cfg.capabilities[mod.id]);
+            li.append(body);
+            line(li, 'agenda__mins meta-label', dur(mod.minutes));
+            inner.append(li);
+          });
+          block.append(inner);
+          ol.append(block);
+        });
+        agenda.append(ol);
+
+        if (from + AGENDA_PER_PAGE >= sessions.length) {
+          line(agenda, 'slide__foot meta-label', dur(minutesOf(labs)));
+        }
+      }
+
+      // 3 — how the day works. Only honest to promise a demonstration when the
+      // selected labs actually carry one.
+      if (labs.some((m) => m.walkthrough.length)) {
+        const how = slide('how');
+        line(how, 'slide__eyebrow meta-label', s.kicker);
+        line(how, 'slide__title display', s.howTitle, 'h2');
+        line(how, 'slide__lede', s.howBody);
+      }
+
+      // 4..n — a divider before each sitting, then four slides per lab.
+      let labNo = 0;
+      sessions.forEach((group, si) => {
+        divider(si);
+
+        group.forEach((mod) => {
+          labNo += 1;
+          const label = `${s.labLabel} ${String(labNo).padStart(2, '0')}`;
+
+        const open = slide('open');
+        line(open, 'slide__eyebrow meta-label', label);
+        line(open, 'slide__title display', mod.name, 'h2');
+        line(open, 'slide__objective', mod.objective);
+
+        const needs = slide('needs');
+        line(needs, 'slide__eyebrow meta-label', `${label} · ${mod.name}`);
+        line(needs, 'slide__heading display', s.needsLabel, 'h2');
+        const cols = document.createElement('div');
+        cols.className = 'needs';
+        (
+          [
+            [s.skillsLabel, mod.needs.skills],
+            [s.toolsLabel, mod.needs.tools],
+            [s.materialsLabel, mod.needs.materials],
+          ] as const
+        ).forEach(([heading, items]) => {
+          const col = document.createElement('div');
+          col.className = 'needs__col';
+          line(col, 'needs__label meta-label', heading);
+          list(col, 'needs__list', [...items]);
+          cols.append(col);
+        });
+        needs.append(cols);
+
+        const work = slide('work');
+        line(work, 'slide__eyebrow meta-label', `${label} · ${mod.name}`);
+        line(work, 'slide__heading display', s.stepsLabel, 'h2');
+        list(work, 'steps', mod.steps, true);
+
+        // One action per screen. The room is following along on their own
+        // laptops, and six steps on one slide is six people lost.
+        mod.walkthrough.forEach((step, n) => {
+          const demo = slide('demo');
+          const rail = document.createElement('div');
+          rail.className = 'demo__rail';
+          line(rail, 'slide__eyebrow meta-label', `${label} · ${n + 1}/${mod.walkthrough.length}`);
+          line(rail, 'demo__act display', step.act, 'h2');
+          line(rail, 'demo__label meta-label', s.whereLabel);
+          line(rail, 'demo__where', step.where);
+          line(rail, 'demo__do', step.do);
+          if (step.type) {
+            line(rail, 'demo__label meta-label', s.typeLabel);
+            line(rail, 'demo__type', step.type);
+          }
+          line(rail, 'demo__label meta-label', s.seeLabel);
+          line(rail, 'demo__see', step.see);
+          if (step.note) line(rail, 'demo__note', step.note);
+
+          demo.append(rail);
+
+          if (step.shot) {
+            const figure = document.createElement('figure');
+            figure.className = 'demo__shot';
+            const img = document.createElement('img');
+            img.src = step.shot;
+            img.alt = step.act;
+            // Never lazy: a screenshot that is still fetching when the
+            // facilitator advances is a blank slide in front of the room.
+            img.loading = 'eager';
+            // A screenshot that decodes after the fit pass would blow the
+            // slide past the stage without it.
+            img.addEventListener('load', () => fit(slides[index]));
+            figure.append(img);
+            demo.append(figure);
+          }
+        });
+
+        const close = slide('close');
+        line(close, 'slide__eyebrow meta-label', `${label} · ${mod.name}`);
+        line(close, 'slide__label meta-label', s.summaryLabel);
+        line(close, 'slide__summary display', mod.summary, 'h2');
+        line(close, 'slide__foot meta-label', dur(mod.minutes));
+        });
+      });
+
+      // n+1 — where this goes. Bookends the title slide rather than repeating
+      // its own heading as an eyebrow.
+      const end = slide('end');
+      line(end, 'slide__eyebrow meta-label', s.kicker);
+      line(end, 'slide__title display', s.closeTitle, 'h2');
+      line(end, 'slide__lede', s.closeBody);
+    }
+
+    // ——— navigation ————————————————————————————————————————————————————
+
+    let index = 0;
+    const counter = document.querySelector<HTMLElement>('[data-counter]')!;
+
+    /**
+     * A slide that scrolls is a slide the back of the room cannot read, and a
+     * projector gives no warning that anything was cut. Rather than guess type
+     * sizes per slide kind — which breaks the first time a lab has six steps
+     * or a customer name is long — measure the composed slide and scale it to
+     * the height available. One mechanism, every slide, no clipping.
+     */
+    function fit(el: HTMLElement) {
+      const inner = el.querySelector<HTMLElement>('.slide__inner');
+      if (!inner) return;
+      inner.style.transform = '';
+      const box = getComputedStyle(el);
+      const available =
+        el.clientHeight - parseFloat(box.paddingTop) - parseFloat(box.paddingBottom);
+      const needed = inner.scrollHeight;
+      if (needed > available && available > 0) {
+        inner.style.transform = `scale(${available / needed})`;
+      }
+    }
+
+    function show(next: number) {
+      index = Math.max(0, Math.min(slides.length - 1, next));
+      slides.forEach((el, i) => {
+        el.hidden = i !== index;
+      });
+      fit(slides[index]);
+      counter.textContent = s.counter
+        .replace('{n}', String(index + 1))
+        .replace('{total}', String(slides.length));
+    }
+
+    function bindKeys() {
+      document.querySelector('[data-prev]')!.addEventListener('click', () => show(index - 1));
+      document.querySelector('[data-next]')!.addEventListener('click', () => show(index + 1));
+
+      document.addEventListener('keydown', (event) => {
+        switch (event.key) {
+          case 'ArrowRight':
+          case 'PageDown':
+          case ' ':
+            event.preventDefault();
+            show(index + 1);
+            break;
+          case 'ArrowLeft':
+          case 'PageUp':
+            event.preventDefault();
+            show(index - 1);
+            break;
+          case 'Home':
+            event.preventDefault();
+            show(0);
+            break;
+          case 'End':
+            event.preventDefault();
+            show(slides.length - 1);
+            break;
+          case 'Escape':
+            window.location.href = cfg.exitHref;
+            break;
+        }
+      });
+    }
+
+    // Last, not first: the slide array and the counter above are `const`, so
+    // rendering has to come after they exist.
+    if (labs.length) {
+      fallback.hidden = true;
+      stage.hidden = false;
+      bar.hidden = false;
+      build();
+      show(0);
+      bindKeys();
+      // Plugging in a projector changes the viewport, usually mid-sentence.
+      window.addEventListener('resize', () => fit(slides[index]));
+      // Webfonts land after first paint and change every measurement.
+      document.fonts?.ready.then(() => fit(slides[index]));
+    }
+  }
+</script>
+
+<style is:global>
+  /* Every slide below the deck shell is built by the script above, so Astro's
+     scoping would never reach it — this block is global by necessity, and the
+     `deck-` prefix is what keeps that honest. A projector is also not a
+     browser window: dark ground, one idea per screen, type sized for the back
+     row rather than for reading at a desk. */
+  .deck {
+    --pad: clamp(2rem, 6vw, 6rem);
+    position: fixed;
+    inset: 0;
+    display: grid;
+    grid-template-rows: 1fr auto;
+    background: var(--color-ink-deep);
+    color: var(--color-parchment);
+    overflow: hidden;
+    z-index: 50;
+  }
+
+  .deck__stage {
+    position: relative;
+    min-height: 0;
+  }
+
+  .deck .slide {
+    position: absolute;
+    inset: 0;
+    display: grid;
+    align-content: center;
+    padding: var(--pad);
+    overflow: hidden;
+  }
+
+  .deck .slide[hidden] {
+    display: none;
+  }
+
+  .deck .slide__inner {
+    width: min(72rem, 100%);
+    margin-inline: auto;
+    display: grid;
+    gap: 1.1rem;
+    justify-items: start;
+    transform-origin: center center;
+  }
+
+  .deck .slide--title .slide__inner,
+  .deck .slide--empty .slide__inner {
+    gap: 0.7rem;
+  }
+
+  .deck .slide--empty {
+    position: relative;
+    inset: auto;
+    min-height: 70vh;
+  }
+
+  /* Walkthrough: instruction rail beside the capture. The rail is fixed-width
+     so the eye lands in the same place on every step of a demo. Before a step
+     has been captured there is no second column to balance, so it stays
+     single-column rather than leaving half the screen empty. */
+  .deck .slide--demo:has(.demo__shot) .slide__inner {
+    width: min(92rem, 100%);
+    grid-template-columns: minmax(17rem, 24rem) 1fr;
+    gap: clamp(1.25rem, 3vw, 3rem);
+    align-items: start;
+    justify-items: stretch;
+  }
+
+  .deck .demo__rail {
+    display: grid;
+    gap: 0.4rem;
+    align-content: start;
+  }
+
+  .deck .demo__act {
+    font-family: var(--font-display);
+    font-size: clamp(1.5rem, 2.5vw, 2.2rem);
+    line-height: 1.12;
+    font-weight: 600;
+    margin: 0 0 0.3rem;
+    color: var(--color-parchment);
+  }
+
+  .deck .demo__label {
+    margin: 0.55rem 0 0;
+  }
+
+  .deck .demo__where,
+  .deck .demo__do,
+  .deck .demo__see {
+    margin: 0;
+    font-size: clamp(0.92rem, 1.15vw, 1.08rem);
+    line-height: 1.45;
+    color: color-mix(in srgb, var(--color-parchment) 88%, transparent);
+  }
+
+  .deck .demo__where {
+    font-weight: 600;
+  }
+
+  /* Verbatim: this is text the room retypes, so it must not be restyled
+     into something that hides a trailing space or a curly quote. */
+  .deck .demo__type {
+    margin: 0;
+    font-family: ui-monospace, 'SF Mono', Menlo, monospace;
+    font-size: clamp(0.82rem, 1vw, 0.95rem);
+    line-height: 1.5;
+    padding: 0.6rem 0.75rem;
+    border-inline-start: 2px solid var(--color-gold);
+    background: color-mix(in srgb, var(--color-parchment) 7%, transparent);
+    color: var(--color-parchment);
+    white-space: pre-wrap;
+  }
+
+  .deck .demo__note {
+    margin: 0.5rem 0 0;
+    font-size: clamp(0.8rem, 1vw, 0.92rem);
+    line-height: 1.45;
+    font-style: italic;
+    color: color-mix(in srgb, var(--color-parchment) 62%, transparent);
+  }
+
+  .deck .demo__shot {
+    margin: 0;
+    display: grid;
+    /* The rail reads top-down; the capture is one object, so it sits on the
+       rail's optical centre rather than hanging from its first line. */
+    align-self: center;
+    border: 1px solid color-mix(in srgb, var(--color-parchment) 18%, transparent);
+    background: color-mix(in srgb, var(--color-parchment) 4%, transparent);
+  }
+
+  .deck .demo__shot img {
+    display: block;
+    width: 100%;
+    height: auto;
+    max-height: 72vh;
+    object-fit: contain;
+  }
+
+  @media (max-width: 60rem) {
+    .deck .slide--demo:has(.demo__shot) .slide__inner {
+      grid-template-columns: 1fr;
+    }
+  }
+
+  .deck .slide__kicker,
+  .deck .slide__eyebrow,
+  .deck .slide__label,
+  .deck .slide__for,
+  .deck .slide__foot {
+    font-family: var(--font-body);
+    font-size: var(--text-micro);
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.16em;
+    margin: 0;
+    color: var(--color-gold-bright);
+  }
+
+  .deck .slide__foot {
+    color: color-mix(in srgb, var(--color-parchment) 45%, transparent);
+  }
+
+  .deck .slide__title {
+    font-family: var(--font-display);
+    font-size: clamp(2.6rem, 6vw, 5.25rem);
+    line-height: 1.03;
+    font-weight: 600;
+    margin: 0;
+    color: var(--color-parchment);
+  }
+
+  .deck .slide__heading {
+    font-family: var(--font-display);
+    font-size: clamp(1.9rem, 3.8vw, 3.1rem);
+    line-height: 1.1;
+    font-weight: 600;
+    margin: 0;
+    color: var(--color-parchment);
+  }
+
+  .deck .slide__objective,
+  .deck .slide__lede {
+    font-size: clamp(1.15rem, 1.9vw, 1.65rem);
+    line-height: 1.5;
+    margin: 0;
+    max-width: 46ch;
+    color: color-mix(in srgb, var(--color-parchment) 86%, transparent);
+  }
+
+  .deck .slide__summary {
+    font-family: var(--font-display);
+    font-size: clamp(1.8rem, 3.4vw, 2.9rem);
+    line-height: 1.2;
+    font-weight: 600;
+    margin: 0;
+    max-width: 26ch;
+    color: var(--color-gold-bright);
+  }
+
+  .deck .slide__date {
+    font-size: clamp(1rem, 1.3vw, 1.15rem);
+    margin: 0;
+    color: color-mix(in srgb, var(--color-parchment) 68%, transparent);
+  }
+
+  /* Agenda — two columns so it breathes, breaking between sittings rather
+     than through the middle of one. */
+  .deck .agenda {
+    list-style: none;
+    margin: 0.6rem 0 0;
+    padding: 0;
+    width: 100%;
+    columns: 2;
+    column-gap: clamp(1.5rem, 4vw, 3.5rem);
+  }
+
+  .deck .agenda__session {
+    break-inside: avoid;
+    margin-block-end: 1.1rem;
+  }
+
+  .deck .agenda__session-head {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: 1rem;
+    padding-block-end: 0.3rem;
+    border-block-end: 1px solid color-mix(in srgb, var(--color-gold) 55%, transparent);
+  }
+
+  .deck .agenda__session-name,
+  .deck .agenda__session-mins {
+    margin: 0;
+    color: var(--color-gold-bright);
+  }
+
+  .deck .agenda__labs {
+    list-style: none;
+    margin: 0.5rem 0 0;
+    padding: 0;
+    display: grid;
+    gap: 0.5rem;
+  }
+
+  .deck .agenda__row {
+    display: grid;
+    grid-template-columns: auto 1fr auto;
+    align-items: baseline;
+    gap: clamp(0.7rem, 1.5vw, 1.25rem);
+  }
+
+  .deck .agenda__no {
+    font-family: var(--font-display);
+    font-size: clamp(1.15rem, 1.9vw, 1.7rem);
+    margin: 0;
+    color: var(--color-gold);
+    font-variant-numeric: tabular-nums;
+  }
+
+  .deck .agenda__name {
+    font-size: clamp(1.02rem, 1.55vw, 1.4rem);
+    margin: 0;
+    color: var(--color-parchment);
+  }
+
+  .deck .agenda__why {
+    font-size: clamp(0.82rem, 1vw, 0.95rem);
+    line-height: 1.4;
+    margin: 0.15rem 0 0;
+    color: color-mix(in srgb, var(--color-parchment) 58%, transparent);
+  }
+
+  .deck .agenda__mins {
+    white-space: nowrap;
+    color: color-mix(in srgb, var(--color-parchment) 50%, transparent);
+  }
+
+  /* Between-sittings progress. Done recedes, now is gold, next is dim. */
+  .deck .track {
+    list-style: none;
+    margin: 0.6rem 0 0;
+    padding: 0;
+    display: grid;
+    gap: 0.55rem;
+    width: 100%;
+  }
+
+  .deck .track__row {
+    display: grid;
+    grid-template-columns: auto 1fr auto;
+    align-items: baseline;
+    gap: clamp(0.9rem, 2vw, 1.75rem);
+    padding: 0.55rem 0.75rem;
+    border: 1px solid transparent;
+  }
+
+  .deck .track__row[data-state='now'] {
+    border-color: color-mix(in srgb, var(--color-gold) 70%, transparent);
+    background: color-mix(in srgb, var(--color-gold) 10%, transparent);
+  }
+
+  .deck .track__row[data-state='done'] {
+    opacity: 0.45;
+  }
+
+  .deck .track__row[data-state='next'] {
+    opacity: 0.7;
+  }
+
+  .deck .track__no {
+    font-family: var(--font-display);
+    font-size: clamp(1.15rem, 1.9vw, 1.7rem);
+    margin: 0;
+    font-variant-numeric: tabular-nums;
+    color: var(--color-gold);
+  }
+
+  .deck .track__row[data-state='now'] .track__no {
+    color: var(--color-gold-bright);
+  }
+
+  .deck .track__names {
+    margin: 0;
+    font-size: clamp(0.95rem, 1.4vw, 1.25rem);
+    line-height: 1.4;
+    color: var(--color-parchment);
+  }
+
+  .deck .track__right {
+    display: flex;
+    align-items: baseline;
+    gap: 0.75rem;
+    white-space: nowrap;
+  }
+
+  .deck .track__flag {
+    margin: 0;
+    color: var(--color-gold-bright);
+  }
+
+  .deck .track__flag--done {
+    color: color-mix(in srgb, var(--color-parchment) 55%, transparent);
+  }
+
+  .deck .track__mins {
+    margin: 0;
+    color: color-mix(in srgb, var(--color-parchment) 55%, transparent);
+  }
+
+  /* Pre-flight — read out before anyone opens a laptop. */
+  .deck .needs {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(14rem, 1fr));
+    gap: clamp(1.25rem, 3vw, 2.75rem);
+    width: 100%;
+    margin-block-start: 0.5rem;
+  }
+
+  .deck .needs__label {
+    margin-block-end: 0.65rem;
+    color: var(--color-gold-bright);
+  }
+
+  .deck .needs__list {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: grid;
+    gap: 0.45rem;
+  }
+
+  .deck .needs__list li {
+    position: relative;
+    padding-inline-start: 1.15rem;
+    font-size: clamp(0.98rem, 1.3vw, 1.18rem);
+    line-height: 1.45;
+    color: color-mix(in srgb, var(--color-parchment) 88%, transparent);
+  }
+
+  .deck .needs__list li::before {
+    content: '';
+    position: absolute;
+    inset-inline-start: 0;
+    top: 0.6em;
+    width: 0.42rem;
+    height: 0.42rem;
+    border: 1px solid var(--color-gold);
+    transform: rotate(45deg);
+  }
+
+  /* The working slide: this one stays up while people build. */
+  .deck .steps {
+    counter-reset: step;
+    list-style: none;
+    margin: 0.4rem 0 0;
+    padding: 0;
+    display: grid;
+    gap: 0.8rem;
+    width: 100%;
+  }
+
+  .deck .steps li {
+    counter-increment: step;
+    display: grid;
+    grid-template-columns: auto 1fr;
+    gap: 1rem;
+    align-items: baseline;
+    font-size: clamp(1.05rem, 1.7vw, 1.45rem);
+    line-height: 1.45;
+    max-width: 54ch;
+    color: color-mix(in srgb, var(--color-parchment) 92%, transparent);
+  }
+
+  .deck .steps li::before {
+    content: counter(step, decimal-leading-zero);
+    font-family: var(--font-display);
+    font-size: 0.9em;
+    color: var(--color-gold);
+    font-variant-numeric: tabular-nums;
+  }
+
+  /* Chrome, deliberately quiet — it is not what the room is looking at. */
+  .deck__bar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+    padding: 0.7rem clamp(1rem, 4vw, 2.5rem);
+    border-block-start: 1px solid color-mix(in srgb, var(--color-parchment) 12%, transparent);
+    background: color-mix(in srgb, var(--color-ink-deep) 92%, black);
+  }
+
+  .deck__exit,
+  .deck__hint,
+  .deck__counter {
+    margin: 0;
+    font-size: 0.78rem;
+    letter-spacing: 0.09em;
+    color: color-mix(in srgb, var(--color-parchment) 55%, transparent);
+  }
+
+  .deck__exit {
+    text-decoration: none;
+    text-transform: uppercase;
+  }
+
+  .deck__exit:hover,
+  .deck__exit:focus-visible {
+    color: var(--color-gold-bright);
+  }
+
+  .deck__hint {
+    display: none;
+  }
+
+  .deck__nav {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+  }
+
+  .deck__counter {
+    min-width: 4.5rem;
+    text-align: center;
+    font-variant-numeric: tabular-nums;
+  }
+
+  .deck__step {
+    width: 2.25rem;
+    height: 2.25rem;
+    border: 1px solid color-mix(in srgb, var(--color-parchment) 24%, transparent);
+    background: transparent;
+    color: var(--color-parchment);
+    font-size: 1rem;
+    line-height: 1;
+    cursor: pointer;
+  }
+
+  .deck__step:hover,
+  .deck__step:focus-visible {
+    border-color: var(--color-gold);
+    color: var(--color-gold-bright);
+  }
+
+  @media (min-width: 48rem) {
+    .deck__hint {
+      display: block;
+    }
+  }
+</style>

@@ -1,194 +1,1186 @@
 [
   {
-    "id": "agent-basics",
+    "id": "agent-instructions",
     "order": 1,
     "minutes": 30,
     "requires": [],
     "en": {
       "name": "Build and test your first agent",
       "teaches": "Creating an agent, writing instructions that hold, and using the test pane to see why it answered the way it did.",
-      "build": "A working agent that answers from its instructions alone, and a habit of reading the test pane rather than guessing."
+      "build": "A working agent that answers from its instructions alone, and a habit of reading the test pane rather than guessing.",
+      "objective": "Create an agent, shape its behaviour with instructions, and diagnose any answer from the test pane.",
+      "needs": {
+        "skills": [
+          "None — this is the starting point"
+        ],
+        "tools": [
+          "Copilot Studio, signed in",
+          "An environment you may build in"
+        ],
+        "materials": [
+          "Nothing. This one starts empty on purpose"
+        ]
+      },
+      "steps": [
+        "Create an agent and name it for the task, not the technology.",
+        "Write the instructions as rules: what it must do, and what it must refuse.",
+        "Ask three questions in the test pane — one it should answer, one it should refuse, one genuinely ambiguous.",
+        "Change a single line of the instructions and watch the same three answers move.",
+        "Publish to the test channel and open it the way a user would."
+      ],
+      "summary": "You have an agent whose behaviour you can predict, and a way to find out why when you cannot."
     },
     "zh": {
       "name": "建出并测试你的第一个 agent",
       "teaches": "创建 agent、把说明写得站得住、以及用测试面板看清楚它为什么这么答。",
-      "build": "一个只靠说明就能作答的 agent，以及「看测试面板而不是靠猜」的习惯。"
-    }
+      "build": "一个只靠说明就能作答的 agent，以及「看测试面板而不是靠猜」的习惯。",
+      "objective": "会建 agent、会用说明控制它的行为、并能从测试面板看出任一回答是怎么来的。",
+      "needs": {
+        "skills": [
+          "无——这就是起点"
+        ],
+        "tools": [
+          "能登录的 Copilot Studio",
+          "一个允许你建东西的环境"
+        ],
+        "materials": [
+          "不需要。这一课故意从空白开始"
+        ]
+      },
+      "steps": [
+        "建一个 agent，名字按它要干的活起，不按技术起。",
+        "把说明写成规则：它必须做什么、必须拒绝什么。",
+        "在测试面板问三个问题——一个它该答、一个它该拒、一个真的模棱两可。",
+        "改说明里的一行，看同样这三个回答怎么变。",
+        "发布到测试渠道，用真实用户的方式打开它。"
+      ],
+      "summary": "你有了一个行为可预测的 agent，以及在它不可预测时查出原因的办法。"
+    },
+    "walkthrough": [
+      {
+        "shot": "01-new-agent",
+        "en": {
+          "act": "Create the agent",
+          "where": "Agents → New agent",
+          "do": "You land straight on the Build canvas. There is no wizard to sit through — name, instructions and configuration are all one screen.",
+          "see": "Build / Preview / Evaluate / Monitor across the top. A model is already chosen, and Knowledge already holds one entry: Search all websites.",
+          "note": "Point at that default web knowledge now, before anyone asks why the agent is quoting the internet in ten minutes' time."
+        },
+        "zh": {
+          "act": "建这个 agent",
+          "where": "Agents → New agent",
+          "do": "直接落在 Build 画布上。没有向导要走——名字、说明、配置都在同一屏。",
+          "see": "顶部是 Build / Preview / Evaluate / Monitor。模型已经选好，Knowledge 里也已经有一条：Search all websites。",
+          "note": "现在就把那个默认的联网知识指出来——十分钟后会有人问「它怎么引的是网上的东西」。"
+        }
+      },
+      {
+        "shot": "02-instructions",
+        "en": {
+          "act": "Name it, then write the instructions as rules",
+          "where": "Build → the name field, then Instructions",
+          "do": "Name it for the job it does. Replace the placeholder instructions: what it must do, then what it must refuse. Save.",
+          "type": "You answer employee questions about the company expense policy.\n\nAnswer only about expenses. If asked about anything else — payroll, HR, IT — say you only handle expenses and stop.\n\nIf you are not certain, say you are not certain. Never guess a monetary limit.",
+          "see": "Saving creates the agent and unlocks the Evaluate tab. The Save button then greys out — that is how you know it took.",
+          "note": "The refusal clause and the 'never guess' clause are the load-bearing ones. You will watch both fire in a moment."
+        },
+        "zh": {
+          "act": "先命名，再把说明写成规则",
+          "where": "Build → 名称输入框，然后 Instructions",
+          "do": "名字按它要干的活起。把占位说明整段替掉：先写必须做什么，再写必须拒绝什么。保存。",
+          "type": "You answer employee questions about the company expense policy.\n\nAnswer only about expenses. If asked about anything else — payroll, HR, IT — say you only handle expenses and stop.\n\nIf you are not certain, say you are not certain. Never guess a monetary limit.",
+          "see": "保存会真正创建 agent，并解锁 Evaluate 页签。Save 按钮随后变灰——这就是存上了的信号。",
+          "note": "起作用的是那句「拒绝」和那句「不准猜」。马上你会亲眼看到它俩生效。"
+        }
+      },
+      {
+        "shot": "03-preview-answer",
+        "en": {
+          "act": "Ask the one it should answer",
+          "where": "Preview tab",
+          "do": "Ask a question squarely inside its job. Then read the reasoning trace above the answer, not just the answer.",
+          "type": "Can I expense a taxi to the airport?",
+          "see": "It loads a search-before-answer skill, calls tools, and reports it could not find a company policy. It then states outright that it will not guess a dollar cap — and cites the public web instead.",
+          "note": "Two lessons on one screen. The instruction held. And with no company knowledge attached, that default web source is what it fell back on — which is precisely what Lab 02 fixes."
+        },
+        "zh": {
+          "act": "先问那个它该答的",
+          "where": "Preview 页签",
+          "do": "问一个正好在它职责范围内的问题。然后读回答上方的推理过程，而不只是读回答。",
+          "type": "Can I expense a taxi to the airport?",
+          "see": "它加载了 search-before-answer 技能、调用了工具，并说明没找到公司政策。接着它直说不会猜金额上限——然后引了公开网页。",
+          "note": "一屏两个教训。说明生效了。而在没有公司知识的情况下，它只能回退到默认的联网源——而这正是 Lab 02 要解决的。"
+        }
+      },
+      {
+        "shot": "04-refusal",
+        "en": {
+          "act": "Ask the one it should refuse",
+          "where": "Preview tab, same conversation",
+          "do": "Ask something plainly outside its remit.",
+          "type": "How much holiday do I have left?",
+          "see": "Two sentences, no hedging, and a redirect to HR. No web search and no citations — it did not even try.",
+          "note": "Compare the length against the previous answer. A good refusal is short. If yours runs three paragraphs, the instruction is too soft."
+        },
+        "zh": {
+          "act": "再问那个它该拒的",
+          "where": "Preview 页签，同一段对话",
+          "do": "问一个明显不归它管的事。",
+          "type": "How much holiday do I have left?",
+          "see": "两句话，不拖泥带水，直接指向 HR。没搜网、没引用——它根本没去试。",
+          "note": "把它和上一个回答的长度比一下。好的拒绝是短的。如果你的拒绝有三段，说明说明写得太软了。"
+        }
+      },
+      {
+        "shot": "05-ambiguous",
+        "en": {
+          "act": "Ask the genuinely ambiguous one",
+          "where": "Preview tab, same conversation",
+          "do": "Ask the question that has no clean answer without your own policy.",
+          "type": "Is a client dinner an expense or entertainment?",
+          "see": "A confident, well-sourced, detailed answer on tax treatment — closing with an explicit caveat that it cannot find your policy and will not guess your cap.",
+          "note": "This is the slide for the business people. Everything above the caveat is correct and useless; the caveat is the honest part. That gap is the entire argument for Lab 02."
+        },
+        "zh": {
+          "act": "问那个真模棱两可的",
+          "where": "Preview 页签，同一段对话",
+          "do": "问一个没有你们自己的政策就答不干净的问题。",
+          "type": "Is a client dinner an expense or entertainment?",
+          "see": "一个笃定、有出处、很详细的税务口径回答——结尾明确声明：找不到你们的政策，不会猜你们的上限。",
+          "note": "这一张是给业务方看的。声明以上的内容都对，但都没用；那句声明才是诚实的部分。这个落差就是 Lab 02 存在的理由。"
+        }
+      },
+      {
+        "shot": "06-published-user-view",
+        "en": {
+          "act": "Publish, then look at it as a user",
+          "where": "Publish, then Preview → End user preview",
+          "do": "Publish and wait for it to finish. Then turn on End user preview and start a new chat with the same first question.",
+          "see": "The same answer, but the reasoning trace, the skill loading and the tool calls are all gone. The user gets the conclusion and the citations, nothing else.",
+          "note": "Do this at the end of every lab. What the maker sees and what the user sees diverge immediately, and only one of them ships."
+        },
+        "zh": {
+          "act": "发布，然后用用户的眼睛看一遍",
+          "where": "Publish，然后 Preview → End user preview",
+          "do": "发布并等它完成。然后打开 End user preview，新开一段对话，问同样的第一个问题。",
+          "see": "回答一样，但推理过程、技能加载、工具调用全没了。用户只拿到结论和引用。",
+          "note": "每一课结束都做一次。作者看到的和用户看到的立刻就分岔了，而上线的只有其中一个。"
+        }
+      }
+    ]
   },
   {
     "id": "knowledge-grounding",
     "order": 2,
     "minutes": 45,
-    "requires": ["agent-basics"],
+    "requires": [
+      "agent-instructions"
+    ],
     "en": {
       "name": "Ground it in your own documents",
       "teaches": "Adding knowledge sources, checking what was actually retrieved, and making the agent cite rather than assert.",
-      "build": "An agent that answers only from documents you chose, shows its source, and says so when it does not know."
+      "build": "An agent that answers only from documents you chose, shows its source, and says so when it does not know.",
+      "objective": "Point an agent at your own documents and make it answer from them — with the source shown, and a refusal when the answer is not there.",
+      "needs": {
+        "skills": [
+          "Agent instructions"
+        ],
+        "tools": [
+          "Copilot Studio",
+          "A SharePoint site or Teams channel you can read"
+        ],
+        "materials": [
+          "A SharePoint site holding the documents — including two editions of one of them"
+        ]
+      },
+      "steps": [
+        "Add a knowledge source, and wait for indexing to finish before judging anything.",
+        "Ask a question whose answer is definitely in there, then check which document it cited.",
+        "Ask one whose answer is definitely not, and make it say so rather than invent.",
+        "Turn on citations and confirm a reader could verify the answer without you.",
+        "Ask something the documents answer inconsistently — that is the case your users will hit."
+      ],
+      "summary": "Answers are now traceable to a source, which is the difference between a demo and something a business will accept."
     },
     "zh": {
       "name": "让它依据你自己的文档作答",
       "teaches": "添加知识来源、检查它实际检索到了什么、以及让它给出处而不是张口就来。",
-      "build": "一个只依据你选定的文档作答、并给出出处、不知道就说不知道的 agent。"
-    }
+      "build": "一个只依据你选定的文档作答、并给出出处、不知道就说不知道的 agent。",
+      "objective": "能把 agent 接到你自己的文档上，让它依据文档作答、给出出处，没有依据时直接拒答。",
+      "needs": {
+        "skills": [
+          "Agent 指令设计"
+        ],
+        "tools": [
+          "Copilot Studio",
+          "一个你读得了的 SharePoint 站点或 Teams 频道"
+        ],
+        "materials": [
+          "一个放着这些文档的 SharePoint 站点——其中至少有一份文档存两个版本"
+        ]
+      },
+      "steps": [
+        "添加知识来源，等索引建完再下任何结论。",
+        "问一个答案肯定在里面的问题，然后看它引了哪份文档。",
+        "再问一个答案肯定不在里面的，逼它说「没有」而不是编。",
+        "打开引用，确认读者不需要你帮忙就能核对。",
+        "问一个文档里自相矛盾的问题——那才是你用户会碰上的情况。"
+      ],
+      "summary": "回答现在能追溯到出处——这就是「演示」和「业务愿意接受的东西」之间的差别。"
+    },
+    "walkthrough": [
+      {
+        "shot": "01-add-knowledge",
+        "en": {
+          "act": "Open the knowledge picker",
+          "where": "Build → Knowledge → Add knowledge",
+          "do": "Look at what the options actually are before choosing one. Public websites, SharePoint, OneDrive, Azure SQL — and a plain file upload.",
+          "see": "Uploading a file is the fastest path and the worst habit. A file uploaded here is a copy that will drift from the original the moment somebody edits it.",
+          "note": "Take the SharePoint route even though it is slower to set up. Grounding on the live library is the difference between a demo and something the business can keep."
+        },
+        "zh": {
+          "act": "打开知识源选择器",
+          "where": "Build → Knowledge → Add knowledge",
+          "do": "先看清楚有哪些选项，再决定用哪个。公开网站、SharePoint、OneDrive、Azure SQL——以及直接传文件。",
+          "see": "直接传文件最快，也最坐不住。传上去的是一份副本，原件一被人改，它就对不上了。",
+          "note": "宁可麻烦一点也走 SharePoint。接在活的文档库上，才是「演示」和「业务能长期用」的分界线。"
+        }
+      },
+      {
+        "shot": "02-sharepoint-source",
+        "en": {
+          "act": "Point it at the SharePoint site",
+          "where": "Add knowledge → SharePoint",
+          "do": "Paste the site URL rather than browsing. Then give the source a name a human would recognise — that name appears in citations.",
+          "type": "https://<your-tenant>.sharepoint.com/sites/aiia-labs",
+          "see": "The site resolves to a row with an editable name and description. The dialog warns that SharePoint knowledge is only available to authenticated end users.",
+          "note": "That warning is the security model, not a caveat. The agent sees exactly what the person asking is allowed to see — which is why grounding on SharePoint is defensible where a copied file is not."
+        },
+        "zh": {
+          "act": "把它指向 SharePoint 站点",
+          "where": "Add knowledge → SharePoint",
+          "do": "直接粘站点 URL，别用浏览。然后给这个源起一个人看得懂的名字——这个名字会出现在引用里。",
+          "type": "https://<your-tenant>.sharepoint.com/sites/aiia-labs",
+          "see": "站点解析成一行，名称和描述都可改。对话框会提醒：SharePoint 知识只对已认证的终端用户可用。",
+          "note": "那句提醒不是免责声明，而是安全模型。agent 能看到的，就是提问的人有权看到的——这就是为什么接 SharePoint 站得住，而拷一份文件站不住。"
+        }
+      },
+      {
+        "shot": "03-grounded-config",
+        "en": {
+          "act": "Remove the default web source",
+          "where": "Build → Knowledge → remove Search all websites, then Save",
+          "do": "Delete the web knowledge entry that Lab 01 caught quoting the internet. Save, and wait for indexing before judging anything.",
+          "see": "Knowledge now lists one source. This is the moment the agent stops being able to answer from the open web.",
+          "note": "Leave the web source in and every test below is contaminated — you will never know whether an answer came from the policy or from a tax blog."
+        },
+        "zh": {
+          "act": "把默认的联网源删掉",
+          "where": "Build → Knowledge → 删除 Search all websites，然后 Save",
+          "do": "把 Lab 01 里那个“引网上内容”的联网知识条目删掉。保存，并等索引建完再下结论。",
+          "see": "Knowledge 里现在只剩一个源。从这一刻起，agent 再也不能从公开网络作答。",
+          "note": "不删它，下面每一项测试都是脏的——你永远不知道答案是来自政策还是来自某个税务博客。"
+        }
+      },
+      {
+        "shot": "04-grounded-answer",
+        "en": {
+          "act": "Ask what the documents answer",
+          "where": "Preview tab",
+          "do": "Ask the question Lab 01 could not answer, and this time look at the citation before the answer.",
+          "type": "What is the daily limit for meals when travelling?",
+          "see": "It loads an analysing-docx skill, returns the figures, and cites the document by filename. It picks the current edition over the superseded one without being asked.",
+          "note": "Same question as Lab 01. Then it refused to guess a cap; now it states one and shows you where it came from. That is the whole value of this lab in one screen."
+        },
+        "zh": {
+          "act": "问文档里答得了的",
+          "where": "Preview 页签",
+          "do": "问 Lab 01 答不了的那个问题，这次先看引用，再看回答。",
+          "type": "What is the daily limit for meals when travelling?",
+          "see": "它加载了 analyzing-docx 技能，给出具体金额，并按文件名引用。没人告诉它，它自己选了现行版而不是废止版。",
+          "note": "和 Lab 01 同一个问题。当时它拒绝猜上限；现在它给出了一个，并且告诉你出处。这一屏就是这节课的全部价值。"
+        }
+      },
+      {
+        "shot": "05-conflict",
+        "en": {
+          "act": "Ask what they do not cover",
+          "where": "Preview tab",
+          "do": "Ask something adjacent to the policy but not in it, and read the whole answer including the reasoning.",
+          "type": "What is the limit for a meal in Oslo on a public holiday?",
+          "see": "It states plainly that no city or public-holiday rate exists, applies the nearest rule that does, flags that the superseded edition says something different, and routes you to the exception process. Two citations.",
+          "note": "Nobody asked it to compare editions. Put two versions of a document in a library and the agent will find the disagreement — which is a content problem for whoever owns those documents, and they should be in the room."
+        },
+        "zh": {
+          "act": "问文档里没有的",
+          "where": "Preview 页签",
+          "do": "问一个贴着政策、但政策里没写的问题，连推理过程一起读完。",
+          "type": "What is the limit for a meal in Oslo on a public holiday?",
+          "see": "它直说没有城市或节假日的专项标准，改用最接近的那条规则，指出废止版的数字不一样，并把你引到例外审批流程。两条引用。",
+          "note": "没人让它去对比版本。只要库里有两个版本，agent 就会把矛盾翻出来——而这是内容的问题，管文档的人得在场。"
+        }
+      }
+    ]
   },
   {
-    "id": "topics-flow",
+    "id": "deterministic-dialogue",
     "order": 3,
     "minutes": 40,
-    "requires": ["agent-basics"],
+    "requires": [
+      "agent-instructions"
+    ],
     "en": {
       "name": "Pin the paths that must be deterministic",
       "teaches": "Topics and trigger phrases, and where a scripted path beats letting the model decide.",
-      "build": "One conversation that always goes the same way — the one your compliance people would ask about."
+      "build": "One conversation that always goes the same way — the one your compliance people would ask about.",
+      "objective": "Pin the parts of a conversation that must never vary, and tell the difference between what the model may decide and what it must not.",
+      "needs": {
+        "skills": [
+          "Agent instructions"
+        ],
+        "tools": [
+          "Copilot Studio"
+        ],
+        "materials": [
+          "One exchange where a wrong answer has consequences"
+        ]
+      },
+      "steps": [
+        "Pick the exchange your compliance people would ask about first.",
+        "Build it as a topic with explicit trigger phrases.",
+        "Force it down the scripted path and confirm it cannot be talked out of it.",
+        "Add a fallback for when the trigger is missed entirely.",
+        "Re-test the generative path to confirm the topic did not swallow unrelated questions."
+      ],
+      "summary": "One conversation now behaves identically every time, and you have a rule for deciding which others need the same."
     },
     "zh": {
       "name": "把必须确定的路径钉死",
       "teaches": "Topics 与触发短语，以及什么地方「写死的流程」优于「让模型自己决定」。",
-      "build": "一段永远走同一条路的对话——就是合规同事一定会问的那一段。"
-    }
+      "build": "一段永远走同一条路的对话——就是合规同事一定会问的那一段。",
+      "objective": "能把对话中绝不允许变的部分钉死，并分清哪些能交给模型判断、哪些绝对不能。",
+      "needs": {
+        "skills": [
+          "Agent 指令设计"
+        ],
+        "tools": [
+          "Copilot Studio"
+        ],
+        "materials": [
+          "一段答错了会有后果的对话"
+        ]
+      },
+      "steps": [
+        "挑出合规同事最先会追问的那一段。",
+        "把它做成一个 Topic，写明确的触发短语。",
+        "逼它走写死的流程，确认它不会被话术带偷。",
+        "为「触发词没命中」加一条兵底路径。",
+        "重测生成式那条路，确认这个 Topic 没把无关问题也吞了。"
+      ],
+      "summary": "你有了一段每次表现一致的对话，以及一条判断「还有哪些也该这么处理」的标准。"
+    },
+    "walkthrough": [
+      {
+        "en": {
+          "act": "Choose the exchange that must not vary",
+          "where": "On the whiteboard, before you touch the product",
+          "do": "Ask the room which single exchange their compliance people would ask about first. Write it down before building anything.",
+          "see": "Usually a disagreement. That disagreement is the useful output of this step.",
+          "note": "Skipping this and building a topic you invented is how labs produce something nobody needed."
+        },
+        "zh": {
+          "act": "选出那段不允许变的对话",
+          "where": "先在白板上，先别碰产品",
+          "do": "问全场：合规的人最先会追问哪一段对话？先把它写下来，再开始建。",
+          "see": "通常会吵起来。这个分歧就是这一步真正的产出。",
+          "note": "跳过这一步、直接建一个自己想的 topic，就是 Lab 做出一堆没人需要的东西的原因。"
+        }
+      },
+      {
+        "en": {
+          "act": "Build it as a topic",
+          "where": "Your agent → Topics → Add a topic → From blank",
+          "do": "Add trigger phrases in the words your users actually use, not the words the policy uses.",
+          "type": "how do I claim mileage\nmileage claim\nclaim for driving\npetrol money",
+          "see": "The topic saves with its trigger phrases listed, and an empty conversation canvas below.",
+          "note": "Users do not say 'mileage reimbursement request'. Trigger phrases written in policy language never fire."
+        },
+        "zh": {
+          "act": "把它建成一个 topic",
+          "where": "你的 agent → Topics → Add a topic → From blank",
+          "do": "触发词用用户真会说的话写，不是用制度文件里的话写。",
+          "type": "how do I claim mileage\nmileage claim\nclaim for driving\npetrol money",
+          "see": "topic 保存后列出触发词，下面是一块空的对话画布。",
+          "note": "用户不会说「里程费报销申请」。用制度语言写的触发词永远触发不了。"
+        }
+      },
+      {
+        "en": {
+          "act": "Force it down the scripted path",
+          "where": "Test pane",
+          "do": "Trigger the topic, then try to talk it out of the script mid-way.",
+          "type": "actually never mind, just tell me the limit",
+          "see": "It should hold the path. If it wanders back to generative answering, the topic is not doing its job.",
+          "note": "This is the whole point of a topic: the parts a regulator asks about must not be improvised."
+        },
+        "zh": {
+          "act": "把它按在脚本路径上",
+          "where": "测试面板",
+          "do": "触发这个 topic，然后在中途试图把它从脚本里带出去。",
+          "type": "actually never mind, just tell me the limit",
+          "see": "它应该守住路径。如果又滑回生成式回答，说明这个 topic 没起到作用。",
+          "note": "这就是 topic 存在的意义：监管会追问的部分，不允许即兴发挥。"
+        }
+      },
+      {
+        "en": {
+          "act": "Handle the trigger being missed",
+          "where": "Topics → your topic → add a fallback branch",
+          "do": "Phrase the same request in a way you did not anticipate, then add a route for it.",
+          "type": "i drove to the client site last tuesday, what now",
+          "see": "Before the fallback, it answers generatively — confidently, and outside the script.",
+          "note": "Every topic leaks. The question is whether it leaks into something safe."
+        },
+        "zh": {
+          "act": "处理「没触发上」的情况",
+          "where": "Topics → 你的 topic → 加一个兑底分支",
+          "do": "用一个你没预料到的说法提同一件事，然后为它加一条路。",
+          "type": "i drove to the client site last tuesday, what now",
+          "see": "加兑底之前，它会用生成式回答——语气笃定，并且在脚本之外。",
+          "note": "每个 topic 都会漏。问题只在于它漏到的地方安不安全。"
+        }
+      },
+      {
+        "en": {
+          "act": "Confirm it did not swallow everything else",
+          "where": "Test pane",
+          "do": "Ask an unrelated question that shares a word with your trigger phrases.",
+          "type": "can I claim a taxi?",
+          "see": "It should answer generatively, not drop into the mileage script.",
+          "note": "Over-broad triggers are the most common defect, and the one nobody tests for."
+        },
+        "zh": {
+          "act": "确认它没把别的都吐吞了",
+          "where": "测试面板",
+          "do": "问一个不相干、但和触发词共用某个词的问题。",
+          "type": "can I claim a taxi?",
+          "see": "它应该用生成式回答，而不是掉进里程费那个脚本。",
+          "note": "触发词范围过宽是最常见的缺陷，也是最没人去测的。"
+        }
+      }
+    ]
   },
   {
-    "id": "orchestration",
+    "id": "tool-orchestration",
     "order": 4,
     "minutes": 45,
-    "requires": ["agent-basics", "knowledge-grounding"],
+    "requires": [
+      "agent-instructions",
+      "knowledge-grounding"
+    ],
     "en": {
       "name": "Let the model choose the tool",
       "teaches": "Generative orchestration: describing tools well enough that the agent picks the right one, and seeing what it picked.",
-      "build": "An agent with more than one thing it could do, choosing correctly — and a feel for when it will not."
+      "build": "An agent with more than one thing it could do, choosing correctly — and a feel for when it will not.",
+      "objective": "Give an agent several things it could do, have it pick the right one, and see what it picked when it does not.",
+      "needs": {
+        "skills": [
+          "Agent instructions",
+          "Knowledge grounding"
+        ],
+        "tools": [
+          "Copilot Studio"
+        ],
+        "materials": [
+          "Two or more tools or knowledge sources with overlapping scope"
+        ]
+      },
+      "steps": [
+        "Enable generative orchestration and describe each tool by when to use it, not by what it is.",
+        "Ask something that clearly belongs to one tool and confirm the choice.",
+        "Ask something ambiguous and watch which one it reaches for.",
+        "Rewrite the losing description until the choice flips.",
+        "Write down the cases it still gets wrong — those are your topic candidates."
+      ],
+      "summary": "You know how much of the decision to hand to the model, and where to take it back."
     },
     "zh": {
       "name": "让模型自己选工具",
       "teaches": "生成式编排：把工具描述写到 agent 能选对，并且看得见它选了哪个。",
-      "build": "一个有多种可能动作的 agent，能选对——以及对「它什么时候会选错」的手感。"
+      "build": "一个有多种可能动作的 agent，能选对——以及对「它什么时候会选错」的手感。",
+      "objective": "给 agent 多个可选动作，让它选对；选错时你看得见它选了哪个。",
+      "needs": {
+        "skills": [
+          "Agent 指令设计",
+          "知识接地"
+        ],
+        "tools": [
+          "Copilot Studio"
+        ],
+        "materials": [
+          "两个以上职责有重叠的工具或知识源"
+        ]
+      },
+      "steps": [
+        "开启生成式编排，每个工具的描述写「什么时候用它」，而不是「它是什么」。",
+        "问一个明显属于某个工具的问题，确认它选对了。",
+        "再问一个模棱两可的，看它伸手去拿哪个。",
+        "改写没被选中那个的描述，直到选择翻转。",
+        "把它依然选错的情况记下来——那些就是该做成 Topic 的候选。"
+      ],
+      "summary": "你清楚了多少判断可以交给模型，以及从哪里开始得收回来。"
     }
   },
   {
-    "id": "actions-connectors",
+    "id": "system-actions",
     "order": 5,
     "minutes": 50,
-    "requires": ["agent-basics"],
+    "requires": [
+      "agent-instructions"
+    ],
     "en": {
       "name": "Reach a real system",
       "teaches": "Connectors and custom actions: passing parameters in, getting a result back, and handling the call that fails.",
-      "build": "An agent that reads or writes something outside itself, and does not lie when the call errors."
+      "build": "An agent that reads or writes something outside itself, and does not lie when the call errors.",
+      "objective": "Make an agent read from or write to a system outside itself, and behave correctly when that call fails.",
+      "needs": {
+        "skills": [
+          "Agent instructions"
+        ],
+        "tools": [
+          "Copilot Studio",
+          "A connector to a system you can actually reach"
+        ],
+        "materials": [
+          "A test account or credentials for that system"
+        ]
+      },
+      "steps": [
+        "Add a connector and make one read call with a hard-coded parameter.",
+        "Replace the hard-coded value with one the agent extracts from the conversation.",
+        "Return the result in the agent's own words, not as raw output.",
+        "Break it on purpose — wrong id, no permission — and confirm it reports rather than invents.",
+        "Note what a user sees when the system is simply down."
+      ],
+      "summary": "The agent touches something real, and fails in a way you would be willing to show a user."
     },
     "zh": {
       "name": "连到一个真实系统",
       "teaches": "连接器与自定义动作：把参数传进去、把结果拿回来、以及调用失败时怎么办。",
-      "build": "一个能读写外部系统的 agent，并且在调用出错时不会编。"
+      "build": "一个能读写外部系统的 agent，并且在调用出错时不会编。",
+      "objective": "能让 agent 读写一个外部系统，并在调用失败时表现正确。",
+      "needs": {
+        "skills": [
+          "Agent 指令设计"
+        ],
+        "tools": [
+          "Copilot Studio",
+          "一个你真连得上的系统的连接器"
+        ],
+        "materials": [
+          "那个系统的测试账号或凭据"
+        ]
+      },
+      "steps": [
+        "加一个连接器，先用写死的参数调一次读接口。",
+        "把写死的值换成 agent 从对话里提取出来的。",
+        "结果用 agent 自己的话说出来，不要直接抛原始输出。",
+        "故意弄坏它——错的 id、没权限——确认它如实报告而不是编。",
+        "记下系统直接宕机时，用户会看到什么。"
+      ],
+      "summary": "agent 碰到了真实系统，而且它出错的样子是你敢给用户看的。"
     }
   },
   {
-    "id": "power-automate",
-    "order": 6,
+    "id": "deterministic-automation",
+    "order": 7,
     "minutes": 45,
-    "requires": ["actions-connectors"],
+    "requires": [
+      "system-actions"
+    ],
     "en": {
       "name": "Put the deterministic steps in a flow",
       "teaches": "Calling Power Automate from an agent, and drawing the line between what the model decides and what the flow guarantees.",
-      "build": "A flow the agent calls, doing the part that must happen the same way every time."
+      "build": "A flow the agent calls, doing the part that must happen the same way every time.",
+      "objective": "Move the steps that must be identical every time out of the model and into a flow the agent calls.",
+      "needs": {
+        "skills": [
+          "System actions"
+        ],
+        "tools": [
+          "Power Automate",
+          "Copilot Studio"
+        ],
+        "materials": [
+          "One process with a step that must not vary"
+        ]
+      },
+      "steps": [
+        "Draw the line: list what the model may decide, and what the flow must guarantee.",
+        "Build the flow standalone and test it with fixed inputs first.",
+        "Call it from the agent, passing the values the agent gathered.",
+        "Handle the flow returning an error, not only a result.",
+        "Confirm the deterministic part is identical across five runs."
+      ],
+      "summary": "The unreliable part and the guaranteed part are separate, which is what makes the whole thing auditable."
     },
     "zh": {
       "name": "把确定性步骤放进流",
       "teaches": "从 agent 调用 Power Automate，以及划清「模型决定什么」和「流保证什么」的界线。",
-      "build": "一条被 agent 调用的流，负责那些每次都必须一模一样的步骤。"
+      "build": "一条被 agent 调用的流，负责那些每次都必须一模一样的步骤。",
+      "objective": "把必须每次一致的步骤从模型里拿出来，放进一条 agent 调用的流。",
+      "needs": {
+        "skills": [
+          "系统动作"
+        ],
+        "tools": [
+          "Power Automate",
+          "Copilot Studio"
+        ],
+        "materials": [
+          "一个含有「不允许变」步骤的流程"
+        ]
+      },
+      "steps": [
+        "先划线：列清楚哪些交给模型判断、哪些必须由流保证。",
+        "先把流单独建好，用固定输入测通。",
+        "从 agent 调用它，把 agent 收集到的值传进去。",
+        "处理流返回错误的情况，而不只是返回结果。",
+        "跑五次，确认确定性那部分每次完全一致。"
+      ],
+      "summary": "不可靠的部分和有保证的部分分开了——这正是整件事能被审计的前提。"
     }
   },
   {
-    "id": "doc-extraction",
-    "order": 7,
+    "id": "document-extraction",
+    "order": 8,
     "minutes": 50,
-    "requires": ["power-automate"],
+    "requires": [
+      "deterministic-automation"
+    ],
     "en": {
       "name": "Get structured fields out of a document",
       "teaches": "Reading fields off invoices, forms or contracts, and deciding the confidence line below which a human looks.",
-      "build": "A document in, structured values out, and an exception path for the ones that are not clear enough."
+      "build": "A document in, structured values out, and an exception path for the ones that are not clear enough.",
+      "objective": "Turn a document into structured values, and decide the confidence line below which a person looks at it.",
+      "needs": {
+        "skills": [
+          "Deterministic automation"
+        ],
+        "tools": [
+          "Power Automate",
+          "An extraction step such as AI Builder"
+        ],
+        "materials": [
+          "20–30 real documents, including the messy ones"
+        ]
+      },
+      "steps": [
+        "Run extraction over a clean document and check every field by hand.",
+        "Run it over the worst document you have and note exactly what it got wrong.",
+        "Set a confidence threshold and route anything below it to a person.",
+        "Write the exception path: what the reviewer sees, and what they do next.",
+        "Measure accuracy across the whole sample, not the clean half."
+      ],
+      "summary": "You have a number for how often a human is needed — the number the business case depends on."
     },
     "zh": {
       "name": "从文档里抽出结构化字段",
       "teaches": "从发票、表单或合同里读取字段，并定出「低于多少置信度就转人看」的那条线。",
-      "build": "文档进、结构化值出，外加一条给「看不清楚的那些」走的异常路径。"
+      "build": "文档进、结构化值出，外加一条给「看不清楚的那些」走的异常路径。",
+      "objective": "能把文档变成结构化值，并定出「低于多少置信度就转人看」的那条线。",
+      "needs": {
+        "skills": [
+          "确定性自动化"
+        ],
+        "tools": [
+          "Power Automate",
+          "AI Builder 等抽取能力"
+        ],
+        "materials": [
+          "20–30 份真实单据，包括那些乱七八糟的"
+        ]
+      },
+      "steps": [
+        "先跑一份干净的单据，逐个字段人工核对。",
+        "再跑你手上最差的那份，记清楚它错在哪。",
+        "定一个置信度阈值，低于它的全部转人。",
+        "把异常路径写出来：审核的人看到什么、接下来干什么。",
+        "在全量样本上算准确率，不是只算干净的那一半。"
+      ],
+      "summary": "你拿到了「多大比例需要人介入」这个数——也就是整个投产比的命根子。"
     }
   },
   {
     "id": "human-approval",
-    "order": 8,
+    "order": 9,
     "minutes": 35,
-    "requires": ["power-automate"],
+    "requires": [
+      "deterministic-automation"
+    ],
     "en": {
       "name": "Put a person in the loop",
       "teaches": "Approval gates: what the agent may do alone, what needs confirming, and what the record of that decision looks like.",
-      "build": "A step that waits for a human, with the approval captured where an auditor could find it."
+      "build": "A step that waits for a human, with the approval captured where an auditor could find it.",
+      "objective": "Stop an agent at the point where a person must decide, and leave a record of that decision.",
+      "needs": {
+        "skills": [
+          "Deterministic automation"
+        ],
+        "tools": [
+          "Power Automate",
+          "Teams or Outlook for the approval"
+        ],
+        "materials": [
+          "The list of actions that need a human, and who approves each"
+        ]
+      },
+      "steps": [
+        "Name the actions the agent may take alone, and the ones it may not.",
+        "Insert an approval step before the second kind.",
+        "Give the approver enough context to decide without opening another system.",
+        "Handle rejection and timeout, not only approval.",
+        "Confirm the decision, the approver and the timestamp land somewhere findable."
+      ],
+      "summary": "There is now a gate a named person owns, and evidence that it was used."
     },
     "zh": {
       "name": "把人放回环里",
       "teaches": "审批闸口：哪些 agent 可以自己做、哪些必须有人确认、以及这个决定留下什么记录。",
-      "build": "一个会等人的步骤，且审批记录留在审计的人找得到的地方。"
+      "build": "一个会等人的步骤，且审批记录留在审计的人找得到的地方。",
+      "objective": "能在必须由人拍板的地方把 agent 拦下来，并把这个决定留成记录。",
+      "needs": {
+        "skills": [
+          "确定性自动化"
+        ],
+        "tools": [
+          "Power Automate",
+          "用 Teams 或 Outlook 做审批"
+        ],
+        "materials": [
+          "需要人工确认的动作清单，以及各自的审批人"
+        ]
+      },
+      "steps": [
+        "列明 agent 可以自己做的动作，和不可以的。",
+        "在后一类动作前插入审批步骤。",
+        "给审批人足够的上下文，让他不用再开另一个系统就能判断。",
+        "把驳回和超时也处理了，不能只处理通过。",
+        "确认决定、审批人、时间戳都落在了找得到的地方。"
+      ],
+      "summary": "你有了一道由具体的人负责的闸，以及它被用过的证据。"
     }
   },
   {
-    "id": "dataverse",
-    "order": 9,
+    "id": "structured-persistence",
+    "order": 10,
     "minutes": 45,
-    "requires": ["actions-connectors"],
+    "requires": [
+      "system-actions"
+    ],
     "en": {
       "name": "Give it somewhere to remember",
       "teaches": "Storing and retrieving structured records in Dataverse, and why a spreadsheet stops working at the second user.",
-      "build": "A table the agent reads and writes, with the permissions that decide who sees which rows."
+      "build": "A table the agent reads and writes, with the permissions that decide who sees which rows.",
+      "objective": "Give the agent structured memory that survives the conversation, with permissions that decide who sees what.",
+      "needs": {
+        "skills": [
+          "System actions"
+        ],
+        "tools": [
+          "Dataverse",
+          "Copilot Studio"
+        ],
+        "materials": [
+          "The shape of the record you actually need to keep"
+        ]
+      },
+      "steps": [
+        "Model one table — the fields you will query, not everything you might store.",
+        "Write a record from the agent and read it back in a later conversation.",
+        "Add a second user and confirm they see only what they should.",
+        "Query by something other than the primary key.",
+        "Decide what happens to the record when the process it belongs to ends."
+      ],
+      "summary": "The agent remembers across sessions, and the permissions on that memory are explicit rather than accidental."
     },
     "zh": {
       "name": "给它一个能记住东西的地方",
       "teaches": "在 Dataverse 里存取结构化记录，以及为什么表格到第二个用户就撑不住了。",
-      "build": "一张 agent 读写的表，以及决定「谁能看到哪几行」的权限设置。"
+      "build": "一张 agent 读写的表，以及决定「谁能看到哪几行」的权限设置。",
+      "objective": "给 agent 一份能跨对话保留的结构化记忆，并把「谁看得到什么」定清楚。",
+      "needs": {
+        "skills": [
+          "系统动作"
+        ],
+        "tools": [
+          "Dataverse",
+          "Copilot Studio"
+        ],
+        "materials": [
+          "你真正需要留存的那条记录的结构"
+        ]
+      },
+      "steps": [
+        "建一张表——只放你会查的字段，不是所有可能存的字段。",
+        "从 agent 写一条记录，在下一次对话里把它读回来。",
+        "加一个第二个用户，确认他只看得到该看的。",
+        "用主键以外的条件查一次。",
+        "想清楚：它所属的流程结束后，这条记录怎么办。"
+      ],
+      "summary": "agent 能跨会话记住事情了，而且这份记忆的权限是明确设的，不是碰巧的。"
     }
   },
   {
-    "id": "channels-publish",
-    "order": 10,
+    "id": "deployment-channels",
+    "order": 13,
     "minutes": 30,
-    "requires": ["agent-basics"],
+    "requires": [
+      "agent-instructions"
+    ],
     "en": {
       "name": "Publish it where people already are",
       "teaches": "Publishing to Teams or a website, and the sharing and consent questions that appear the moment you do.",
-      "build": "An agent a colleague can open without being told how — the point at which it stops being yours."
+      "build": "An agent a colleague can open without being told how — the point at which it stops being yours.",
+      "objective": "Put the agent where people already work, and answer the sharing and consent questions that appear the moment you do.",
+      "needs": {
+        "skills": [
+          "Agent instructions"
+        ],
+        "tools": [
+          "Copilot Studio",
+          "Teams, or a website you can edit"
+        ],
+        "materials": [
+          "A colleague willing to be the first user"
+        ]
+      },
+      "steps": [
+        "Publish to Teams or a demo site.",
+        "Share it with one person and watch them open it without instructions.",
+        "Note every consent or permission prompt they hit.",
+        "Decide the audience: a team, a department, or everyone.",
+        "Publish a change and confirm they get it without doing anything."
+      ],
+      "summary": "The agent is somebody else's tool now, which is the first point at which it can create value."
     },
     "zh": {
       "name": "把它发布到人本来就在的地方",
       "teaches": "发布到 Teams 或网站，以及发布那一刻立刻冒出来的共享与授权问题。",
-      "build": "一个同事不用教就能打开的 agent——从这一刻起它不再只是你的。"
+      "build": "一个同事不用教就能打开的 agent——从这一刻起它不再只是你的。",
+      "objective": "把 agent 放到人本来就在的地方，并处理好发布那一刻冒出来的共享与授权问题。",
+      "needs": {
+        "skills": [
+          "Agent 指令设计"
+        ],
+        "tools": [
+          "Copilot Studio",
+          "Teams，或一个你改得了的网站"
+        ],
+        "materials": [
+          "一位愿意当第一个用户的同事"
+        ]
+      },
+      "steps": [
+        "发布到 Teams 或演示站点。",
+        "发给一个人，看他在没人指导的情况下能不能打开。",
+        "记下他碰到的每一个授权或权限弹窗。",
+        "定下受众范围：一个团队、一个部门，还是所有人。",
+        "发布一次修改，确认他什么都不用做就能拿到。"
+      ],
+      "summary": "agent 现在是别人的工具了——这是它能产生价值的第一个时刻。"
     }
   },
   {
-    "id": "governance",
-    "order": 11,
+    "id": "governance-guardrails",
+    "order": 14,
     "minutes": 40,
     "requires": [],
     "en": {
       "name": "Keep it inside the guardrails",
       "teaches": "Environments, DLP policy and roles: where an agent is allowed to live and which connectors it may touch.",
-      "build": "A clear answer to \"where does this run, and who decided it could\" — before someone from security asks."
+      "build": "A clear answer to \"where does this run, and who decided it could\" — before someone from security asks.",
+      "objective": "Be able to say where an agent is allowed to live, which connectors it may touch, and who decided that.",
+      "needs": {
+        "skills": [
+          "None — this one is a conversation with whoever owns policy"
+        ],
+        "tools": [
+          "Power Platform admin centre"
+        ],
+        "materials": [
+          "Your environment list and the DLP policy that applies"
+        ]
+      },
+      "steps": [
+        "Find out which environments exist and what each one is for.",
+        "Read the DLP policy that applies to the environment you build in.",
+        "List the connectors your scenario needs and check each against it.",
+        "Agree who approves a new connector, and how long that takes.",
+        "Write down where this agent runs, and who signed off."
+      ],
+      "summary": "You can answer the security question before it is asked — usually what decides whether the thing ships at all."
     },
     "zh": {
       "name": "让它待在护栏里",
       "teaches": "环境、DLP 策略与角色：agent 允许待在哪、能碰哪些连接器。",
-      "build": "对「这东西跑在哪、谁批准的」有个明确答案——赶在安全同事来问之前。"
+      "build": "对「这东西跑在哪、谁批准的」有个明确答案——赶在安全同事来问之前。",
+      "objective": "能说清楚 agent 允许待在哪、能碰哪些连接器、以及这是谁定的。",
+      "needs": {
+        "skills": [
+          "无——这一课是和管策略的人聊一次"
+        ],
+        "tools": [
+          "Power Platform 管理中心"
+        ],
+        "materials": [
+          "你们的环境清单，以及适用的 DLP 策略"
+        ]
+      },
+      "steps": [
+        "搞清楚现在有哪些环境，各自是干什么的。",
+        "读一遍你要建的那个环境适用的 DLP 策略。",
+        "列出你的场景需要的连接器，逐个对照策略检查。",
+        "谈定：新连接器由谁批、大概要多久。",
+        "把「这个 agent 跑在哪、谁签的字」写下来。"
+      ],
+      "summary": "安全的问题你能在被问之前就答上——而这通常就决定了东西能不能上线。"
     }
   },
   {
-    "id": "measurement",
-    "order": 12,
+    "id": "operational-measurement",
+    "order": 15,
     "minutes": 35,
-    "requires": ["agent-basics"],
+    "requires": [
+      "agent-instructions"
+    ],
     "en": {
       "name": "Find out whether it is working",
       "teaches": "Session analytics and evaluation: what to measure against the baseline you took before you started.",
-      "build": "A number you would be willing to show at the gate, and the sessions behind it."
+      "build": "A number you would be willing to show at the gate, and the sessions behind it.",
+      "objective": "Tell whether the agent is working, against the baseline you took before it existed.",
+      "needs": {
+        "skills": [
+          "Agent instructions"
+        ],
+        "tools": [
+          "Copilot Studio analytics"
+        ],
+        "materials": [
+          "The before-baseline for the process you changed"
+        ]
+      },
+      "steps": [
+        "Confirm you have a before-number. If you do not, this module is premature.",
+        "Pick the two measures that would move if this worked.",
+        "Read the session transcripts, not only the counts.",
+        "Find the questions it answered badly and classify them.",
+        "Report the number and its caveat together, in the same sentence."
+      ],
+      "summary": "You have a figure you would defend at a gate, and the transcripts that back it up."
     },
     "zh": {
       "name": "搞清楚它到底有没有用",
       "teaches": "会话分析与评估：对着「开工前记录的基线」该看哪些数。",
-      "build": "一个你敢拿到闸门上给人看的数字，以及它背后的会话记录。"
+      "build": "一个你敢拿到闸门上给人看的数字，以及它背后的会话记录。",
+      "objective": "能判断 agent 到底有没有用——对照的是它存在之前你记下的基线。",
+      "needs": {
+        "skills": [
+          "Agent 指令设计"
+        ],
+        "tools": [
+          "Copilot Studio 分析"
+        ],
+        "materials": [
+          "你所改变的那个流程的「改之前」基线"
+        ]
+      },
+      "steps": [
+        "先确认你有「改之前」的数。没有的话，这一课现在上就早了。",
+        "选两个「如果真有用就会动」的指标。",
+        "读会话原文，不只看计数。",
+        "找出它答得差的那些问题，分好类。",
+        "报数字的时候，把前提和局限写在同一句话里。"
+      ],
+      "summary": "你有了一个在闸门上站得住的数字，以及支撑它的原始记录。"
+    }
+  },
+  {
+    "id": "structured-data-query",
+    "order": 6,
+    "minutes": 50,
+    "requires": [
+      "system-actions"
+    ],
+    "en": {
+      "name": "Query your operational records",
+      "teaches": "Reading live business records from a spreadsheet, a table or a database, and knowing which of the three a case actually warrants.",
+      "build": "An agent that answers from the records themselves rather than from a document describing them.",
+      "objective": "Query real operational data, and know the point where a spreadsheet stops being defensible and a proper table starts.",
+      "needs": {
+        "skills": [
+          "System actions"
+        ],
+        "tools": [
+          "Copilot Studio",
+          "A spreadsheet, table or database you are allowed to read"
+        ],
+        "materials": [
+          "A small extract of real records — orders, stock, tickets, whatever your work turns on"
+        ]
+      },
+      "steps": [
+        "Start on a spreadsheet, but only as a proper table with a unique key — without one, nothing downstream behaves.",
+        "Query it with a value the agent extracted from the question rather than one you hard-coded.",
+        "Handle the empty result and the hundred-results case before the working path feels finished.",
+        "Move the same query onto a table or database view, and note what changed: permissions, speed, and who can see which rows.",
+        "Write down the point at which the spreadsheet stops being defensible for this case."
+      ],
+      "summary": "The agent answers from records rather than prose, and you can say which store this case belongs in and why."
+    },
+    "zh": {
+      "name": "查询你的业务数据",
+      "teaches": "从表格、数据表或数据库里读实时业务记录，并判断某个场景到底该用哪一种。",
+      "build": "一个直接依据记录作答的 agent，而不是依据一份描述这些记录的文档。",
+      "objective": "会查真实业务数据，并说得清「电子表格到什么时候就不够用了」。",
+      "needs": {
+        "skills": [
+          "系统动作"
+        ],
+        "tools": [
+          "Copilot Studio",
+          "一份你有权读的表格、数据表或数据库"
+        ],
+        "materials": [
+          "一小份真实记录——订单、库存、工单，你的活儿围着什么转就用什么"
+        ]
+      },
+      "steps": [
+        "先用电子表格，但必须是带唯一键的规范表——没有唯一键，后面全都不对。",
+        "查询条件要用 agent 从问题里提取出来的值，不要写死。",
+        "先把「查不到」和「查出一百条」这两种情况处理掉，再去看正常路径。",
+        "把同一个查询搬到数据表或数据库视图上，记下变化：权限、速度、以及谁能看到哪些行。",
+        "写下这个场景里「电子表格不再站得住」的那个临界点。"
+      ],
+      "summary": "agent 依据记录作答而不是依据文字描述，而且你说得出这个场景该落在哪种存储上、为什么。"
+    }
+  },
+  {
+    "id": "custom-tool-extension",
+    "order": 11,
+    "minutes": 55,
+    "requires": [
+      "system-actions"
+    ],
+    "en": {
+      "name": "Extend past the prebuilt connectors",
+      "teaches": "The ladder from custom connector to REST or MCP tool to a second agent, and what each rung costs to own afterwards.",
+      "build": "One capability no prebuilt connector reached, wired in with its contract and its failure behaviour written down.",
+      "objective": "Reach a capability the prebuilt connectors do not cover, using the lowest rung of the ladder that actually gets there.",
+      "needs": {
+        "skills": [
+          "System actions"
+        ],
+        "tools": [
+          "Copilot Studio",
+          "An API, MCP endpoint or second agent you are allowed to call"
+        ],
+        "materials": [
+          "The input and output contract of whatever you are calling"
+        ]
+      },
+      "steps": [
+        "Name the thing no prebuilt connector reaches. If one does reach it, stop here and use it.",
+        "Take the lowest rung that works: custom connector, then REST or MCP, then a second agent.",
+        "Write the input and output contract before wiring anything, including what an error looks like.",
+        "Decide whether the model may call this freely, or only a topic may invoke it.",
+        "Make the write path idempotent, or make it confirm before it can act twice."
+      ],
+      "summary": "You have a capability the platform did not ship with, and a rule for how far up the ladder to climb next time."
+    },
+    "zh": {
+      "name": "越过预建连接器去扩展",
+      "teaches": "从自定义连接器，到 REST/MCP 工具，再到第二个 agent 的能力阶梯，以及每一级后续要付的维护代价。",
+      "build": "一个预建连接器够不到的能力，接进来，并把契约和失败行为写清楚。",
+      "objective": "够到预建连接器覆盖不了的能力，并且用「能够到的最低那一级」去做。",
+      "needs": {
+        "skills": [
+          "系统动作"
+        ],
+        "tools": [
+          "Copilot Studio",
+          "一个你有权调用的 API、MCP 端点或第二个 agent"
+        ],
+        "materials": [
+          "被调用方的输入输出契约"
+        ]
+      },
+      "steps": [
+        "先说清楚哪件事是预建连接器够不到的。如果其实够得到，就到此为止，直接用。",
+        "取能解决问题的最低一级：自定义连接器 → REST/MCP → 第二个 agent。",
+        "动手接之前先把输入输出契约写下来，包括「出错长什么样」。",
+        "决定这个工具是让模型自由调用，还是只能由某个 topic 显式调用。",
+        "写操作要做成幂等的，否则就必须在可能重复执行前先确认。"
+      ],
+      "summary": "你有了一个平台没自带的能力，也有了一条「下次该爬到第几级」的判断标准。"
+    }
+  },
+  {
+    "id": "test-evaluation",
+    "order": 12,
+    "minutes": 45,
+    "requires": [
+      "agent-instructions"
+    ],
+    "en": {
+      "name": "Test it before you ship it",
+      "teaches": "Building a test set with agreed expected answers, and using it as a gate rather than a formality.",
+      "build": "A re-runnable test set, a pass threshold the business agreed to, and one regression you caught with it.",
+      "objective": "Decide whether the agent is fit to pilot from a test set you can re-run, rather than from a demo that went well.",
+      "needs": {
+        "skills": [
+          "Agent instructions"
+        ],
+        "tools": [
+          "Copilot Studio evaluation"
+        ],
+        "materials": [
+          "Questions with agreed correct answers, including ones it should refuse"
+        ]
+      },
+      "steps": [
+        "Write the test set before you tune anything, or you will only write tests it already passes.",
+        "Cover five kinds: the normal case, the edge, the out-of-scope, the unauthorised, and a multi-turn exchange.",
+        "Agree the pass threshold with whoever owns the process, in writing, before you run it.",
+        "Change one thing, re-run the whole set, and look at what else moved.",
+        "On a failure, read the activity trace to find which step actually broke rather than guessing at the prompt."
+      ],
+      "summary": "Shipping is now a decision against a threshold, instead of a feeling about how the demo went."
+    },
+    "zh": {
+      "name": "上线之前先把它测了",
+      "teaches": "建一套有约定标准答案的测试集，并且真的把它当闸门用，而不是走个过场。",
+      "build": "一套可重复运行的测试集、一个业务方认可的通过线，以及一个靠它抓出来的回归。",
+      "objective": "靠一套能反复跑的测试集来判断能不能试点，而不是靠「刚才那次演示挺顺」。",
+      "needs": {
+        "skills": [
+          "Agent 指令设计"
+        ],
+        "tools": [
+          "Copilot Studio 评估"
+        ],
+        "materials": [
+          "带约定标准答案的问题集，包括那些它应该拒绝的"
+        ]
+      },
+      "steps": [
+        "在调优之前先把测试集写完，否则你写出来的只会是它已经能过的题。",
+        "覆盖五类：正常、边界、范围外、越权、以及一次多轮对话。",
+        "跑之前，先和流程负责人把通过线白纸黑字定下来。",
+        "只改一处，把整套重跑一遍，看看还有什么跟着动了。",
+        "失败时去读活动轨迹，找出到底是哪一步断的，而不是对着提示词猜。"
+      ],
+      "summary": "「能不能上」从此是对着一条线做判断，而不是对着一次演示凭感觉。"
     }
   }
 ]

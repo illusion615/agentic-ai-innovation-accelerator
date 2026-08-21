@@ -1,7 +1,12 @@
 ---
 import { LANG_HTML, localePath, otherLang, withBase, type Lang } from '../i18n/config';
+// Resolved through Vite so the preload and the @font-face rule always agree —
+// under `base`, in dev and in the build alike.
+import garamondUrl from '../assets/fonts/eb-garamond-400-600-latin.woff2?url';
+import interUrl from '../assets/fonts/inter-300-700-latin.woff2?url';
 import { useTranslations } from '../i18n/content';
 import TopBar from '../components/TopBar.astro';
+import ProjectChip from '../components/ProjectChip.astro';
 import ProgressAxis from '../components/ProgressAxis.astro';
 import Transmutation from '../components/Transmutation.astro';
 import '../styles/global.css';
@@ -17,12 +22,25 @@ interface Props {
    * resolved end of that axis, and the reader walked there.
    */
   axis?: boolean;
+  /**
+   * Nav bar and particle field. A page projected in a room is not being
+   * browsed: there is nowhere to navigate to mid-slide, and a moving
+   * background competes with the person talking. Opt-out rather than a
+   * separate document, so head, fonts and the language handoff stay single-
+   * sourced.
+   */
+  chrome?: boolean;
   title?: string;
 }
 
-const { lang, path = '/', axis = true, title } = Astro.props;
+const { lang, path = '/', axis = true, chrome = true, title } = Astro.props;
 const t = useTranslations(lang);
 const alt = otherLang(lang);
+
+// Everywhere you can act on a project except the portal, which is the project
+// list itself, and the workspace, which already names the open project.
+const showProjectChip =
+  chrome && path.startsWith('/program/') && path !== '/program/' && path !== '/program/project/';
 ---
 
 <!doctype html>
@@ -39,14 +57,14 @@ const alt = otherLang(lang);
       rel="preload"
       as="font"
       type="font/woff2"
-      href={withBase('/fonts/eb-garamond-400-600-latin.woff2')}
+      href={garamondUrl}
       crossorigin
     />
     <link
       rel="preload"
       as="font"
       type="font/woff2"
-      href={withBase('/fonts/inter-300-700-latin.woff2')}
+      href={interUrl}
       crossorigin
     />
     <script is:inline>
@@ -72,8 +90,9 @@ const alt = otherLang(lang);
   </head>
   <body>
     <a href="#main" class="skip-link">{t.nav.skipToContent}</a>
-    <Transmutation />
-    <TopBar lang={lang} path={path} />
+    {chrome && <Transmutation />}
+    {chrome && <TopBar lang={lang} path={path} />}
+    {showProjectChip && <ProjectChip lang={lang} />}
     {axis && <ProgressAxis lang={lang} />}
     <main id="main">
       <slot />

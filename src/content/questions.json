@@ -225,10 +225,10 @@
       "gap": "Copilot Studio licences and an environment are the one prerequisite with no workaround, and arranging them is usually the longest lead time in the whole programme. Start it now."
     },
     "zh": {
-      "prompt": "那 Copilot Studio 呢？——这个项目就是在它上面建东西的",
+      "prompt": "那 Copilot Studio 呢？——加速器里的东西就是在它上面建的",
       "help": "这是唯一一个没有替代品的前置条件。",
       "gapTitle": "Copilot Studio 许可与环境",
-      "gap": "Copilot Studio 的许可和环境，是唯一绕不过去的前置条件；而且它通常是整个项目里等待时间最长的一件事。现在就开始办。"
+      "gap": "Copilot Studio 的许可和环境，是唯一绕不过去的前置条件；而且它通常是整个落地过程里等待时间最长的一件事。现在就开始办。"
     },
     "options": [
       {

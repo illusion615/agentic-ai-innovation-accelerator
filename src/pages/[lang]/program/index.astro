@@ -1,33 +1,20 @@
 ---
 /**
- * GET STARTED — three ordered steps, one live action at a time.
+ * THE PORTAL — what you see when you open the tool.
  *
- * This is what the closing CTA opens. The previous version was a console: a
- * session box, an entry gate, a five-column stage table, three tier cards and
- * a roadmap of unbuilt tools, all at the same visual weight, with five
- * competing calls to action. It was arranged by what the programme *is*, so
- * neither of the reader's two questions — what do I do now, and what happens
- * after — could be answered by looking at it. The first interactive element
- * was a text box asking you to name an engagement you did not yet have.
+ * The first question on arriving is "which customer am I here for", not "what
+ * is step one". So the entry is a shelf of engagements, and the three-step
+ * console lives one click in, scoped to whichever project you opened. Keeping
+ * the two apart is what stops the console from asking you to pick a project
+ * and start work in the same breath.
  *
- * It is now a path. Step 1 is the only live thing on arrival; step 2 is
- * visibly waiting on it and says so; step 3 is reference, collapsed. There is
- * exactly one gold button on the screen at any moment and its identity is a
- * function of session state — before the gate it is "start the questions",
- * after it, "open your path". The facilitator plumbing that used to open the
- * page is now a disclosure at the foot of it.
- *
- * The stages, artifacts and gates are *not* re-authored here. They are read
- * from `journey.stages` and `rhythm.gates`, the same records the story page
- * renders, so the thing the customer was sold and the thing they are then
- * walked through cannot drift apart.
+ * Stage and progress are read off each session's own evidence rather than
+ * stored, so a card cannot claim progress the project has not made.
  */
-import { getCollection } from 'astro:content';
 import Base from '../../../layouts/Base.astro';
 import SectionHead from '../../../components/SectionHead.astro';
 import { LANGS, isLang, localePath, type Lang } from '../../../i18n/config';
 import { useTranslations } from '../../../i18n/content';
-import { STAGE_GATES, type Stage } from '../../../lib/session';
 
 export function getStaticPaths() {
   return LANGS.map((lang) => ({ params: { lang } }));
@@ -36,947 +23,421 @@ export function getStaticPaths() {
 const { lang: raw } = Astro.params;
 const lang: Lang = isLang(raw) ? raw : 'en';
 const t = useTranslations(lang);
-const p = t.program;
-
-const gateByKey = new Map(t.rhythm.gates.map((g) => [g.key, g]));
-
-// Only what the client needs to re-derive a stored diagnosis: ids, dimensions
-// and option scores. The prompts themselves stay on the assessment page.
-const questions = (await getCollection('questions'))
-  .sort((a, b) => a.data.order - b.data.order)
-  .map((q) => ({
-    id: q.id,
-    data: { dimension: q.data.dimension, options: q.data.options.map((o) => ({ score: o.score })) },
-  }));
+const po = t.program.portal;
 
 const bootstrap = {
-  questions,
-  tierNames: t.readiness.result.tierNames,
-  resultPrefix: p.step1.resultPrefix,
-  retakeCta: p.step1.retakeCta,
-  resetConfirm: p.resetConfirm,
-  stateNow: p.stateNow,
-  stateDone: p.stateDone,
+  strings: po,
+  // The five stages are named once, in the story data; the cards join to it.
+  stages: Object.fromEntries(
+    t.journey.stages.map((s) => [s.id, { index: s.index, name: s.name }])
+  ),
+  projectHref: localePath(lang, '/program/project/'),
 };
 ---
 
-<Base lang={lang} path="/program/" axis={false} title={p.title}>
-  <section id="start-here" class="section getstarted">
+<Base lang={lang} path="/program/" axis={false} title={po.title}>
+  <section id="portal" class="section portal">
     <div class="shell">
-      <SectionHead as="h1" eyebrow={p.eyebrow} title={p.title} lede={p.lede} measure="wide" />
+      <SectionHead as="h1" eyebrow={po.eyebrow} title={po.title} lede={po.lede} measure="wide" />
 
-      <!-- You are here. Three chips, so "what is left" is answerable without
-           reading anything below them. -->
-      <nav class="rail" aria-label={p.railLabel}>
-        <ol class="rail__list">
-          {
-            [p.step1.name, p.step2.name, p.step3.name].map((name, i) => (
-              <li
-                class="rail__item"
-                data-rail-step={String(i + 1)}
-                data-state={i === 0 ? 'now' : i === 1 ? 'locked' : 'open'}
-                aria-current={i === 0 ? 'step' : undefined}
-              >
-                <span class="rail__num">
-                  <span class="rail__digit">{i + 1}</span>
-                  <span class="rail__tick" aria-hidden="true">✓</span>
-                </span>
-                <span class="rail__name">{name}</span>
-              </li>
-            ))
-          }
-        </ol>
-      </nav>
-
-      <ol class="path">
-        <li class="step" data-step="1" data-state="now">
-          <div class="step__head">
-            <p class="step__num display">1</p>
-            <div class="step__heading">
-              <p class="step__name meta-label">{p.step1.name}</p>
-              <h2 class="step__title display">{p.step1.title}</h2>
-            </div>
-            <p class="step__badge" data-step-badge="1">{p.stateNow}</p>
-          </div>
-
-          <div class="step__body">
-            <p class="step__lede">{p.step1.body}</p>
-            <p class="step__note" data-step1-note>{p.step1.notStarted}</p>
-            <p class="step__result" data-step1-result hidden></p>
-            <a
-              class="btn btn--gold step__cta"
-              href={localePath(lang, '/program/readiness/')}
-              data-step1-cta
-            >
-              {p.step1.cta}
-            </a>
-
-            <p class="step__primer">
-              <span>{p.step1.primer}</span>
-              <a href={localePath(lang, '/program/basics/')}>{p.step1.primerCta}</a>
-            </p>
-          </div>
-        </li>
-
-        <li class="step" data-step="2" data-state="locked">
-          <div class="step__head">
-            <p class="step__num display">2</p>
-            <div class="step__heading">
-              <p class="step__name meta-label">{p.step2.name}</p>
-              <h2 class="step__title display">{p.step2.title}</h2>
-            </div>
-            <p class="step__badge" data-step-badge="2">{p.stateLocked}</p>
-          </div>
-
-          <div class="step__body">
-            <p class="step__lede">{p.step2.body}</p>
-
-            <p class="step__locked" data-step2-locked>{p.step2.lockedBody}</p>
-
-            <!-- All three are rendered because the diagnosis lives in this
-                 browser, not in the build. Exactly one is ever shown. -->
-            <div class="yourpath" data-yourpath hidden>
-              {
-                t.tiers.items.map((tier) => {
-                  const path = t.paths.items[tier.key];
-                  return (
-                    <article class="yourpath__card" data-tier-card={tier.key} hidden>
-                      <p class="yourpath__meta meta-label">
-                        {tier.index} · {path.motion}
-                      </p>
-                      <h3 class="yourpath__title display">{path.title}</h3>
-                      <p class="yourpath__who">{path.who}</p>
-                      <a
-                        class="btn btn--gold"
-                        href={localePath(lang, `/program/path/${tier.key}/`)}
-                      >
-                        {t.paths.openLabel}
-                      </a>
-                    </article>
-                  );
-                })
-              }
-
-              <p class="yourpath__others">
-                <span class="yourpath__others-label">{p.step2.othersLabel}</span>
-                {
-                  t.tiers.items.map((tier) => (
-                    <a
-                      class="yourpath__other"
-                      data-other-tier={tier.key}
-                      href={localePath(lang, `/program/path/${tier.key}/`)}
-                      hidden
-                    >
-                      {tier.index} · {t.paths.items[tier.key].motion}
-                    </a>
-                  ))
-                }
-              </p>
-
-              <p class="yourpath__check">
-                <span>{p.step2.checkLead}</span>
-                <a href={localePath(lang, '/program/checklist/')}>{p.step2.checkCta}</a>
-              </p>
-            </div>
-          </div>
-        </li>
-
-        <li class="step" data-step="3" data-state="open">
-          <div class="step__head">
-            <p class="step__num display">3</p>
-            <div class="step__heading">
-              <p class="step__name meta-label">{p.step3.name}</p>
-              <h2 class="step__title display">{p.step3.title}</h2>
-            </div>
-          </div>
-
-          <div class="step__body">
-            <p class="step__lede">{p.step3.body}</p>
-
-            <div class="live">
-              <p class="live__lead">{p.step3.liveLead}</p>
-              <a class="btn btn--quiet" href={localePath(lang, '/program/scenarios/')}>
-                {p.step3.liveCta}
-              </a>
-            </div>
-
-            <details class="method">
-              <summary class="method__summary">{p.step3.expandLabel}</summary>
-              <ol class="stages">
-                {
-                  t.journey.stages.map((stage) => {
-                    const gates = STAGE_GATES[stage.id as Stage] ?? [];
-                    return (
-                      <li class="pstage">
-                        <p class="pstage__index display">{stage.index}</p>
-                        <h4 class="pstage__name">{stage.name}</h4>
-
-                        <p class="pstage__label meta-label">{p.inputsLabel}</p>
-                        <ul class="pstage__inputs">
-                          {(p.stageInputs[stage.id] ?? []).map((input) => (
-                            <li>{input}</li>
-                          ))}
-                        </ul>
-
-                        <p class="pstage__label meta-label">{p.producesLabel}</p>
-                        <p class="pstage__artifact">{stage.artifact}</p>
-
-                        <p class="pstage__label meta-label">{p.gateLabel}</p>
-                        {gates.length === 0 ? (
-                          <p class="pstage__nogate">{p.noGateLabel}</p>
-                        ) : (
-                          <ul class="pstage__gates">
-                            {gates.map((key) => (
-                              <li>
-                                <span class="pstage__gate-when">{gateByKey.get(key)?.when}</span>
-                                <span class="pstage__gate-name">{gateByKey.get(key)?.name}</span>
-                              </li>
-                            ))}
-                          </ul>
-                        )}
-                      </li>
-                    );
-                  })
-                }
-              </ol>
-            </details>
-          </div>
-        </li>
-      </ol>
-
-      <!-- Whoever is running the room, not whoever just arrived from the
-           story. It opened the page once; that was the mistake. -->
-      <details class="tools" data-console>
-        <summary class="tools__summary">{p.toolsLabel}</summary>
-        <div class="tools__body">
-          <div class="tools__field">
-            <label class="meta-label" for="customer">{p.customerLabel}</label>
-            <input
-              id="customer"
-              class="tools__input"
-              type="text"
-              placeholder={p.customerPlaceholder}
-              autocomplete="off"
-              data-customer
-            />
-          </div>
-          <div class="tools__actions">
-            <button type="button" class="btn btn--quiet" data-export>{p.exportLabel}</button>
-            <button type="button" class="btn btn--quiet" data-reset>{p.resetLabel}</button>
-          </div>
-          <p class="tools__note">{p.savedNote}</p>
-        </div>
-      </details>
-
-      <div class="upcoming">
-        <p class="meta-label">{p.upcomingLabel}</p>
-        <p class="upcoming__note">{p.upcomingNote}</p>
-        <ul class="upcoming__list">
-          {
-            p.upcoming.map((tool) => (
-              <li class="upcoming__tool">
-                <span>{tool.name}</span>
-                <span class="upcoming__stage">
-                  {t.journey.stages.find((s) => s.id === tool.stage)?.index}
-                </span>
-              </li>
-            ))
-          }
-        </ul>
+      <div class="portal__bar">
+        <button type="button" class="btn btn--gold" data-new-project>{po.newCta}</button>
+        <p class="portal__note">{po.note}</p>
       </div>
+
+      <div class="portal__empty" data-empty hidden>
+        <h2 class="portal__empty-title display">{po.emptyTitle}</h2>
+        <p class="portal__empty-body">{po.emptyBody}</p>
+      </div>
+
+      <ul class="cards" data-cards></ul>
     </div>
   </section>
 
-  <script type="application/json" data-console-bootstrap set:html={JSON.stringify(bootstrap)} />
+  <dialog class="newproj" data-dialog aria-labelledby="newproj-title">
+    <form method="dialog" class="newproj__form">
+      <h2 class="newproj__title display" id="newproj-title">{po.dialogTitle}</h2>
+      <p class="newproj__lede">{po.dialogLede}</p>
+
+      <label class="newproj__label meta-label" for="newproj-name">{po.nameLabel}</label>
+      <input
+        id="newproj-name"
+        class="newproj__input"
+        type="text"
+        required
+        autocomplete="off"
+        placeholder={po.namePlaceholder}
+        data-new-name
+      />
+
+      <label class="newproj__label meta-label" for="newproj-facilitator">
+        {po.facilitatorLabel}
+      </label>
+      <input
+        id="newproj-facilitator"
+        class="newproj__input"
+        type="text"
+        autocomplete="off"
+        placeholder={po.facilitatorPlaceholder}
+        data-new-facilitator
+      />
+
+      <menu class="newproj__actions">
+        <button type="submit" class="btn btn--quiet" value="cancel" formnovalidate>
+          {po.cancelCta}
+        </button>
+        <button type="submit" class="btn btn--gold" value="create">{po.createCta}</button>
+      </menu>
+    </form>
+  </dialog>
+
+  <script type="application/json" data-portal-bootstrap set:html={JSON.stringify(bootstrap)} />
 </Base>
 
 <script>
   import {
     LocalSessionStore,
-    openActiveSession,
     createSession,
     setActiveSessionId,
-    toJSON,
+    projectProgress,
   } from '../../../lib/session';
-  import { diagnose, decodeAnswers } from '../../../lib/assessment';
 
-  const boot = document.querySelector('[data-console-bootstrap]');
+  const boot = document.querySelector('[data-portal-bootstrap]');
 
   if (boot) {
     const cfg = JSON.parse(boot.textContent ?? '{}');
+    const s = cfg.strings;
     const store = new LocalSessionStore();
-    const session = await openActiveSession(store);
 
-    // A shared result link (?r=…) seeds this browser's session, so a sponsor
-    // opening a colleague's link lands on the same diagnosis rather than a
-    // blank first step.
-    const shared = new URLSearchParams(location.search).get('r');
-    if (shared) {
-      const answers = decodeAnswers(cfg.questions, shared);
-      if (answers) {
-        session.readiness = { answers };
-        await store.save(session);
-        history.replaceState(null, '', location.pathname);
+    const cards = document.querySelector<HTMLElement>('[data-cards]')!;
+    const empty = document.querySelector<HTMLElement>('[data-empty]')!;
+    const dialog = document.querySelector<HTMLDialogElement>('[data-dialog]')!;
+
+    const dateFmt = new Intl.DateTimeFormat(document.documentElement.lang, { dateStyle: 'medium' });
+
+    function open(id: string) {
+      setActiveSessionId(id);
+      location.href = cfg.projectHref;
+    }
+
+    async function render() {
+      const metas = await store.list();
+      cards.textContent = '';
+      empty.hidden = metas.length > 0;
+
+      for (const meta of metas) {
+        const session = await store.load(meta.id);
+        if (!session) continue;
+
+        const progress = projectProgress(session);
+        const stage = progress.stage ? cfg.stages[progress.stage] : null;
+        const name = session.customer.trim() || s.untitled;
+
+        const li = document.createElement('li');
+        li.className = 'card';
+
+        const stageRow = document.createElement('p');
+        stageRow.className = 'card__stage meta-label';
+        if (stage) {
+          const idx = document.createElement('span');
+          idx.className = 'card__stage-index';
+          idx.textContent = stage.index;
+          stageRow.append(idx, document.createTextNode(stage.name));
+        } else {
+          stageRow.classList.add('card__stage--none');
+          stageRow.textContent = s.stageNotStarted;
+        }
+
+        const heading = document.createElement('h2');
+        heading.className = 'card__name display';
+        heading.textContent = name;
+
+        const meta2 = document.createElement('dl');
+        meta2.className = 'card__meta';
+        (
+          [
+            [s.startedLabel, dateFmt.format(new Date(session.createdAt))],
+            [s.progressLabel, `${progress.percent}%`],
+          ] as const
+        ).forEach(([term, value]) => {
+          const wrap = document.createElement('div');
+          const dt = document.createElement('dt');
+          dt.textContent = term;
+          const dd = document.createElement('dd');
+          dd.textContent = value;
+          wrap.append(dt, dd);
+          meta2.append(wrap);
+        });
+
+        const bar = document.createElement('div');
+        bar.className = 'card__bar';
+        bar.setAttribute('role', 'progressbar');
+        bar.setAttribute('aria-valuenow', String(progress.percent));
+        bar.setAttribute('aria-valuemin', '0');
+        bar.setAttribute('aria-valuemax', '100');
+        bar.setAttribute('aria-label', s.progressLabel);
+        const fill = document.createElement('span');
+        fill.style.width = `${progress.percent}%`;
+        bar.append(fill);
+
+        const actions = document.createElement('div');
+        actions.className = 'card__actions';
+
+        const openBtn = document.createElement('button');
+        openBtn.type = 'button';
+        openBtn.className = 'btn btn--quiet';
+        openBtn.textContent = s.openCta;
+        openBtn.addEventListener('click', () => open(session.id));
+
+        const del = document.createElement('button');
+        del.type = 'button';
+        del.className = 'card__delete';
+        del.textContent = s.deleteLabel;
+        del.addEventListener('click', async (event) => {
+          event.stopPropagation();
+          if (!confirm(s.deleteConfirm.replace('{name}', name))) return;
+          await store.remove(session.id);
+          await render();
+        });
+
+        actions.append(openBtn, del);
+        li.append(stageRow, heading, meta2, bar, actions);
+
+        // The whole card is the target; the button is there for keyboard and
+        // for people who expect one.
+        li.addEventListener('click', (event) => {
+          if ((event.target as HTMLElement).closest('button')) return;
+          open(session.id);
+        });
+
+        cards.append(li);
       }
     }
 
-    /** Moves a step and its rail chip together — they must never disagree. */
-    function setStepState(step: number, state: string, badge?: string) {
-      document.querySelector(`[data-step="${step}"]`)?.setAttribute('data-state', state);
-      const chip = document.querySelector(`[data-rail-step="${step}"]`);
-      if (chip) {
-        chip.setAttribute('data-state', state);
-        if (state === 'now') chip.setAttribute('aria-current', 'step');
-        else chip.removeAttribute('aria-current');
-      }
-      const el = document.querySelector<HTMLElement>(`[data-step-badge="${step}"]`);
-      if (el && badge) el.textContent = badge;
-    }
+    void render();
 
-    const startTier = (() => {
-      if (!session.readiness) return 0;
-      const d = diagnose(cfg.questions, session.readiness.answers);
-      return d.complete ? d.startTier : 0;
-    })();
-
-    if (startTier) {
-      // Step 1 settles into a result, and hands the single gold button on.
-      setStepState(1, 'done', cfg.stateDone);
-      document.querySelector('[data-step1-note]')?.setAttribute('hidden', '');
-
-      const result = document.querySelector<HTMLElement>('[data-step1-result]');
-      if (result) {
-        result.textContent = `${cfg.resultPrefix} ${cfg.tierNames[startTier - 1] ?? ''}`;
-        result.hidden = false;
-      }
-
-      const cta = document.querySelector<HTMLAnchorElement>('[data-step1-cta]');
-      if (cta) {
-        cta.textContent = cfg.retakeCta;
-        cta.classList.replace('btn--gold', 'btn--quiet');
-      }
-
-      // Step 2 becomes the live one, showing one path rather than a choice.
-      setStepState(2, 'now', cfg.stateNow);
-      document.querySelector('[data-step2-locked]')?.setAttribute('hidden', '');
-
-      const panel = document.querySelector<HTMLElement>('[data-yourpath]');
-      if (panel) panel.hidden = false;
-
-      const key = `tier-${startTier}`;
-      const yours = document.querySelector<HTMLElement>(`[data-tier-card="${key}"]`);
-      if (yours) yours.hidden = false;
-
-      document.querySelectorAll<HTMLElement>('[data-other-tier]').forEach((link) => {
-        link.hidden = link.dataset.otherTier === key;
-      });
-    }
-
-    const customer = document.querySelector<HTMLInputElement>('[data-customer]');
-    if (customer) {
-      customer.value = session.customer;
-      let timer: number | undefined;
-      customer.addEventListener('input', () => {
-        session.customer = customer.value;
-        // Debounced: a facilitator typing a name should not write to storage on
-        // every keystroke while a room watches.
-        window.clearTimeout(timer);
-        timer = window.setTimeout(() => void store.save(session), 400);
-      });
-    }
-
-    document.querySelector('[data-export]')?.addEventListener('click', () => {
-      const blob = new Blob([toJSON(session)], { type: 'application/json' });
-      const url = URL.createObjectURL(blob);
-      const a = document.createElement('a');
-      a.href = url;
-      a.download = `aiia-${session.customer || 'session'}-${session.id.slice(0, 8)}.json`;
-      a.click();
-      URL.revokeObjectURL(url);
+    document.querySelector('[data-new-project]')?.addEventListener('click', () => {
+      dialog.querySelector<HTMLInputElement>('[data-new-name]')!.value = '';
+      dialog.querySelector<HTMLInputElement>('[data-new-facilitator]')!.value = '';
+      dialog.showModal();
     });
 
-    document.querySelector('[data-reset]')?.addEventListener('click', () => {
-      if (!confirm(cfg.resetConfirm)) return;
-      const fresh = createSession();
-      setActiveSessionId(fresh.id);
-      void store.save(fresh).then(() => location.reload());
+    dialog.addEventListener('close', async () => {
+      if (dialog.returnValue !== 'create') return;
+      const name = dialog.querySelector<HTMLInputElement>('[data-new-name]')!.value.trim();
+      const facilitator = dialog
+        .querySelector<HTMLInputElement>('[data-new-facilitator]')!
+        .value.trim();
+      if (!name) return;
+
+      const fresh = createSession({ customer: name, facilitator });
+      await store.save(fresh);
+      open(fresh.id);
     });
   }
 </script>
 
 <style>
-  /* --- The "you are here" rail ------------------------------------------ */
-  .rail {
-    margin-block-start: clamp(1.75rem, 1.2rem + 2vw, 2.75rem);
-  }
-
-  .rail__list {
-    list-style: none;
-    margin: 0;
-    padding: 0;
+  .portal__bar {
     display: flex;
     flex-wrap: wrap;
-    gap: 0.5rem 1.4rem;
+    align-items: center;
+    gap: 0.75rem 1.25rem;
+    margin-block-start: clamp(1.5rem, 1rem + 2vw, 2.5rem);
   }
 
-  .rail__item {
+  .portal__note {
+    margin: 0;
+    font-size: var(--text-micro);
+    color: var(--color-muted);
+  }
+
+  .portal__empty {
+    margin-block-start: clamp(2rem, 1.5rem + 2vw, 3.5rem);
+    padding: clamp(1.5rem, 1rem + 2vw, 2.5rem);
+    border: 1px dashed color-mix(in srgb, var(--color-ink) 22%, transparent);
+    text-align: center;
+  }
+
+  .portal__empty[hidden] {
+    display: none;
+  }
+
+  .portal__empty-title {
+    margin: 0 0 0.4rem;
+    font-size: var(--text-h3);
+  }
+
+  .portal__empty-body {
+    margin: 0;
+    color: var(--color-muted);
+  }
+
+  .cards {
+    list-style: none;
+    margin: clamp(1.5rem, 1rem + 2vw, 2.5rem) 0 0;
+    padding: 0;
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(17rem, 1fr));
+    gap: clamp(0.9rem, 0.7rem + 1vw, 1.5rem);
+  }
+
+  :global(.card) {
+    display: grid;
+    gap: 0.6rem;
+    align-content: start;
+    padding: clamp(1rem, 0.85rem + 0.8vw, 1.4rem);
+    border: 1px solid color-mix(in srgb, var(--color-ink) 14%, transparent);
+    background: color-mix(in srgb, var(--color-parchment-deep) 40%, transparent);
+    cursor: pointer;
+    transition:
+      border-color var(--duration-base) var(--ease-in-out-soft),
+      transform var(--duration-base) var(--ease-in-out-soft);
+  }
+
+  :global(.card:hover) {
+    border-color: var(--color-gold);
+    transform: translateY(-2px);
+  }
+
+  :global(.card__stage) {
     display: flex;
     align-items: center;
-    gap: 0.55rem;
-    font-size: var(--text-small);
+    gap: 0.5rem;
+    margin: 0;
+    color: var(--color-ink);
+  }
+
+  :global(.card__stage--none) {
     color: var(--color-muted);
   }
 
-  .rail__num {
-    display: grid;
+  :global(.card__stage-index) {
+    display: inline-grid;
     place-items: center;
-    inline-size: 1.6rem;
-    block-size: 1.6rem;
-    border-radius: 50%;
-    border: 1px solid color-mix(in srgb, var(--color-ink) 22%, transparent);
-    font-size: var(--text-micro);
-    font-variant-numeric: tabular-nums;
-  }
-
-  .rail__item[data-state='now'] {
-    color: var(--color-ink);
-    font-weight: 600;
-  }
-
-  .rail__item[data-state='now'] .rail__num {
-    background: var(--color-gold);
-    border-color: var(--color-gold);
-    color: var(--color-ink-deep);
-    font-weight: 700;
-  }
-
-  .rail__item[data-state='done'] {
-    color: color-mix(in srgb, var(--color-ink) 70%, transparent);
-  }
-
-  /* The tick replaces the numeral outright — `display`, not a zeroed font size,
-     so it leaves the accessibility tree too. */
-  .rail__tick {
-    display: none;
-  }
-
-  .rail__item[data-state='done'] .rail__num {
-    border-color: var(--color-gold);
-    color: var(--color-gold);
-    font-size: var(--text-small);
-  }
-
-  .rail__item[data-state='done'] .rail__digit {
-    display: none;
-  }
-
-  .rail__item[data-state='done'] .rail__tick {
-    display: block;
-  }
-
-  /* --- The three steps -------------------------------------------------- */
-  .path {
-    list-style: none;
-    margin: clamp(1.5rem, 1rem + 1.6vw, 2.25rem) 0 0;
-    padding: 0;
-    display: grid;
-    gap: clamp(1rem, 0.7rem + 1.2vw, 1.6rem);
-    max-inline-size: 62rem;
-  }
-
-  .step {
-    padding: clamp(1.3rem, 1rem + 1.4vw, 2rem);
-    border: 1px solid color-mix(in srgb, var(--color-ink) 12%, transparent);
-    border-inline-start: 4px solid color-mix(in srgb, var(--color-ink) 14%, transparent);
-    background: color-mix(in srgb, #fff 62%, transparent);
-    transition:
-      opacity var(--duration-base) var(--ease-in-out-soft),
-      border-color var(--duration-base) var(--ease-in-out-soft);
-  }
-
-  /* Only the live step gets the gold spine and a full-strength ground. */
-  .step[data-state='now'] {
-    background: #fff;
-    border-inline-start-color: var(--color-gold);
-    box-shadow: 0 10px 34px -22px rgb(22 41 74 / 0.35);
-  }
-
-  .step[data-state='done'] {
-    background: color-mix(in srgb, var(--color-parchment-deep) 55%, transparent);
-    border-inline-start-color: color-mix(in srgb, var(--color-gold) 60%, transparent);
-  }
-
-  /* Dimmed, not hidden: the reader has to be able to see what is coming
-     without being able to mistake it for something they can act on. */
-  .step[data-state='locked'] {
-    opacity: 0.62;
-  }
-
-  .step__head {
-    display: grid;
-    grid-template-columns: auto minmax(0, 1fr);
-    align-items: start;
-    column-gap: clamp(0.9rem, 0.6rem + 1vw, 1.4rem);
-    row-gap: 0.5rem;
-  }
-
-  .step__num {
-    grid-row: span 2;
-    margin: 0;
-    font-size: clamp(2.2rem, 1.6rem + 2vw, 3.2rem);
-    line-height: 0.9;
-    color: color-mix(in srgb, var(--color-gold) 70%, var(--color-parchment-deep));
-  }
-
-  .step[data-state='now'] .step__num {
-    color: var(--color-gold);
-  }
-
-  .step__name {
-    margin: 0;
-  }
-
-  .step__title {
-    margin: 0.25rem 0 0;
-    font-size: var(--text-h3);
-    line-height: 1.2;
-    color: var(--color-ink);
-    text-wrap: balance;
-  }
-
-  .step__badge {
-    grid-column: 2;
-    justify-self: start;
-    margin: 0.2rem 0 0;
-    padding: 0.2em 0.7em;
-    font-size: var(--text-micro);
-    font-weight: 600;
-    letter-spacing: 0.18em;
-    text-transform: uppercase;
-    color: var(--color-muted);
-    border: 1px solid color-mix(in srgb, var(--color-ink) 18%, transparent);
-  }
-
-  .step[data-state='now'] .step__badge {
-    background: var(--color-gold);
-    border-color: var(--color-gold);
-    color: var(--color-ink-deep);
-  }
-
-  .step[data-state='done'] .step__badge {
-    border-color: color-mix(in srgb, var(--color-gold) 70%, transparent);
-    color: color-mix(in srgb, var(--color-ink) 72%, transparent);
-  }
-
-  .step__body {
-    margin-block-start: clamp(0.9rem, 0.7rem + 0.8vw, 1.3rem);
-  }
-
-  .step__lede {
-    margin: 0;
-    max-inline-size: 58ch;
-    font-size: var(--text-small);
-    line-height: 1.6;
-    color: color-mix(in srgb, var(--color-ink) 82%, transparent);
-    text-wrap: pretty;
-  }
-
-  .step__note {
-    margin: 1rem 0 0;
-    font-size: var(--text-micro);
-    letter-spacing: 0.06em;
-    color: var(--color-muted);
-  }
-
-  .step__result {
-    margin: 1rem 0 0;
+    min-width: 1.6rem;
+    height: 1.6rem;
     font-family: var(--font-display);
-    font-size: var(--text-lede);
+    font-size: 0.85rem;
     color: var(--color-ink);
+    background: color-mix(in srgb, var(--color-gold) 35%, transparent);
   }
 
-  .step__cta {
-    margin-block-start: 1rem;
-  }
-
-  /* Quiet on purpose: it must be findable by someone who is stuck, without
-     competing with the one gold button. */
-  .step__primer {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 0.15rem 0.5rem;
-    margin: 0.9rem 0 0;
-    font-size: var(--text-micro);
-    color: var(--color-muted);
-  }
-
-  .step__primer a {
-    color: inherit;
-    text-decoration: none;
-    padding-block-end: 0.1rem;
-    border-block-end: 1px solid color-mix(in srgb, var(--color-gold) 60%, transparent);
-  }
-
-  .step__primer a:hover {
-    color: var(--color-ink);
-    border-block-end-color: var(--color-gold);
-  }
-
-  .step__locked {
-    margin: 1rem 0 0;
-    padding-inline-start: 0.9rem;
-    border-inline-start: 2px solid color-mix(in srgb, var(--color-ink) 20%, transparent);
-    max-inline-size: 52ch;
-    font-size: var(--text-small);
-    font-style: italic;
-    color: var(--color-muted);
-  }
-
-  :global(html[lang='zh']) .step__locked {
-    font-style: normal;
-  }
-
-  /* --- Step 2: the one path, not three cards ---------------------------- */
-  .yourpath {
-    margin-block-start: 1.2rem;
-  }
-
-  .yourpath__card {
-    padding: clamp(1.1rem, 0.85rem + 1vw, 1.6rem);
-    background: var(--color-ink-deep);
-    color: var(--color-parchment);
-    border-inline-start: 3px solid var(--color-gold);
-  }
-
-  .yourpath__meta {
+  :global(.card__name) {
     margin: 0;
-    color: var(--color-gold-bright);
-  }
-
-  .yourpath__title {
-    margin: 0.3rem 0 0;
     font-size: var(--text-h3);
     line-height: 1.15;
+    overflow-wrap: anywhere;
   }
 
-  .yourpath__who {
-    margin: 0.5rem 0 1.1rem;
-    max-inline-size: 52ch;
-    font-size: var(--text-small);
-    color: color-mix(in srgb, var(--color-parchment) 78%, transparent);
-  }
-
-  .yourpath__others {
+  :global(.card__meta) {
+    margin: 0;
     display: flex;
     flex-wrap: wrap;
-    align-items: baseline;
-    gap: 0.4rem 1rem;
-    margin: 0.9rem 0 0;
-    font-size: var(--text-micro);
+    gap: 0.25rem 1.5rem;
+  }
+
+  :global(.card__meta dt) {
+    font-size: 0.65rem;
+    text-transform: uppercase;
+    letter-spacing: 0.12em;
     color: var(--color-muted);
   }
 
-  .yourpath__other {
-    color: inherit;
-    text-decoration: none;
-    padding-block-end: 0.15rem;
-    border-block-end: 1px solid color-mix(in srgb, var(--color-gold) 55%, transparent);
-  }
-
-  .yourpath__other:hover {
+  :global(.card__meta dd) {
+    margin: 0.1rem 0 0;
+    font-size: var(--text-small);
     color: var(--color-ink);
-    border-block-end-color: var(--color-gold);
   }
 
-  .yourpath__check {
+  :global(.card__bar) {
+    height: 3px;
+    background: color-mix(in srgb, var(--color-ink) 12%, transparent);
+  }
+
+  :global(.card__bar span) {
+    display: block;
+    height: 100%;
+    background: var(--color-gold);
+  }
+
+  :global(.card__actions) {
     display: flex;
-    flex-wrap: wrap;
-    align-items: baseline;
-    gap: 0.2rem 0.5rem;
-    margin: 1.1rem 0 0;
-    padding-block-start: 0.9rem;
-    border-block-start: 1px solid color-mix(in srgb, var(--color-ink) 14%, transparent);
-    font-size: var(--text-small);
-    color: color-mix(in srgb, var(--color-ink) 78%, transparent);
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.75rem;
+    margin-block-start: 0.15rem;
   }
 
-  .yourpath__check a {
-    font-weight: 600;
-    color: var(--color-ink);
-    text-decoration: none;
-    padding-block-end: 0.15rem;
-    border-block-end: 1px solid var(--color-gold);
-  }
-
-  .yourpath__check a:hover {
-    color: var(--color-gold);
-  }
-
-  /* --- Step 3: the method, folded away ---------------------------------- */
-  .live {
-    margin-block-start: 1.1rem;
-    padding: clamp(0.9rem, 0.75rem + 0.8vw, 1.3rem);
-    border-inline-start: 3px solid var(--color-gold);
-    background: color-mix(in srgb, var(--color-gold) 8%, transparent);
-  }
-
-  .live__lead {
-    margin: 0 0 0.9rem;
-    max-inline-size: 58ch;
-    font-size: var(--text-small);
-    line-height: 1.6;
-    color: color-mix(in srgb, var(--color-ink) 82%, transparent);
-  }
-
-  .method {
-    margin-block-start: 1.1rem;
-  }
-
-  .method__summary {
+  :global(.card__delete) {
+    background: none;
+    border: 0;
     cursor: pointer;
-    display: inline-block;
-    list-style: none;
     font-size: var(--text-micro);
-    font-weight: 600;
-    letter-spacing: 0.16em;
-    text-transform: uppercase;
-    color: var(--color-ink);
-    padding-block-end: 0.25rem;
-    border-block-end: 1px solid var(--color-gold);
+    color: var(--color-muted);
+    text-decoration: underline;
   }
 
-  .method__summary::-webkit-details-marker {
-    display: none;
-  }
-
-  .method__summary:hover {
-    color: var(--color-gold);
-  }
-
-  .stages {
-    list-style: none;
-    margin: clamp(1.2rem, 0.9rem + 1.2vw, 1.9rem) 0 0;
-    padding: 0;
-    display: grid;
-    gap: clamp(1.5rem, 1rem + 2vw, 2.5rem);
-  }
-
-  .pstage {
-    min-inline-size: 0;
-    padding-block-start: clamp(0.9rem, 0.7rem + 0.8vw, 1.4rem);
-    border-block-start: 2px solid color-mix(in srgb, var(--color-gold) 55%, transparent);
-  }
-
-  .pstage__index {
-    margin: 0;
-    font-size: var(--text-h3);
-    line-height: 1;
-    color: color-mix(in srgb, var(--color-gold) 78%, var(--color-parchment));
-  }
-
-  .pstage__name {
-    margin: 0.35rem 0 0;
-    font-family: var(--font-body);
-    font-size: var(--text-small);
-    font-weight: 600;
-    letter-spacing: 0.1em;
-    text-transform: uppercase;
-    color: var(--color-ink);
-  }
-
-  .pstage__label {
-    margin: clamp(0.9rem, 0.7rem + 0.5vw, 1.2rem) 0 0.3rem;
-  }
-
-  .pstage__inputs,
-  .pstage__gates {
-    list-style: none;
-    margin: 0;
-    padding: 0;
-    display: grid;
-    gap: 0.25rem;
-    font-size: var(--text-small);
-    color: color-mix(in srgb, var(--color-ink) 86%, transparent);
-  }
-
-  .pstage__inputs li {
-    padding-inline-start: 0.85rem;
-    position: relative;
-  }
-
-  .pstage__inputs li::before {
-    content: '';
-    position: absolute;
-    inset-inline-start: 0;
-    inset-block-start: 0.62em;
-    inline-size: 0.35rem;
-    block-size: 1px;
-    background: var(--color-muted);
-  }
-
-  .pstage__artifact {
-    margin: 0;
-    font-family: var(--font-display);
-    font-size: var(--text-body);
+  :global(.card__delete:hover),
+  :global(.card__delete:focus-visible) {
     color: var(--color-ember);
   }
 
-  .pstage__gates li {
-    display: grid;
-    gap: 0.1rem;
-    padding-inline-start: 0.75rem;
-    border-inline-start: 2px solid color-mix(in srgb, var(--color-gold) 60%, transparent);
-  }
-
-  .pstage__gate-when {
-    font-size: var(--text-eyebrow);
-    letter-spacing: 0.2em;
-    text-transform: uppercase;
-    color: var(--color-gold);
-  }
-
-  .pstage__nogate {
-    margin: 0;
-    font-size: var(--text-small);
-    font-style: italic;
-    color: var(--color-muted);
-  }
-
-  /* --- Facilitator plumbing, at the foot where it belongs ---------------- */
-  .tools {
-    margin-block-start: clamp(2.5rem, 1.6rem + 3vw, 4rem);
-    max-inline-size: 62rem;
-  }
-
-  .tools__summary {
-    cursor: pointer;
-    display: inline-block;
-    list-style: none;
-    font-family: var(--font-body);
-    font-size: var(--text-micro);
-    font-weight: 600;
-    letter-spacing: 0.2em;
-    text-transform: uppercase;
-    color: var(--color-muted);
-  }
-
-  .tools__summary::-webkit-details-marker {
-    display: none;
-  }
-
-  .tools__summary:hover {
+  /* --- New project dialog ---------------------------------------------- */
+  .newproj {
+    margin: auto;
+    border: 1px solid color-mix(in srgb, var(--color-ink) 20%, transparent);
+    background: var(--color-parchment);
     color: var(--color-ink);
+    padding: 0;
+    width: min(30rem, calc(100vw - 2rem));
   }
 
-  .tools__body {
-    margin-block-start: 1rem;
-    padding: clamp(1.1rem, 0.8rem + 1.2vw, 1.6rem);
-    border: 1px solid color-mix(in srgb, var(--color-ink) 12%, transparent);
+  .newproj::backdrop {
+    background: color-mix(in srgb, var(--color-ink-deep) 55%, transparent);
+    backdrop-filter: blur(3px);
+  }
+
+  .newproj__form {
     display: grid;
-    gap: 0.9rem;
-    align-items: end;
+    gap: 0.5rem;
+    padding: clamp(1.25rem, 1rem + 1.5vw, 2rem);
   }
 
-  .tools__field {
-    display: grid;
-    gap: 0.4rem;
-    min-inline-size: 0;
+  .newproj__title {
+    margin: 0;
+    font-size: var(--text-h3);
   }
 
-  .tools__input {
-    inline-size: 100%;
+  .newproj__lede {
+    margin: 0 0 0.5rem;
+    font-size: var(--text-small);
+    color: var(--color-muted);
+  }
+
+  .newproj__label {
+    margin-block-start: 0.4rem;
+  }
+
+  .newproj__input {
     font: inherit;
-    font-size: var(--text-body);
     color: var(--color-ink);
     background: transparent;
     border: 0;
     border-block-end: 2px solid color-mix(in srgb, var(--color-gold) 55%, transparent);
-    padding: 0.4rem 0;
+    padding: 0.35rem 0;
   }
 
-  .tools__input:focus-visible {
+  .newproj__input:focus-visible {
     outline: none;
     border-block-end-color: var(--color-gold);
   }
 
-  .tools__actions {
+  .newproj__actions {
     display: flex;
-    flex-wrap: wrap;
+    justify-content: flex-end;
     gap: 0.6rem;
-  }
-
-  .tools__note {
-    margin: 0;
-    font-size: var(--text-micro);
-    color: var(--color-muted);
-    grid-column: 1 / -1;
-  }
-
-  /* --- Roadmap ---------------------------------------------------------- */
-  .upcoming {
-    margin-block-start: clamp(2rem, 1.4rem + 2vw, 3rem);
-    padding-block-start: clamp(1.2rem, 0.9rem + 1.2vw, 1.8rem);
-    border-block-start: 1px solid color-mix(in srgb, var(--color-gold) 45%, transparent);
-    max-inline-size: 62rem;
-  }
-
-  .upcoming__note {
-    margin: 0.4rem 0 0;
-    font-size: var(--text-small);
-    color: var(--color-muted);
-    max-inline-size: 62ch;
-  }
-
-  .upcoming__list {
-    list-style: none;
-    margin: clamp(1rem, 0.8rem + 0.8vw, 1.5rem) 0 0;
+    margin: 1.25rem 0 0;
     padding: 0;
-    display: grid;
-    gap: 0.5rem;
-  }
-
-  .upcoming__tool {
-    display: flex;
-    align-items: baseline;
-    justify-content: space-between;
-    gap: 1rem;
-    padding-block: 0.5rem;
-    border-block-end: 1px solid color-mix(in srgb, var(--color-ink) 8%, transparent);
-    font-size: var(--text-small);
-    color: var(--color-muted);
-  }
-
-  .upcoming__stage {
-    font-family: var(--font-display);
-    color: color-mix(in srgb, var(--color-gold) 70%, var(--color-muted));
-  }
-
-  @media (min-width: 46rem) {
-    .step__head {
-      grid-template-columns: auto minmax(0, 1fr) auto;
-    }
-
-    .step__badge {
-      grid-column: 3;
-      grid-row: 1;
-      justify-self: end;
-      margin-block-start: 0.35rem;
-    }
-
-    .tools__body {
-      grid-template-columns: minmax(0, 1fr) auto;
-    }
-
-    .upcoming__list {
-      grid-template-columns: repeat(2, minmax(0, 1fr));
-      column-gap: clamp(1.5rem, 1rem + 2vw, 3rem);
-    }
-  }
-
-  @media (min-width: 68rem) {
-    .stages {
-      grid-template-columns: repeat(5, minmax(0, 1fr));
-      gap: clamp(1rem, 0.4rem + 1.6vw, 2rem);
-    }
   }
 </style>

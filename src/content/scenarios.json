@@ -3,7 +3,7 @@
     "id": "email-routing",
     "department": "crm",
     "tier": 1,
-    "capabilities": ["agent-basics", "actions-connectors", "power-automate", "human-approval"],
+    "capabilities": ["agent-instructions", "system-actions", "deterministic-automation", "human-approval"],
     "en": {
       "title": "Email routing and first-reply drafting",
       "pain": "A shared mailbox someone reads every morning, sorting what is urgent from what is routine, and typing the same four answers.",
@@ -19,7 +19,7 @@
     "id": "rfp-response",
     "department": "crm",
     "tier": 2,
-    "capabilities": ["knowledge-grounding", "doc-extraction", "orchestration", "human-approval"],
+    "capabilities": ["knowledge-grounding", "document-extraction", "tool-orchestration", "human-approval"],
     "en": {
       "title": "Bid and RFP response assembly",
       "pain": "Every bid is assembled by hand from previous bids nobody can find, and the deadline decides how much reuse actually happens.",
@@ -35,7 +35,7 @@
     "id": "service-ops-agent",
     "department": "crm",
     "tier": 3,
-    "capabilities": ["orchestration", "actions-connectors", "dataverse", "channels-publish", "governance"],
+    "capabilities": ["tool-orchestration", "system-actions", "custom-tool-extension", "structured-persistence", "test-evaluation", "deployment-channels", "governance-guardrails"],
     "en": {
       "title": "Field service operations agent",
       "pain": "Dispatch, parts, history and the engineer's own notes live in four systems, and the person in the van has none of them.",
@@ -52,7 +52,7 @@
     "id": "invoice-recognition",
     "department": "finance",
     "tier": 1,
-    "capabilities": ["doc-extraction", "power-automate", "human-approval", "dataverse"],
+    "capabilities": ["document-extraction", "deterministic-automation", "human-approval", "structured-persistence"],
     "en": {
       "title": "Invoice and order recognition",
       "pain": "Someone retypes numbers from a PDF into a form, and the errors surface a month later in a reconciliation.",
@@ -68,7 +68,7 @@
     "id": "expense-policy",
     "department": "finance",
     "tier": 1,
-    "capabilities": ["agent-basics", "knowledge-grounding", "channels-publish"],
+    "capabilities": ["agent-instructions", "knowledge-grounding", "deployment-channels"],
     "en": {
       "title": "Expense policy questions",
       "pain": "Finance answers the same twenty questions every month, and the policy document is long enough that nobody reads it first.",
@@ -84,7 +84,7 @@
     "id": "close-checklist",
     "department": "finance",
     "tier": 2,
-    "capabilities": ["power-automate", "dataverse", "human-approval", "measurement"],
+    "capabilities": ["deterministic-automation", "structured-persistence", "human-approval", "operational-measurement"],
     "en": {
       "title": "Month-end close chase-up",
       "pain": "Close depends on a dozen submissions arriving, and someone spends the last three days chasing the ones that have not.",
@@ -101,7 +101,7 @@
     "id": "hr-policy-qa",
     "department": "hr",
     "tier": 1,
-    "capabilities": ["agent-basics", "knowledge-grounding", "human-approval", "channels-publish"],
+    "capabilities": ["agent-instructions", "knowledge-grounding", "human-approval", "deployment-channels"],
     "en": {
       "title": "HR policy and benefits questions",
       "pain": "The same questions about leave, benefits and process arrive in HR's inbox all year, phrased differently every time.",
@@ -117,7 +117,7 @@
     "id": "onboarding-runbook",
     "department": "hr",
     "tier": 2,
-    "capabilities": ["power-automate", "actions-connectors", "dataverse", "human-approval"],
+    "capabilities": ["deterministic-automation", "system-actions", "structured-persistence", "human-approval"],
     "en": {
       "title": "New-joiner onboarding runbook",
       "pain": "Onboarding is a checklist in someone's head, spread across HR, IT and the hiring manager, and every new joiner gets a slightly different version.",
@@ -133,7 +133,7 @@
     "id": "jd-screening",
     "department": "hr",
     "tier": 2,
-    "capabilities": ["knowledge-grounding", "doc-extraction", "orchestration"],
+    "capabilities": ["knowledge-grounding", "document-extraction", "tool-orchestration"],
     "en": {
       "title": "Job description drafting and CV first pass",
       "pain": "Every role is written from scratch, and the first CV pass is a volume problem that pushes real judgement to the end.",
@@ -150,7 +150,7 @@
     "id": "it-helpdesk",
     "department": "it",
     "tier": 1,
-    "capabilities": ["agent-basics", "knowledge-grounding", "topics-flow", "channels-publish"],
+    "capabilities": ["agent-instructions", "knowledge-grounding", "deterministic-dialogue", "deployment-channels"],
     "en": {
       "title": "IT helpdesk first line",
       "pain": "A large share of tickets are password, access and how-do-I questions that a knowledge base already answers.",
@@ -166,7 +166,7 @@
     "id": "access-requests",
     "department": "it",
     "tier": 2,
-    "capabilities": ["topics-flow", "power-automate", "human-approval", "dataverse"],
+    "capabilities": ["deterministic-dialogue", "deterministic-automation", "human-approval", "structured-persistence"],
     "en": {
       "title": "Access request handling",
       "pain": "Access requests arrive as free text, need an approver nobody can name, and stall for days at the wrong desk.",
@@ -182,7 +182,7 @@
     "id": "business-system-agent",
     "department": "it",
     "tier": 3,
-    "capabilities": ["actions-connectors", "orchestration", "dataverse", "governance"],
+    "capabilities": ["system-actions", "tool-orchestration", "structured-data-query", "custom-tool-extension", "structured-persistence", "test-evaluation", "governance-guardrails"],
     "en": {
       "title": "Agent over a legacy business system",
       "pain": "A system everyone depends on and nobody wants to change, reachable only by people who know its screens.",
@@ -199,7 +199,7 @@
     "id": "doc-review",
     "department": "general",
     "tier": 2,
-    "capabilities": ["doc-extraction", "knowledge-grounding", "orchestration", "measurement"],
+    "capabilities": ["document-extraction", "knowledge-grounding", "tool-orchestration", "operational-measurement"],
     "en": {
       "title": "Document review against rules",
       "pain": "Contracts, specs or submissions are checked by hand against a set of rules that lives partly in a document and partly in an expert's memory.",
@@ -215,7 +215,7 @@
     "id": "meeting-to-actions",
     "department": "general",
     "tier": 1,
-    "capabilities": ["agent-basics", "actions-connectors", "power-automate"],
+    "capabilities": ["agent-instructions", "system-actions", "deterministic-automation"],
     "en": {
       "title": "Meeting notes to tracked actions",
       "pain": "Decisions and owners are agreed in the room and then live in someone's notebook until the next meeting rediscovers them.",
@@ -231,7 +231,7 @@
     "id": "knowledge-search",
     "department": "general",
     "tier": 1,
-    "capabilities": ["agent-basics", "knowledge-grounding", "governance"],
+    "capabilities": ["agent-instructions", "knowledge-grounding", "governance-guardrails"],
     "en": {
       "title": "Ask across your own documents",
       "pain": "The answer exists, in a file, in a site nobody remembers the name of, written by someone who has left.",
@@ -241,6 +241,70 @@
       "title": "对着自己的文档提问",
       "pain": "答案是有的——在某个文件里，在某个没人记得名字的站点上，作者已经离职了。",
       "changes": "一个统一入口提问，只依据你自己的文档作答，并给出出处以便核对。"
+    }
+  },
+  {
+    "id": "po-chase",
+    "department": "supply-chain",
+    "tier": 1,
+    "capabilities": ["agent-instructions", "system-actions", "deterministic-automation", "human-approval"],
+    "en": {
+      "title": "Chasing late purchase orders",
+      "pain": "A buyer works down a list of overdue lines, emails suppliers one at a time, and pastes whatever comes back into the same spreadsheet.",
+      "changes": "Overdue lines are chased on a schedule, replies are read for a committed date, and only a dispute or a silence reaches the buyer."
+    },
+    "zh": {
+      "title": "催逾期采购订单",
+      "pain": "采购员对着一张逾期清单，一家一家发邮件催，再把回复一条条粘回同一张表里。",
+      "changes": "逾期行按节奏自动催，回复里读出承诺交期，只有扯皮或没人理才转到采购员手上。"
+    }
+  },
+  {
+    "id": "goods-receipt-match",
+    "department": "supply-chain",
+    "tier": 2,
+    "capabilities": ["document-extraction", "deterministic-automation", "structured-data-query", "structured-persistence", "human-approval"],
+    "en": {
+      "title": "Packing list against purchase order",
+      "pain": "Packing lists arrive as scans and phone photos, and someone compares them line by line against the order before anything can be booked in.",
+      "changes": "Lines are read off the document and matched to the order; only quantity and part-number mismatches are raised for a person to settle."
+    },
+    "zh": {
+      "title": "送货单与采购订单核对",
+      "pain": "送货单是扫描件和手机照片，入库之前得有人逐行和订单比对。",
+      "changes": "从单据上读出行项并与订单匹配，只有数量或料号对不上才提给人处理。"
+    }
+  },
+  {
+    "id": "supplier-compliance",
+    "department": "supply-chain",
+    "tier": 2,
+    "capabilities": ["knowledge-grounding", "document-extraction", "deterministic-automation", "structured-persistence"],
+    "en": {
+      "title": "Supplier documents and expiry tracking",
+      "pain": "Certificates, insurance and bank details are collected over email, and nobody can say which supplier is missing what until an audit asks.",
+      "changes": "Required documents are tracked per supplier, expiry dates are read off the certificates, and the chaser goes out before one lapses."
+    },
+    "zh": {
+      "title": "供应商资质与到期跟踪",
+      "pain": "资质、保险、银行信息都是邮件来回收的，哪家缺什么，得等审计问起来才知道。",
+      "changes": "按供应商跟踪应交材料，从证书上读出有效期，在过期之前就把催办发出去。"
+    }
+  },
+  {
+    "id": "order-status",
+    "department": "supply-chain",
+    "tier": 1,
+    "capabilities": ["agent-instructions", "knowledge-grounding", "system-actions", "structured-data-query", "operational-measurement"],
+    "en": {
+      "title": "Answering “where is my order”",
+      "pain": "Sales and the plants ask the same question all day, and a planner looks it up across two systems and a spreadsheet to answer it.",
+      "changes": "Status questions are answered from the systems of record with the source shown, and a planner is pulled in only when the date has actually slipped."
+    },
+    "zh": {
+      "title": "回答「我的货到哪了」",
+      "pain": "销售和工厂一天到晚问同一个问题，计划员每次都要跨两个系统加一张表去查。",
+      "changes": "直接依据系统里的记录作答并给出出处，只有交期真的滑了才叫计划员介入。"
     }
   }
 ]

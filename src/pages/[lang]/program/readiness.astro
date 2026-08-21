@@ -84,7 +84,7 @@ const bootstrap = {
     ),
     noGaps: res.noGapsLabel,
   },
-  consoleHref: localePath(lang, '/program/'),
+  consoleHref: localePath(lang, '/program/project/'),
 };
 ---
 
@@ -230,10 +230,10 @@ const bootstrap = {
         </div>
 
         <div class="result__actions">
-          <a class="btn btn--gold" href={localePath(lang, '/program/')} data-path-link>
+          <a class="btn btn--gold" href={localePath(lang, '/program/project/')} data-path-link>
             {res.openPathLabel}
           </a>
-          <a class="btn btn--quiet" href={localePath(lang, '/program/')}>{res.consoleLabel}</a>
+          <a class="btn btn--quiet" href={localePath(lang, '/program/project/')}>{res.consoleLabel}</a>
           <button type="button" class="btn btn--quiet" data-copy>{res.copyLinkLabel}</button>
           <button type="button" class="btn btn--quiet" data-print>{res.printLabel}</button>
           <button type="button" class="btn btn--quiet" data-retake>{res.retakeLabel}</button>

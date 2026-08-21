@@ -45,11 +45,19 @@ const bootstrap = {
   // Taken scenarios are titled from here so the path reads in this edition.
   exampleTitles: Object.fromEntries(examples.map((e) => [e.id, e.data[lang].title])),
   strings: {
+    composedTitle: l.composedTitle,
     composedNote: l.composedNote,
+    buildOrderTitle: l.buildOrderTitle,
+    buildOrderNote: l.buildOrderNote,
+    restNote: l.restNote,
+    restNone: l.restNone,
     fromLabel: l.fromLabel,
     prereqNote: l.prereqNote,
     minutesLabel: l.minutesLabel,
+    duration: t.present.duration,
+    buildStepLabel: l.buildStepLabel,
   },
+  departments: t.intake.departments,
 };
 ---
 
@@ -64,17 +72,51 @@ const bootstrap = {
         <a class="btn btn--gold" href={localePath(lang, '/program/scenarios/')}>{l.emptyCta}</a>
       </div>
 
-      <section class="composed" data-composed hidden>
-        <div class="composed__head">
-          <h2 class="composed__title display">{l.composedTitle}</h2>
-          <p class="composed__count" data-count></p>
+      <!-- How big this engagement is, before any list. -->
+      <dl class="tally" data-tally hidden>
+        <div>
+          <dt>{l.tally.modules}</dt>
+          <dd data-tally-modules></dd>
         </div>
-        <ol class="composed__list" data-path></ol>
-        <p class="composed__note">{l.notYetNote}</p>
+        <div>
+          <dt>{l.tally.time}</dt>
+          <dd data-tally-time></dd>
+        </div>
+        <div>
+          <dt>{l.tally.sittings}</dt>
+          <dd data-tally-sittings></dd>
+        </div>
+      </dl>
+
+      <!--
+        One answer, not three. Before stage 03 has ranked anything this is the
+        whole implied path; once it has, it narrows to what to build first.
+        Showing both as peers is what made this page unreadable.
+      -->
+      <section class="answer" data-answer hidden>
+        <h2 class="answer__title display" data-answer-title></h2>
+        <p class="answer__note" data-answer-note></p>
+
+        <ol class="order__list" data-order-list hidden></ol>
+        <ol class="composed__list" data-path hidden></ol>
+
+        <p class="answer__rest" data-rest hidden></p>
+
+        <div class="order__prompt" data-order-prompt hidden>
+          <p class="order__prompt-note">{l.buildNoScoreNote}</p>
+          <a class="btn btn--quiet" href={localePath(lang, '/program/prioritize/')}>
+            {l.buildNoScoreCta}
+          </a>
+        </div>
+
+        <p class="answer__foot" data-answer-foot hidden>{l.notYetNote}</p>
       </section>
 
-      <section class="shelf">
-        <h2 class="shelf__title display">{l.shelfTitle}</h2>
+      <!-- Reference, not part of the answer. -->
+      <details class="shelf">
+        <summary class="shelf__summary">
+          {l.shelfSummary.replace('{n}', String(modules.length))}
+        </summary>
         <p class="shelf__note">{l.shelfNote}</p>
 
         <ul class="shelf__list">
@@ -108,11 +150,11 @@ const bootstrap = {
             })
           }
         </ul>
-      </section>
+      </details>
 
       <div class="labs__foot">
         <a class="btn btn--quiet" href={localePath(lang, '/program/scenarios/')}>{l.emptyCta}</a>
-        <a class="btn btn--gold" href={localePath(lang, '/program/')}>{l.backLabel}</a>
+        <a class="btn btn--gold" href={localePath(lang, '/program/project/')}>{l.backLabel}</a>
       </div>
     </div>
   </section>
@@ -122,6 +164,7 @@ const bootstrap = {
 
 <script>
   import { LocalSessionStore, openActiveSession } from '../../../../lib/session';
+  import { formatDuration, packSessions } from '../../../../lib/duration';
 
   const boot = document.querySelector('[data-labs-bootstrap]');
 
@@ -152,55 +195,174 @@ const bootstrap = {
 
     // Close over prerequisites: a module can pull in one nobody asked for, and
     // that one still has to be in the path or the path cannot be walked.
-    const needed = new Set(askedBy.keys());
-    const queue = [...needed];
-    while (queue.length) {
-      const current = byId.get(queue.pop()!);
-      for (const req of current?.requires ?? []) {
-        if (!needed.has(req)) {
-          needed.add(req);
-          queue.push(req);
+    function closure(seeds: Iterable<string>) {
+      const needed = new Set(seeds);
+      const queue = [...needed];
+      while (queue.length) {
+        const current = byId.get(queue.pop()!);
+        for (const req of current?.requires ?? []) {
+          if (!needed.has(req)) {
+            needed.add(req);
+            queue.push(req);
+          }
         }
       }
+      return needed;
     }
 
-    // Topological order, tie-broken by the shelf's own order so two independent
-    // modules always appear in the same sequence.
-    const ordered: Mod[] = [];
-    const placed = new Set<string>();
-    const pending = [...needed]
-      .map((id) => byId.get(id))
-      .filter((m): m is Mod => !!m)
-      .sort((a, b) => a.order - b.order);
+    /**
+     * Topological order, tie-broken by the shelf's own order so two independent
+     * modules always appear in the same sequence.
+     */
+    function order(needed: Set<string>): Mod[] {
+      const ordered: Mod[] = [];
+      const placed = new Set<string>();
+      const pending = [...needed]
+        .map((id) => byId.get(id))
+        .filter((m): m is Mod => !!m)
+        .sort((a, b) => a.order - b.order);
 
-    while (pending.length) {
-      const next = pending.findIndex((m) => m.requires.every((r) => !needed.has(r) || placed.has(r)));
-      // A cycle would strand everything; take the lowest-order module instead
-      // of looping forever, so a bad edge degrades to a wrong order not a hang.
-      const [taken] = pending.splice(next === -1 ? 0 : next, 1);
-      ordered.push(taken);
-      placed.add(taken.id);
+      while (pending.length) {
+        const next = pending.findIndex((m) =>
+          m.requires.every((r) => !needed.has(r) || placed.has(r))
+        );
+        // A cycle would strand everything; take the lowest-order module instead
+        // of looping forever, so a bad edge degrades to a wrong order not a hang.
+        const [taken] = pending.splice(next === -1 ? 0 : next, 1);
+        ordered.push(taken);
+        placed.add(taken.id);
+      }
+      return ordered;
     }
+
+    const needed = closure(askedBy.keys());
+    const ordered = order(needed);
 
     const emptyBox = document.querySelector<HTMLElement>('[data-empty]')!;
-    const composed = document.querySelector<HTMLElement>('[data-composed]')!;
+    const answer = document.querySelector<HTMLElement>('[data-answer]')!;
+    const tally = document.querySelector<HTMLElement>('[data-tally]')!;
+
+    const top = session.scoring.length
+      ? session.top3
+          .map((id) => session.scenarios.find((s) => s.id === id))
+          .filter((s): s is NonNullable<typeof s> => !!s)
+      : [];
 
     if (!ordered.length) {
       emptyBox.hidden = false;
     } else {
-      composed.hidden = false;
-      renderPath(ordered);
+      tally.hidden = false;
+      answer.hidden = false;
+      renderTally(ordered);
+
+      const title = document.querySelector<HTMLElement>('[data-answer-title]')!;
+      const note = document.querySelector<HTMLElement>('[data-answer-note]')!;
+
+      if (top.length) {
+        title.textContent = cfg.strings.buildOrderTitle;
+        note.textContent = cfg.strings.buildOrderNote;
+        renderBuildOrder(top);
+        renderRest(top, ordered);
+        // Only a ranked list is a sequence to run; before that the note would
+        // be telling the room to follow an order that does not exist yet.
+        document.querySelector<HTMLElement>('[data-answer-foot]')!.hidden = false;
+      } else {
+        title.textContent = cfg.strings.composedTitle;
+        note.textContent = cfg.strings.composedNote;
+        renderPath(ordered);
+        document.querySelector<HTMLElement>('[data-order-prompt]')!.hidden = false;
+      }
+    }
+
+    /** Size of the engagement, in the same sittings the room deck will use. */
+    function renderTally(path: Mod[]) {
+      const minutes = path.reduce((sum, m) => sum + m.minutes, 0);
+      document.querySelector<HTMLElement>('[data-tally-modules]')!.textContent = String(path.length);
+      document.querySelector<HTMLElement>('[data-tally-time]')!.textContent = formatDuration(
+        minutes,
+        cfg.strings.duration
+      );
+      document.querySelector<HTMLElement>('[data-tally-sittings]')!.textContent = String(
+        packSessions(path).length
+      );
+    }
+
+    /**
+     * What the unranked remainder of the backlog adds beyond the Top 3. Named
+     * in a sentence rather than shown as a second full list, which is all the
+     * old "composed path" section was actually contributing once ranked.
+     */
+    function renderRest(top: { capabilities?: string[] }[], path: Mod[]) {
+      const covered = closure(top.flatMap((s) => s.capabilities ?? []));
+      const rest = path.filter((m) => !covered.has(m.id));
+      const el = document.querySelector<HTMLElement>('[data-rest]')!;
+      el.textContent = rest.length
+        ? cfg.strings.restNote.replace(
+            '{modules}',
+            rest.map((m) => cfg.capabilities[m.id] ?? m.id).join(' · ')
+          )
+        : cfg.strings.restNone;
+      el.hidden = false;
+    }
+
+    /**
+     * Stage 03's Top 3, each with the modules that *particular* build needs —
+     * the question a team asks on the morning they start.
+     */
+    function renderBuildOrder(top: NonNullable<(typeof session.scenarios)[number]>[]) {
+      const list = document.querySelector<HTMLElement>('[data-order-list]')!;
+      list.hidden = false;
+      list.textContent = '';
+
+      top.forEach((scenario, index) => {
+        const modules = order(closure(scenario.capabilities ?? []));
+        const minutes = modules.reduce((sum, m) => sum + m.minutes, 0);
+
+        const li = document.createElement('li');
+        li.className = 'build';
+
+        const head = document.createElement('div');
+        head.className = 'build__head';
+
+        const rank = document.createElement('p');
+        rank.className = 'build__rank display';
+        rank.textContent = String(index + 1);
+
+        const heading = document.createElement('div');
+        const meta = document.createElement('p');
+        meta.className = 'build__meta meta-label';
+        const dept = scenario.department ? cfg.departments[scenario.department] : '';
+        meta.textContent = [cfg.strings.buildStepLabel, dept].filter(Boolean).join(' · ');
+        const name = document.createElement('h3');
+        name.className = 'build__name';
+        name.textContent = scenario.sourceId
+          ? (cfg.exampleTitles[scenario.sourceId] ?? scenario.title)
+          : scenario.title;
+        heading.append(meta, name);
+
+        const time = document.createElement('p');
+        time.className = 'build__time';
+        time.textContent = formatDuration(minutes, cfg.strings.duration);
+
+        head.append(rank, heading, time);
+        li.append(head);
+
+        const steps = document.createElement('ol');
+        steps.className = 'build__steps';
+        for (const mod of modules) {
+          const step = document.createElement('li');
+          step.className = 'build__step';
+          step.textContent = cfg.capabilities[mod.id] ?? mod.id;
+          steps.append(step);
+        }
+        li.append(steps);
+        list.append(li);
+      });
     }
 
     function renderPath(path: Mod[]) {
       const list = document.querySelector<HTMLElement>('[data-path]')!;
-      const totalMinutes = path.reduce((sum, m) => sum + m.minutes, 0);
-      const hours = Math.round((totalMinutes / 60) * 2) / 2;
-
-      document.querySelector<HTMLElement>('[data-count]')!.textContent = cfg.strings.composedNote
-        .replace('{modules}', String(path.length))
-        .replace('{hours}', `${hours}h`);
-
+      list.hidden = false;
       list.textContent = '';
 
       for (const mod of path) {
@@ -249,31 +411,163 @@ const bootstrap = {
     color: color-mix(in srgb, var(--color-ink) 80%, transparent);
   }
 
-  .composed {
+  /* --- How big this engagement is -------------------------------------- */
+  .tally {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.6rem clamp(2rem, 1.4rem + 3vw, 4rem);
+    margin: clamp(1.75rem, 1.2rem + 2vw, 2.75rem) 0 0;
+    padding-block-end: clamp(1rem, 0.8rem + 0.9vw, 1.4rem);
+    border-block-end: 1px solid color-mix(in srgb, var(--color-ink) 14%, transparent);
+    max-inline-size: 62rem;
+  }
+
+  .tally dt {
+    font-size: var(--text-micro);
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--color-muted);
+  }
+
+  .tally dd {
+    margin: 0.15rem 0 0;
+    font-family: var(--font-display);
+    font-size: clamp(1.4rem, 1.1rem + 1vw, 2rem);
+    line-height: 1.1;
+    color: var(--color-gold);
+  }
+
+  /* --- One answer, whichever state the project is in -------------------- */
+  .answer {
     margin-block-start: clamp(1.75rem, 1.2rem + 2vw, 2.75rem);
     max-inline-size: 62rem;
   }
 
-  .composed__head {
-    display: flex;
-    flex-wrap: wrap;
-    align-items: baseline;
-    justify-content: space-between;
-    gap: 0.5rem 1.5rem;
-  }
-
-  .composed__title,
-  .shelf__title {
+  .answer__title {
     margin: 0;
     font-size: var(--text-h3);
     color: var(--color-ink);
   }
 
-  .composed__count {
+  .answer__note {
+    margin: 0.45rem 0 0;
+    max-inline-size: 62ch;
+    font-size: var(--text-small);
+    line-height: 1.6;
+    color: var(--color-muted);
+  }
+
+  .answer__rest {
+    margin: clamp(1.2rem, 0.9rem + 1.2vw, 1.8rem) 0 0;
+    padding: clamp(0.8rem, 0.7rem + 0.5vw, 1.1rem) clamp(1rem, 0.8rem + 0.9vw, 1.4rem);
+    border-inline-start: 3px solid color-mix(in srgb, var(--color-gold) 45%, transparent);
+    background: color-mix(in srgb, var(--color-parchment-deep) 45%, transparent);
+    max-inline-size: 62ch;
+    font-size: var(--text-small);
+    line-height: 1.7;
+    color: color-mix(in srgb, var(--color-ink) 80%, transparent);
+  }
+
+  .answer__foot {
+    margin: 1.2rem 0 0;
+    max-inline-size: 62ch;
+    font-size: var(--text-small);
+    line-height: 1.6;
+    color: var(--color-muted);
+  }
+
+  .order__list {
+    list-style: none;
+    margin: clamp(1.2rem, 0.9rem + 1.2vw, 1.8rem) 0 0;
+    padding: 0;
+    display: grid;
+    gap: clamp(0.9rem, 0.7rem + 0.8vw, 1.3rem);
+  }
+
+  .order__prompt {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.9rem 1.5rem;
+    margin-block-start: clamp(1.75rem, 1.2rem + 2vw, 2.75rem);
+    padding: clamp(1rem, 0.8rem + 0.9vw, 1.4rem);
+    border-inline-start: 3px solid color-mix(in srgb, var(--color-gold) 60%, transparent);
+    background: color-mix(in srgb, var(--color-parchment-deep) 45%, transparent);
+    max-inline-size: 62rem;
+  }
+
+  .order__prompt-note {
+    flex: 1 1 26ch;
+    margin: 0;
+    font-size: var(--text-small);
+    line-height: 1.6;
+    color: color-mix(in srgb, var(--color-ink) 80%, transparent);
+  }
+
+  .order__list :global(.build) {
+    padding: clamp(1rem, 0.8rem + 0.9vw, 1.4rem);
+    background: #fff;
+    border: 1px solid color-mix(in srgb, var(--color-ink) 12%, transparent);
+    border-inline-start: 3px solid var(--color-gold);
+  }
+
+  .order__list :global(.build__head) {
+    display: grid;
+    grid-template-columns: auto minmax(0, 1fr) auto;
+    align-items: start;
+    gap: 0.4rem clamp(0.8rem, 0.6rem + 0.8vw, 1.2rem);
+  }
+
+  .order__list :global(.build__rank) {
+    margin: 0;
+    font-size: clamp(1.8rem, 1.4rem + 1.4vw, 2.6rem);
+    line-height: 0.9;
+    color: var(--color-gold);
+  }
+
+  .order__list :global(.build__meta) {
+    margin: 0;
+  }
+
+  .order__list :global(.build__name) {
+    margin: 0.2rem 0 0;
+    font-family: var(--font-display);
+    font-size: var(--text-lede);
+    line-height: 1.25;
+    color: var(--color-ink);
+  }
+
+  .order__list :global(.build__time) {
     margin: 0;
     font-family: var(--font-display);
     font-size: var(--text-lede);
     color: var(--color-gold);
+    white-space: nowrap;
+  }
+
+  .order__list :global(.build__steps) {
+    counter-reset: build-step;
+    list-style: none;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.4rem;
+    margin: 1rem 0 0;
+    padding: 0;
+  }
+
+  .order__list :global(.build__step) {
+    counter-increment: build-step;
+    font-size: var(--text-micro);
+    padding: 0.25em 0.7em;
+    color: color-mix(in srgb, var(--color-ink) 82%, transparent);
+    background: color-mix(in srgb, var(--color-gold) 14%, transparent);
+    border: 1px solid color-mix(in srgb, var(--color-gold) 38%, transparent);
+  }
+
+  .order__list :global(.build__step)::before {
+    content: counter(build-step) ' · ';
+    color: var(--color-gold);
+    font-weight: 600;
   }
 
   .composed__list {
@@ -285,17 +579,22 @@ const bootstrap = {
     gap: clamp(0.9rem, 0.7rem + 0.8vw, 1.3rem);
   }
 
-  .composed__note {
-    margin: 1.2rem 0 0;
-    max-inline-size: 62ch;
-    font-size: var(--text-small);
-    line-height: 1.6;
-    color: var(--color-muted);
-  }
-
   .shelf {
     margin-block-start: clamp(2.5rem, 1.6rem + 3vw, 4rem);
     max-inline-size: 68rem;
+    border-block-start: 1px solid color-mix(in srgb, var(--color-ink) 14%, transparent);
+    padding-block-start: clamp(1rem, 0.8rem + 0.9vw, 1.4rem);
+  }
+
+  .shelf__summary {
+    cursor: pointer;
+    font-family: var(--font-display);
+    font-size: var(--text-lede);
+    color: var(--color-ink);
+  }
+
+  .shelf__summary::marker {
+    color: var(--color-gold);
   }
 
   .shelf__note {

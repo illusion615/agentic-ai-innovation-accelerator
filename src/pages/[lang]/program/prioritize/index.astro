@@ -1,0 +1,473 @@
+---
+/**
+ * STAGE 03 — PRIORITIZE TOP 3. Artifact: the Use Case Canvas.
+ *
+ * Stage 02 produces a backlog, and a backlog is not a plan. The job here is to
+ * turn "everything we thought of" into "these three, and here is why those" —
+ * an order that survives the room disagreeing with it.
+ *
+ * The score is deliberately crude: four axes, 1–5, added and subtracted. It is
+ * not trying to be an optimiser. Its value is that it forces a disagreement to
+ * become specific — "you scored reach at 4 and I would say 1, because the
+ * contracts are in a system nobody has access to" is a useful argument, and
+ * "I think we should do the other one" is not.
+ *
+ * Scores land in `session.scoring` and the resulting order's head in
+ * `session.top3` — both fields the design brief reserved on day one, which is
+ * what lets stage 04 read the result without anything here knowing about it.
+ */
+import Base from '../../../../layouts/Base.astro';
+import SectionHead from '../../../../components/SectionHead.astro';
+import { LANGS, isLang, localePath, type Lang } from '../../../../i18n/config';
+import { useTranslations } from '../../../../i18n/content';
+import { getCollection } from 'astro:content';
+
+export function getStaticPaths() {
+  return LANGS.map((lang) => ({ params: { lang } }));
+}
+
+const { lang: raw } = Astro.params;
+const lang: Lang = isLang(raw) ? raw : 'en';
+const t = useTranslations(lang);
+const p = t.prioritize;
+
+const AXES = ['value', 'dataReadiness', 'complexity', 'effort'] as const;
+const SCALE = [1, 2, 3, 4, 5];
+
+const examples = await getCollection('scenarios');
+
+const bootstrap = {
+  axes: AXES.map((key) => ({
+    key,
+    label: p.axes[key].label,
+    help: p.axes[key].help,
+    up: p.axes[key].up,
+    hint: p.axes[key].up ? p.betterHigh : p.betterLow,
+  })),
+  scale: SCALE,
+  scoreLabel: p.scoreLabel,
+  topLabel: p.topLabel,
+  tiedNote: p.tiedNote,
+  departments: t.intake.departments,
+  tierNames: t.readiness.result.tierNames,
+  capabilities: t.capabilities,
+  exampleTitles: Object.fromEntries(examples.map((e) => [e.id, e.data[lang].title])),
+};
+---
+
+<Base lang={lang} path="/program/prioritize/" axis={false} title={p.title}>
+  <section id="prioritize" class="section prio">
+    <div class="shell">
+      <SectionHead as="h1" eyebrow={p.eyebrow} title={p.title} lede={p.lede} measure="wide" />
+
+      <div class="prio__empty" data-empty hidden>
+        <h2 class="prio__empty-title display">{p.emptyTitle}</h2>
+        <p class="prio__empty-body">{p.emptyBody}</p>
+        <a class="btn btn--gold" href={localePath(lang, '/program/scenarios/')}>{p.emptyCta}</a>
+      </div>
+
+      <div class="prio__live" data-live hidden>
+        <div class="canvas">
+          <h2 class="canvas__title display">{p.canvasTitle}</h2>
+          <p class="canvas__note">{p.canvasNote}</p>
+        </div>
+
+        <ol class="cards" data-cards></ol>
+
+        <div class="prio__foot">
+          <a class="btn btn--gold" href={localePath(lang, '/program/labs/')}>{p.nextCta}</a>
+          <button type="button" class="btn btn--quiet" data-reset-scores>{p.resetLabel}</button>
+          <a class="btn btn--quiet" href={localePath(lang, '/program/project/')}>{p.backLabel}</a>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <script type="application/json" data-prio-bootstrap set:html={JSON.stringify(bootstrap)} />
+</Base>
+
+<script>
+  import { LocalSessionStore, openActiveSession, type ScoreCard } from '../../../../lib/session';
+
+  const boot = document.querySelector('[data-prio-bootstrap]');
+
+  if (boot) {
+    const cfg = JSON.parse(boot.textContent ?? '{}');
+    const store = new LocalSessionStore();
+    const session = await openActiveSession(store);
+
+    const DEFAULT = 3;
+    const cards = document.querySelector<HTMLElement>('[data-cards]')!;
+
+    if (!session.scenarios.length) {
+      document.querySelector<HTMLElement>('[data-empty]')!.hidden = false;
+    } else {
+      document.querySelector<HTMLElement>('[data-live]')!.hidden = false;
+      render();
+    }
+
+    /**
+     * The card as it should render. A scenario nobody has judged yet sits at
+     * the neutral middle, but that card is *not* written to the session:
+     * `scoring` means "somebody made a call on this", and stage 04 relies on
+     * that distinction to know whether it has a real Top 3 or just the order
+     * the room happened to collect things in.
+     */
+    function cardFor(id: string): ScoreCard {
+      return (
+        session.scoring.find((s) => s.scenarioId === id) ?? {
+          scenarioId: id,
+          value: DEFAULT,
+          complexity: DEFAULT,
+          effort: DEFAULT,
+          dataReadiness: DEFAULT,
+        }
+      );
+    }
+
+    function setAxis(id: string, axis: keyof ScoreCard, n: number) {
+      const existing = session.scoring.find((s) => s.scenarioId === id);
+      if (existing) {
+        (existing as unknown as Record<string, number>)[axis] = n;
+      } else {
+        const card = cardFor(id);
+        (card as unknown as Record<string, number>)[axis] = n;
+        session.scoring = [...session.scoring, card];
+      }
+    }
+
+    /** Worth and reach pull up; difficulty and people-time pull down. −8…+8. */
+    function scoreOf(card: ScoreCard) {
+      return card.value + card.dataReadiness - card.complexity - card.effort;
+    }
+
+    function titleOf(scenario: { sourceId?: string; title: string }) {
+      return scenario.sourceId ? (cfg.exampleTitles[scenario.sourceId] ?? scenario.title) : scenario.title;
+    }
+
+    function ranked() {
+      // Collection order is the tie-break, so an unscored list keeps the order
+      // the room built it in rather than shuffling on every render.
+      return session.scenarios
+        .map((scenario, index) => ({ scenario, index, card: cardFor(scenario.id) }))
+        .sort((a, b) => scoreOf(b.card) - scoreOf(a.card) || a.index - b.index);
+    }
+
+    function persist() {
+      // Nothing scored means no considered Top 3 — saying otherwise would dress
+      // up collection order as a decision.
+      session.top3 = session.scoring.length ? ranked().slice(0, 3).map((row) => row.scenario.id) : [];
+      void store.save(session);
+    }
+
+    function render() {
+      const rows = ranked();
+      cards.textContent = '';
+
+      rows.forEach((row, position) => {
+        const score = scoreOf(row.card);
+        const isTop = session.scoring.length > 0 && position < 3;
+        const li = document.createElement('li');
+        li.className = 'card';
+        if (isTop) li.setAttribute('data-top', '');
+
+        const head = document.createElement('div');
+        head.className = 'card__head';
+
+        const rank = document.createElement('p');
+        rank.className = 'card__rank display';
+        rank.textContent = String(position + 1);
+
+        const heading = document.createElement('div');
+        const meta = document.createElement('p');
+        meta.className = 'card__meta meta-label';
+        const dept = row.scenario.department ? cfg.departments[row.scenario.department] : '';
+        meta.textContent = [dept, cfg.tierNames[row.scenario.tier - 1]].filter(Boolean).join(' · ');
+        const name = document.createElement('h3');
+        name.className = 'card__name';
+        name.textContent = titleOf(row.scenario);
+        heading.append(meta, name);
+
+        const scoreBox = document.createElement('p');
+        scoreBox.className = 'card__score';
+        scoreBox.innerHTML = `<span class="card__score-label">${cfg.scoreLabel}</span><span class="card__score-value">${score > 0 ? '+' : ''}${score}</span>`;
+
+        head.append(rank, heading, scoreBox);
+        li.append(head);
+
+        if (isTop) {
+          const flag = document.createElement('p');
+          flag.className = 'card__flag';
+          flag.textContent = cfg.topLabel;
+          li.prepend(flag);
+        }
+
+        const axes = document.createElement('div');
+        axes.className = 'card__axes';
+
+        for (const axis of cfg.axes) {
+          const group = document.createElement('div');
+          group.className = 'axis';
+
+          const label = document.createElement('p');
+          label.className = 'axis__label';
+          label.innerHTML = `<span>${axis.label}</span><span class="axis__hint">${axis.hint}</span>`;
+
+          const help = document.createElement('p');
+          help.className = 'axis__help';
+          help.textContent = axis.help;
+
+          const scale = document.createElement('div');
+          scale.className = 'axis__scale';
+          scale.setAttribute('role', 'group');
+          scale.setAttribute('aria-label', axis.label);
+
+          for (const n of cfg.scale) {
+            const btn = document.createElement('button');
+            btn.type = 'button';
+            btn.className = 'axis__step';
+            btn.textContent = String(n);
+            const current = row.card[axis.key as keyof ScoreCard] as number;
+            btn.setAttribute('aria-pressed', String(current === n));
+            btn.addEventListener('click', () => {
+              setAxis(row.scenario.id, axis.key as keyof ScoreCard, n);
+              persist();
+              render();
+            });
+            scale.append(btn);
+          }
+
+          group.append(label, help, scale);
+          axes.append(group);
+        }
+
+        li.append(axes);
+        cards.append(li);
+      });
+
+      persist();
+    }
+
+    document.querySelector('[data-reset-scores]')?.addEventListener('click', () => {
+      session.scoring = [];
+      session.top3 = [];
+      void store.save(session);
+      render();
+    });
+  }
+</script>
+
+<style>
+  .prio__empty {
+    margin-block-start: clamp(1.75rem, 1.2rem + 2vw, 2.75rem);
+    padding: clamp(1.3rem, 1rem + 1.4vw, 2rem);
+    background: color-mix(in srgb, var(--color-parchment-deep) 55%, transparent);
+    border-inline-start: 4px solid color-mix(in srgb, var(--color-gold) 60%, transparent);
+    max-inline-size: 56rem;
+  }
+
+  .prio__empty-title {
+    margin: 0;
+    font-size: var(--text-h3);
+    color: var(--color-ink);
+  }
+
+  .prio__empty-body {
+    margin: 0.5rem 0 1.1rem;
+    max-inline-size: 58ch;
+    font-size: var(--text-small);
+    line-height: 1.6;
+    color: color-mix(in srgb, var(--color-ink) 80%, transparent);
+  }
+
+  .canvas {
+    margin-block-start: clamp(1.75rem, 1.2rem + 2vw, 2.75rem);
+    padding: clamp(1.1rem, 0.85rem + 1vw, 1.6rem);
+    border-inline-start: 3px solid var(--color-gold);
+    background: color-mix(in srgb, var(--color-gold) 9%, transparent);
+    max-inline-size: 62rem;
+  }
+
+  .canvas__title {
+    margin: 0;
+    font-size: var(--text-h3);
+    color: var(--color-ink);
+  }
+
+  .canvas__note {
+    margin: 0.5rem 0 0;
+    max-inline-size: 62ch;
+    font-size: var(--text-small);
+    line-height: 1.6;
+    color: color-mix(in srgb, var(--color-ink) 80%, transparent);
+  }
+
+  .cards {
+    list-style: none;
+    margin: clamp(1.5rem, 1rem + 1.6vw, 2.25rem) 0 0;
+    padding: 0;
+    display: grid;
+    gap: clamp(0.9rem, 0.7rem + 0.8vw, 1.3rem);
+    max-inline-size: 68rem;
+  }
+
+  /* Built in script, so scoped selectors would not match. */
+  .cards :global(.card) {
+    padding: clamp(1rem, 0.8rem + 0.9vw, 1.4rem);
+    border: 1px solid color-mix(in srgb, var(--color-ink) 12%, transparent);
+    border-inline-start: 3px solid color-mix(in srgb, var(--color-ink) 14%, transparent);
+    background: color-mix(in srgb, #fff 58%, transparent);
+  }
+
+  .cards :global(.card[data-top]) {
+    border-inline-start-color: var(--color-gold);
+    background: #fff;
+    box-shadow: 0 10px 34px -24px rgb(22 41 74 / 0.35);
+  }
+
+  .cards :global(.card__flag) {
+    margin: 0 0 0.5rem;
+    font-size: var(--text-micro);
+    font-weight: 600;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: var(--color-gold);
+  }
+
+  .cards :global(.card__head) {
+    display: grid;
+    grid-template-columns: auto minmax(0, 1fr) auto;
+    align-items: start;
+    gap: 0.5rem clamp(0.8rem, 0.6rem + 0.8vw, 1.2rem);
+  }
+
+  .cards :global(.card__rank) {
+    margin: 0;
+    font-size: clamp(1.8rem, 1.4rem + 1.4vw, 2.6rem);
+    line-height: 0.9;
+    color: color-mix(in srgb, var(--color-gold) 70%, var(--color-parchment-deep));
+  }
+
+  .cards :global(.card[data-top] .card__rank) {
+    color: var(--color-gold);
+  }
+
+  .cards :global(.card__meta) {
+    margin: 0;
+  }
+
+  .cards :global(.card__name) {
+    margin: 0.2rem 0 0;
+    font-family: var(--font-display);
+    font-size: var(--text-lede);
+    line-height: 1.25;
+    color: var(--color-ink);
+  }
+
+  .cards :global(.card__score) {
+    margin: 0;
+    display: grid;
+    justify-items: end;
+    gap: 0.1rem;
+  }
+
+  .cards :global(.card__score-label) {
+    font-size: var(--text-micro);
+    font-weight: 600;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+    color: var(--color-muted);
+  }
+
+  .cards :global(.card__score-value) {
+    font-family: var(--font-display);
+    font-size: var(--text-h3);
+    line-height: 1;
+    color: var(--color-ink);
+    font-variant-numeric: tabular-nums;
+  }
+
+  .cards :global(.card__axes) {
+    display: grid;
+    gap: clamp(0.9rem, 0.7rem + 0.8vw, 1.3rem);
+    margin-block-start: clamp(1rem, 0.8rem + 0.8vw, 1.4rem);
+    padding-block-start: clamp(0.9rem, 0.7rem + 0.7vw, 1.2rem);
+    border-block-start: 1px solid color-mix(in srgb, var(--color-ink) 12%, transparent);
+  }
+
+  .cards :global(.axis__label) {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: baseline;
+    gap: 0.2rem 0.6rem;
+    margin: 0;
+    font-size: var(--text-small);
+    font-weight: 600;
+    color: var(--color-ink);
+  }
+
+  .cards :global(.axis__hint) {
+    font-size: var(--text-micro);
+    font-weight: 400;
+    letter-spacing: 0.04em;
+    color: var(--color-muted);
+  }
+
+  .cards :global(.axis__help) {
+    margin: 0.2rem 0 0;
+    max-inline-size: 62ch;
+    font-size: var(--text-micro);
+    line-height: 1.5;
+    color: color-mix(in srgb, var(--color-ink) 70%, transparent);
+  }
+
+  .cards :global(.axis__scale) {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.35rem;
+    margin-block-start: 0.5rem;
+  }
+
+  .cards :global(.axis__step) {
+    font: inherit;
+    font-size: var(--text-micro);
+    font-weight: 600;
+    font-variant-numeric: tabular-nums;
+    inline-size: 2.2rem;
+    padding-block: 0.4em;
+    cursor: pointer;
+    background: transparent;
+    color: var(--color-ink);
+    border: 1px solid color-mix(in srgb, var(--color-ink) 22%, transparent);
+    transition:
+      background-color var(--duration-quick) ease,
+      border-color var(--duration-quick) ease,
+      color var(--duration-quick) ease;
+  }
+
+  .cards :global(.axis__step:hover) {
+    border-color: var(--color-gold);
+  }
+
+  .cards :global(.axis__step[aria-pressed='true']) {
+    background: var(--color-ink-deep);
+    border-color: var(--color-ink-deep);
+    color: var(--color-parchment);
+  }
+
+  .prio__foot {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.7rem;
+    margin-block-start: clamp(2.5rem, 1.6rem + 3vw, 4rem);
+    padding-block-start: clamp(1.2rem, 0.9rem + 1.2vw, 1.8rem);
+    border-block-start: 1px solid color-mix(in srgb, var(--color-gold) 45%, transparent);
+  }
+
+  @media (min-width: 52rem) {
+    .cards :global(.card__axes) {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      column-gap: clamp(1.5rem, 1rem + 2vw, 3rem);
+    }
+  }
+</style>

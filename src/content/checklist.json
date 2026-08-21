@@ -172,14 +172,14 @@
     "flagBelow": 2,
     "en": {
       "title": "Licences exist beyond a trial, and someone owns them",
-      "gates": "Everything after the first month. A trial will carry you through the labs and then expire mid-project.",
+      "gates": "Everything after the first month. A trial will carry you through the labs and then expire mid-rollout.",
       "how": "Find out what you are on today and when it ends. If the answer is a trial, start the procurement conversation now — this is routinely the longest lead time in the whole programme.",
       "verifyLabel": ""
     },
     "zh": {
       "title": "有试用之外的正式许可，而且有人在管",
-      "gates": "第一个月之后的一切。试用能撑你把 lab 做完，然后在项目中途到期。",
-      "how": "搞清楚现在用的是什么、什么时候到期。如果答案是试用，现在就去开采购的口子——这一项的等待时间在整个项目里往往是最长的。",
+      "gates": "第一个月之后的一切。试用能撑你把 lab 做完，然后在落地中途到期。",
+      "how": "搞清楚现在用的是什么、什么时候到期。如果答案是试用，现在就去开采购的口子——这一项的等待时间往往是全程最长的。",
       "verifyLabel": ""
     }
   },

@@ -1,0 +1,99 @@
+---
+/**
+ * Which project the console is open on, shown on every program page except
+ * the console itself.
+ *
+ * Switching projects is a click, and the sub-pages otherwise look identical
+ * between two customers — so without this it is possible to open the wrong
+ * project and collect one customer's scenarios against another's engagement,
+ * silently. Cheap insurance against an expensive, invisible mistake.
+ */
+import { localePath, type Lang } from '../i18n/config';
+import { useTranslations } from '../i18n/content';
+
+interface Props {
+  lang: Lang;
+}
+
+const { lang } = Astro.props;
+const t = useTranslations(lang);
+const p = t.program.portal;
+---
+
+<a
+  class="projectchip"
+  href={localePath(lang, '/program/project/')}
+  data-project-chip
+  data-untitled={p.untitled}
+  hidden
+>
+  <span class="projectchip__label">{p.chipLabel}</span>
+  <span class="projectchip__name" data-project-chip-name></span>
+</a>
+
+<script>
+  import { LocalSessionStore, activeSessionId } from '../lib/session';
+
+  const chip = document.querySelector<HTMLElement>('[data-project-chip]');
+  if (chip) {
+    const id = activeSessionId();
+    if (id) {
+      const session = await new LocalSessionStore().load(id);
+      // Only worth the pixels once there is something to be confused about.
+      if (session) {
+        const name = session.customer.trim();
+        const target = chip.querySelector<HTMLElement>('[data-project-chip-name]')!;
+        target.textContent = name || chip.dataset.untitled || '';
+        chip.hidden = false;
+      }
+    }
+  }
+</script>
+
+<style>
+  .projectchip {
+    position: fixed;
+    inset-block-end: clamp(0.75rem, 2vw, 1.25rem);
+    inset-inline-end: clamp(0.75rem, 3vw, 1.75rem);
+    z-index: 40;
+    display: inline-flex;
+    align-items: baseline;
+    gap: 0.5rem;
+    padding: 0.35rem 0.75rem;
+    text-decoration: none;
+    border: 1px solid color-mix(in srgb, var(--color-ink) 16%, transparent);
+    background: color-mix(in srgb, var(--color-parchment) 88%, transparent);
+    backdrop-filter: blur(6px);
+    max-width: min(20rem, 45vw);
+  }
+
+  .projectchip[hidden] {
+    display: none;
+  }
+
+  .projectchip__label {
+    font-size: 0.62rem;
+    text-transform: uppercase;
+    letter-spacing: 0.14em;
+    color: var(--color-muted);
+  }
+
+  .projectchip__name {
+    font-size: var(--text-micro);
+    color: var(--color-ink);
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  .projectchip:hover,
+  .projectchip:focus-visible {
+    border-color: var(--color-gold);
+  }
+
+  @media (max-width: 40rem) {
+    .projectchip {
+      display: none;
+    }
+  }
+</style>

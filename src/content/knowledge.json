@@ -1,5 +1,19 @@
 [
   {
+    "id": "ms-ai-customer-cases",
+    "slug": "microsoft-ai-customer-cases",
+    "group": "cases",
+    "order": 1,
+    "en": {
+      "title": "Microsoft AI Customer Cases: 1000+ Enterprise Transformation Stories",
+      "why": "Filterable by product, industry and outcome, and each case carries the pain it started from and what actually changed. The fastest way to find something close enough to your own work to argue with."
+    },
+    "zh": {
+      "title": "Microsoft AI 客户案例全景：1000+ 企业转型故事",
+      "why": "可按产品、行业、业务成果筛选，每个案例都写了它从什么痛点出发、最后变了什么。想找一个接近你们自己情况、能拿来对照的例子，这里最快。"
+    }
+  },
+  {
     "id": "copilot-studio-overview",
     "slug": "copilot-studio-overview",
     "group": "start",

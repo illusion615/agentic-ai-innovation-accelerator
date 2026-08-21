@@ -124,8 +124,9 @@ const knowledge = defineCollection({
      *   start — read before the twelve questions
      *   build — read before your hands are on the tool
      *   it    — hand to whoever owns licences, environments and identity
+     *   cases — shown at intake, where a real example helps someone name their own
      */
-    group: z.enum(['start', 'build', 'it']),
+    group: z.enum(['start', 'build', 'it', 'cases']),
     order: z.number().int().positive(),
     /** Folder under the hub's `posts/`. */
     slug: z.string().min(1),
@@ -199,19 +200,22 @@ const checklist = defineCollection({
  * scenarios they brought, which tools they need to be able to reach for, and
  * then teach those. Generalising from the particular is the deliverable.
  */
-const CAPABILITIES = [
-  'agent-basics',
+export const CAPABILITIES = [
+  'agent-instructions',
   'knowledge-grounding',
-  'topics-flow',
-  'orchestration',
-  'actions-connectors',
-  'power-automate',
-  'doc-extraction',
+  'deterministic-dialogue',
+  'tool-orchestration',
+  'system-actions',
+  'structured-data-query',
+  'deterministic-automation',
+  'document-extraction',
   'human-approval',
-  'dataverse',
-  'channels-publish',
-  'governance',
-  'measurement',
+  'structured-persistence',
+  'custom-tool-extension',
+  'test-evaluation',
+  'deployment-channels',
+  'governance-guardrails',
+  'operational-measurement',
 ] as const;
 
 /**
@@ -228,10 +232,24 @@ const CAPABILITIES = [
  * rhyme far more strongly across companies in the same function than across
  * companies in the same sector.
  */
+/**
+ * The functional groupings the examples are shelved under. Exported so the
+ * intake page's section order and the dictionary's labels are checked against
+ * one list rather than three that drift.
+ */
+export const DEPARTMENTS = [
+  'general',
+  'crm',
+  'finance',
+  'hr',
+  'it',
+  'supply-chain',
+] as const;
+
 const scenarios = defineCollection({
   loader: file('src/content/scenarios.json'),
   schema: z.object({
-    department: z.enum(['general', 'crm', 'finance', 'hr', 'it']),
+    department: z.enum(DEPARTMENTS),
     /** Which tier this shape of work usually belongs to. */
     tier: z.union([z.literal(1), z.literal(2), z.literal(3)]),
     /** What a build of this would actually exercise — the join to lab modules. */
@@ -253,6 +271,54 @@ const scenarios = defineCollection({
  * topological sort of it, so a reader is never handed "call a flow from your
  * agent" before they have built an agent.
  */
+const labContent = z.object({
+  name: z.string(),
+  teaches: z.string(),
+  build: z.string(),
+  /** One sentence, present tense: what the reader can do afterwards. */
+  objective: z.string(),
+  /** The pre-flight a facilitator reads out before anyone opens a laptop. */
+  needs: z.object({
+    skills: z.array(z.string()).min(1),
+    tools: z.array(z.string()).min(1),
+    materials: z.array(z.string()).min(1),
+  }),
+  /** Imperative, one action each. These are slides, so they have to be terse. */
+  steps: z.array(z.string()).min(4),
+  summary: z.string(),
+});
+
+/**
+ * One projected slide, one action. `steps` above is the map the room is shown
+ * before it starts; this is the territory, captured against the real product
+ * so nobody is following a click path that was written from memory.
+ *
+ * Language-neutral fields sit outside en/zh deliberately: a screenshot is a
+ * screenshot, and pairing the two editions per step makes it impossible for
+ * one of them to gain a step the other does not have.
+ */
+const walkthroughStep = z.object({
+  /** Key into src/assets/labs/**; omitted while a step is still uncaptured. */
+  shot: z.string().optional(),
+  en: z.object({
+    act: z.string(),
+    where: z.string(),
+    do: z.string(),
+    /** Literal text to paste. Rendered verbatim, never paraphrased. */
+    type: z.string().optional(),
+    see: z.string(),
+    note: z.string().optional(),
+  }),
+  zh: z.object({
+    act: z.string(),
+    where: z.string(),
+    do: z.string(),
+    type: z.string().optional(),
+    see: z.string(),
+    note: z.string().optional(),
+  }),
+});
+
 const labs = defineCollection({
   loader: file('src/content/labs.json'),
   schema: z.object({
@@ -260,8 +326,10 @@ const labs = defineCollection({
     order: z.number().int().positive(),
     minutes: z.number().int().positive(),
     requires: z.array(z.enum(CAPABILITIES)),
-    en: z.object({ name: z.string(), teaches: z.string(), build: z.string() }),
-    zh: z.object({ name: z.string(), teaches: z.string(), build: z.string() }),
+    en: labContent,
+    zh: labContent,
+    /** Absent until the module has been walked through and captured. */
+    walkthrough: z.array(walkthroughStep).optional(),
   }),
 });
 

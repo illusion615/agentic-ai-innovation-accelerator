@@ -1,0 +1,604 @@
+---
+/**
+ * THE ROADMAP — one open project's whole journey.
+ *
+ * This page used to present three invented steps, which put a second numbering
+ * scheme alongside the method's own five stages and left a reader unable to say
+ * which stage they were actually in. It also stopped at "collect your
+ * scenarios", as though prioritising and building were somebody else's problem.
+ *
+ * So the journey is now laid out on the stages themselves, from the setup that
+ * precedes stage 01 through to adoption, with every task shown whether or not
+ * it has a tool yet. Task state is derived from the session — a roadmap that
+ * has to be ticked off by hand is one that lies within a week.
+ */
+import { getCollection } from 'astro:content';
+import Base from '../../../../layouts/Base.astro';
+import SectionHead from '../../../../components/SectionHead.astro';
+import { LANGS, isLang, localePath, type Lang } from '../../../../i18n/config';
+import { useTranslations } from '../../../../i18n/content';
+import { STAGE_GATES, type Stage } from '../../../../lib/session';
+import type { RoadmapTaskId } from '../../../../i18n/types';
+
+export function getStaticPaths() {
+  return LANGS.map((lang) => ({ params: { lang } }));
+}
+
+const { lang: raw } = Astro.params;
+const lang: Lang = isLang(raw) ? raw : 'en';
+const t = useTranslations(lang);
+const p = t.program;
+const r = p.roadmap;
+
+const gateByKey = new Map(t.rhythm.gates.map((g) => [g.key, g]));
+
+/**
+ * Which tasks belong to which stage. Finding where a customer starts, settling
+ * the path and proving the tenant will allow it is exactly what stage 01 is
+ * for, so it carries them rather than a phase invented to sit in front of it.
+ */
+const TASKS_BY_STAGE: Record<string, RoadmapTaskId[]> = {
+  discover: ['readiness', 'checklist'],
+  inspire: ['scenarios'],
+  prioritize: ['prioritize', 'metrics'],
+  build: ['labs', 'present', 'gates'],
+  adopt: ['champions'],
+};
+
+/**
+ * Tasks a facilitator can act on today. Anything outside this set is listed
+ * but marked as still to come — a roadmap that hides the unbuilt parts is not
+ * a roadmap.
+ */
+const ACTIONABLE = new Set<RoadmapTaskId>([
+  'readiness',
+  'checklist',
+  'scenarios',
+  'prioritize',
+  'labs',
+  'present',
+]);
+
+const TASK_HREF: Partial<Record<RoadmapTaskId, string>> = {
+  readiness: localePath(lang, '/program/readiness/'),
+  checklist: localePath(lang, '/program/checklist/'),
+  scenarios: localePath(lang, '/program/scenarios/'),
+  prioritize: localePath(lang, '/program/prioritize/'),
+  labs: localePath(lang, '/program/labs/'),
+  present: localePath(lang, '/program/present/'),
+};
+
+const phases = t.journey.stages.map((stage) => ({
+  id: stage.id,
+  index: stage.index,
+  name: stage.name,
+  artifact: stage.artifact,
+  gates: (STAGE_GATES[stage.id as Stage] ?? []) as string[],
+}));
+
+// Only what the client needs to re-derive a stored diagnosis: ids, dimensions
+// and option scores. The prompts themselves stay on the assessment page.
+const questions = (await getCollection('questions'))
+  .sort((a, b) => a.data.order - b.data.order)
+  .map((q) => ({
+    id: q.id,
+    data: { dimension: q.data.dimension, options: q.data.options.map((o) => ({ score: o.score })) },
+  }));
+
+const bootstrap = {
+  questions,
+  tierNames: t.readiness.result.tierNames,
+  strings: r,
+  untitledProject: p.portal.untitled,
+  tierHrefs: {
+    1: localePath(lang, '/program/path/tier-1/'),
+    2: localePath(lang, '/program/path/tier-2/'),
+    3: localePath(lang, '/program/path/tier-3/'),
+  },
+};
+---
+
+<Base lang={lang} path="/program/project/" axis={false} title={r.title}>
+  <section id="roadmap" class="section roadmap">
+    <div class="shell">
+      <p class="crumb">
+        <a class="crumb__back" href={localePath(lang, '/program/')}>
+          <span aria-hidden="true">←</span>
+          {p.portal.backToPortal}
+        </a>
+        <span class="crumb__name" data-crumb-name></span>
+      </p>
+
+      <SectionHead as="h1" eyebrow={p.eyebrow} title={r.title} lede={r.lede} measure="wide" />
+
+      <!-- What is done and what is next, before any of the detail. -->
+      <div class="tally">
+        <div class="tally__bar"><span data-tally-fill></span></div>
+        <p class="tally__count meta-label" data-tally-count></p>
+        <p class="tally__next" data-tally-next></p>
+      </div>
+
+      <ol class="phases">
+        {
+          phases.map((phase) => (
+            <li class="phase" data-phase={phase.id}>
+              <div class="phase__head">
+                <p class="phase__index display">{phase.index}</p>
+                <div class="phase__heading">
+                  <h2 class="phase__name display">{phase.name}</h2>
+                  <p class="phase__meta">
+                    <span>
+                      <span class="meta-label">{r.producesLabel}</span>
+                      {phase.artifact}
+                    </span>
+                    <span>
+                      <span class="meta-label">{r.gateLabel}</span>
+                      {phase.gates.length === 0
+                        ? r.noGate
+                        : phase.gates.map((key) => gateByKey.get(key)?.name).join(' · ')}
+                    </span>
+                  </p>
+                </div>
+              </div>
+
+              <ol class="tasks">
+                {(TASKS_BY_STAGE[phase.id] ?? []).map((id) => {
+                  const task = r.tasks[id];
+                  const href = TASK_HREF[id];
+                  return (
+                    <li
+                      class="task"
+                      data-task={id}
+                      data-state={ACTIONABLE.has(id) ? 'locked' : 'planned'}
+                    >
+                      <span class="task__mark" aria-hidden="true" />
+                      <div class="task__body">
+                        <p class="task__name">{task.name}</p>
+                        <p class="task__desc">{task.body}</p>
+                        <p class="task__note" data-task-note hidden />
+                      </div>
+                      <div class="task__end">
+                        <p class="task__state meta-label" data-task-state />
+                        {task.cta && (
+                          <a class="task__cta" href={href ?? '#'} data-task-cta hidden>
+                            {task.cta}
+                          </a>
+                        )}
+                      </div>
+                    </li>
+                  );
+                })}
+              </ol>
+            </li>
+          ))
+        }
+      </ol>
+
+      <!-- Whoever is running the room, not whoever just arrived from the
+           story. It opened the page once; that was the mistake. -->
+      <details class="tools" data-console>
+        <summary class="tools__summary">{p.toolsLabel}</summary>
+        <div class="tools__body">
+          <div class="tools__actions">
+            <button type="button" class="btn btn--quiet" data-export>{p.exportLabel}</button>
+          </div>
+          <p class="tools__note">{p.savedNote}</p>
+        </div>
+      </details>
+    </div>
+  </section>
+
+  <script type="application/json" data-roadmap-bootstrap set:html={JSON.stringify(bootstrap)} />
+</Base>
+
+<script>
+  import {
+    LocalSessionStore,
+    openActiveSession,
+    projectProgress,
+    toJSON,
+  } from '../../../../lib/session';
+  import { diagnose, decodeAnswers } from '../../../../lib/assessment';
+
+  const boot = document.querySelector('[data-roadmap-bootstrap]');
+
+  if (boot) {
+    const cfg = JSON.parse(boot.textContent ?? '{}');
+    const s = cfg.strings;
+    const store = new LocalSessionStore();
+    const session = await openActiveSession(store);
+
+    const crumb = document.querySelector<HTMLElement>('[data-crumb-name]');
+    if (crumb) crumb.textContent = session.customer.trim() || cfg.untitledProject;
+
+    // A shared result link (?r=…) seeds this browser's session, so a sponsor
+    // opening a colleague's link lands on the same diagnosis rather than a
+    // blank first task.
+    const shared = new URLSearchParams(location.search).get('r');
+    if (shared) {
+      const answers = decodeAnswers(cfg.questions, shared);
+      if (answers) {
+        session.readiness = { answers };
+        await store.save(session);
+      }
+    }
+
+    const startTier = (() => {
+      if (!session.readiness) return 0;
+      const d = diagnose(cfg.questions, session.readiness.answers);
+      return d.complete ? d.startTier : 0;
+    })();
+
+    const collected = session.scenarios.length > 0;
+
+    /** Completion and prerequisites, both read off the session. */
+    const spec: Record<
+      string,
+      { done?: boolean; locked?: boolean; note?: string; noteHref?: string }
+    > = {
+      readiness: {
+        done: Boolean(session.readiness),
+        note: startTier ? `${s.resultPrefix} ${cfg.tierNames[startTier - 1]}` : undefined,
+        // Which delivery motion the diagnosis implies is reading, not a task:
+        // there is nothing to decide and nothing to hand in.
+        noteHref: startTier ? cfg.tierHrefs[startTier] : undefined,
+      },
+      checklist: { locked: !startTier, done: Object.keys(session.checklist).length > 0 },
+      scenarios: { done: collected },
+      prioritize: { locked: !collected, done: session.scoring.length > 0 },
+      labs: { locked: !collected },
+      present: { locked: !collected },
+    };
+
+    // The first task that is neither finished nor blocked is what to do next.
+    let nextName = '';
+
+    document.querySelectorAll<HTMLElement>('[data-task]').forEach((el) => {
+      const id = el.dataset.task!;
+      const rule = spec[id];
+      const state = el.querySelector<HTMLElement>('[data-task-state]')!;
+      const note = el.querySelector<HTMLElement>('[data-task-note]')!;
+      const cta = el.querySelector<HTMLAnchorElement>('[data-task-cta]');
+
+      if (el.dataset.state === 'planned') {
+        state.textContent = s.states.planned;
+        return;
+      }
+
+      let key: 'done' | 'now' | 'open' | 'locked';
+      if (rule?.done) key = 'done';
+      else if (rule?.locked) key = 'locked';
+      else if (!nextName) key = 'now';
+      else key = 'open';
+
+      if (key === 'now') nextName = s.tasks[id].name;
+
+      el.dataset.state = key;
+      state.textContent = s.states[key];
+
+      const why = key === 'locked' ? s.tasks[id].locked : rule?.note;
+      if (why) {
+        note.textContent = why;
+        if (key !== 'locked' && rule?.noteHref) {
+          const link = document.createElement('a');
+          link.className = 'task__notelink';
+          link.href = rule.noteHref;
+          link.textContent = s.pathLink;
+          note.append(' · ', link);
+        }
+        note.hidden = false;
+      }
+
+      if (cta) {
+        cta.hidden = key === 'locked';
+        // Once the diagnosis is stored its link is a way back in, not a step.
+        if (key === 'done' && id === 'readiness') cta.textContent = s.retakeCta;
+      }
+    });
+
+    const progress = projectProgress(session);
+    document.querySelector<HTMLElement>('[data-tally-fill]')!.style.width = `${progress.percent}%`;
+    document.querySelector<HTMLElement>('[data-tally-count]')!.textContent = s.summary
+      .replace('{done}', String(progress.done))
+      .replace('{total}', String(progress.total));
+    document.querySelector<HTMLElement>('[data-tally-next]')!.textContent = nextName
+      ? `${s.nextLabel} · ${nextName}`
+      : s.allDone;
+
+    document.querySelector('[data-export]')?.addEventListener('click', () => {
+      const blob = new Blob([toJSON(session)], { type: 'application/json' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `aiia-${session.customer || 'session'}-${session.id.slice(0, 8)}.json`;
+      a.click();
+      URL.revokeObjectURL(url);
+    });
+  }
+</script>
+
+<style>
+  /* --- Which project this is, and the way back ------------------------- */
+  .crumb {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: baseline;
+    gap: 0.5rem 0.9rem;
+    margin: 0 0 clamp(0.75rem, 0.5rem + 1vw, 1.25rem);
+    font-size: var(--text-micro);
+  }
+
+  .crumb__back {
+    display: inline-flex;
+    align-items: baseline;
+    gap: 0.35rem;
+    text-transform: uppercase;
+    letter-spacing: 0.12em;
+    color: var(--color-muted);
+    text-decoration: none;
+  }
+
+  .crumb__back:hover,
+  .crumb__back:focus-visible {
+    color: var(--color-gold);
+  }
+
+  .crumb__name {
+    color: var(--color-ink);
+    font-weight: 600;
+  }
+
+  .crumb__name:not(:empty)::before {
+    content: '\00b7';
+    margin-inline-end: 0.7rem;
+    color: var(--color-muted);
+    font-weight: 400;
+  }
+
+  /* --- Done, and what is next ------------------------------------------ */
+  .tally {
+    margin-block-start: clamp(1.5rem, 1rem + 2vw, 2.5rem);
+    display: grid;
+    gap: 0.5rem;
+  }
+
+  .tally__bar {
+    height: 4px;
+    background: color-mix(in srgb, var(--color-ink) 12%, transparent);
+  }
+
+  .tally__bar span {
+    display: block;
+    height: 100%;
+    width: 0;
+    background: var(--color-gold);
+    transition: width var(--duration-base) var(--ease-in-out-soft);
+  }
+
+  .tally__count {
+    margin: 0;
+    color: var(--color-muted);
+  }
+
+  .tally__next {
+    margin: 0;
+    font-family: var(--font-display);
+    font-size: var(--text-h3);
+    line-height: 1.2;
+    color: var(--color-ink);
+  }
+
+  /* --- The journey, stage by stage ------------------------------------- */
+  .phases {
+    list-style: none;
+    margin: clamp(2rem, 1.5rem + 2vw, 3.5rem) 0 0;
+    padding: 0;
+    display: grid;
+    gap: clamp(1.75rem, 1.2rem + 2vw, 3rem);
+  }
+
+  .phase__head {
+    display: grid;
+    grid-template-columns: auto 1fr;
+    gap: clamp(0.9rem, 0.7rem + 1vw, 1.5rem);
+    align-items: baseline;
+    padding-block-end: 0.6rem;
+    border-block-end: 1px solid color-mix(in srgb, var(--color-ink) 16%, transparent);
+  }
+
+  .phase__index {
+    margin: 0;
+    font-size: clamp(1.6rem, 1.2rem + 1.6vw, 2.4rem);
+    color: var(--color-gold);
+    font-variant-numeric: tabular-nums;
+  }
+
+  .phase__name {
+    margin: 0;
+    font-size: var(--text-h3);
+    line-height: 1.15;
+  }
+
+  .phase__meta {
+    margin: 0.3rem 0 0;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.2rem 1.5rem;
+    font-size: var(--text-micro);
+    color: var(--color-muted);
+  }
+
+  .phase__meta .meta-label {
+    margin-inline-end: 0.4rem;
+  }
+
+  .tasks {
+    list-style: none;
+    margin: 0.9rem 0 0;
+    padding: 0;
+    display: grid;
+    gap: 0.5rem;
+  }
+
+  .task {
+    display: grid;
+    grid-template-columns: auto 1fr auto;
+    gap: clamp(0.75rem, 0.6rem + 0.8vw, 1.25rem);
+    align-items: start;
+    padding: clamp(0.75rem, 0.6rem + 0.6vw, 1.1rem);
+    border: 1px solid color-mix(in srgb, var(--color-ink) 12%, transparent);
+  }
+
+  .task[data-state='now'] {
+    border-color: var(--color-gold);
+    background: color-mix(in srgb, var(--color-gold) 8%, transparent);
+  }
+
+  .task[data-state='done'] {
+    opacity: 0.62;
+  }
+
+  .task[data-state='locked'],
+  .task[data-state='planned'] {
+    opacity: 0.55;
+    border-style: dashed;
+  }
+
+  /* Filled for done, a ring for everything still ahead. */
+  .task__mark {
+    inline-size: 0.7rem;
+    block-size: 0.7rem;
+    margin-block-start: 0.35rem;
+    border: 1.5px solid color-mix(in srgb, var(--color-ink) 35%, transparent);
+    transform: rotate(45deg);
+  }
+
+  .task[data-state='done'] .task__mark {
+    background: var(--color-gold);
+    border-color: var(--color-gold);
+  }
+
+  .task[data-state='now'] .task__mark {
+    border-color: var(--color-gold);
+    border-width: 2.5px;
+  }
+
+  .task__name {
+    margin: 0;
+    font-size: var(--text-small);
+    font-weight: 600;
+    color: var(--color-ink);
+  }
+
+  .task__desc {
+    margin: 0.2rem 0 0;
+    font-size: var(--text-micro);
+    line-height: 1.5;
+    color: var(--color-muted);
+    max-width: 60ch;
+  }
+
+  .task__note {
+    margin: 0.35rem 0 0;
+    font-size: var(--text-micro);
+    color: var(--color-ink);
+  }
+
+  .task__note[hidden] {
+    display: none;
+  }
+
+  .task__notelink {
+    color: var(--color-ink);
+    text-decoration: none;
+    border-block-end: 1px solid var(--color-gold);
+    white-space: nowrap;
+  }
+
+  .task__notelink:hover,
+  .task__notelink:focus-visible {
+    color: var(--color-gold);
+  }
+
+  .task__end {
+    display: grid;
+    justify-items: end;
+    gap: 0.4rem;
+    text-align: end;
+  }
+
+  .task__state {
+    margin: 0;
+    color: var(--color-muted);
+    white-space: nowrap;
+  }
+
+  .task[data-state='now'] .task__state {
+    color: var(--color-ink);
+  }
+
+  .task__cta {
+    font-size: var(--text-micro);
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    text-decoration: none;
+    color: var(--color-ink);
+    border-block-end: 2px solid var(--color-gold);
+    padding-block-end: 0.1rem;
+    white-space: nowrap;
+  }
+
+  .task__cta[hidden] {
+    display: none;
+  }
+
+  .task__cta:hover,
+  .task__cta:focus-visible {
+    color: var(--color-gold);
+  }
+
+  @media (max-width: 40rem) {
+    .task {
+      grid-template-columns: auto 1fr;
+    }
+
+    .task__end {
+      grid-column: 2;
+      justify-items: start;
+      text-align: start;
+    }
+  }
+
+  /* --- Facilitator plumbing -------------------------------------------- */
+  .tools {
+    margin-block-start: clamp(2rem, 1.5rem + 2vw, 3.5rem);
+    border-block-start: 1px solid color-mix(in srgb, var(--color-ink) 12%, transparent);
+    padding-block-start: 1rem;
+  }
+
+  .tools__summary {
+    cursor: pointer;
+    font-size: var(--text-micro);
+    text-transform: uppercase;
+    letter-spacing: 0.12em;
+    color: var(--color-muted);
+  }
+
+  .tools__body {
+    display: grid;
+    gap: 0.75rem;
+    margin-block-start: 1rem;
+  }
+
+  .tools__actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.6rem;
+  }
+
+  .tools__note {
+    margin: 0;
+    font-size: var(--text-micro);
+    color: var(--color-muted);
+  }
+</style>

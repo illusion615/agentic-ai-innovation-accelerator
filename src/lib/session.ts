@@ -150,6 +150,50 @@ export interface SessionMeta {
   updatedAt: string;
 }
 
+/**
+ * How far a project has actually got, derived rather than stored.
+ *
+ * A stored "stage" field would be a second source of truth that drifts the
+ * moment someone collects a scenario without updating it. Reading it off the
+ * evidence means the portal cannot lie about progress.
+ */
+export interface ProjectProgress {
+  /** null until the twelve questions have been answered. */
+  stage: Stage | null;
+  done: number;
+  total: number;
+  percent: number;
+}
+
+export function projectProgress(s: ProgramSession): ProjectProgress {
+  const cleared = new Set(
+    s.gates.filter((g) => g.state === 'cleared').map((g) => g.gate)
+  );
+
+  const milestones = [
+    Boolean(s.readiness),
+    Object.keys(s.checklist).length > 0,
+    s.scenarios.length > 0,
+    s.scoring.length > 0,
+    cleared.size > 0,
+  ];
+  const done = milestones.filter(Boolean).length;
+
+  const stage: Stage | null = cleared.has('w8')
+    ? 'adopt'
+    : cleared.has('w4') || cleared.has('w6')
+      ? 'build'
+      : s.scoring.length
+        ? 'prioritize'
+        : s.scenarios.length
+          ? 'inspire'
+          : s.readiness
+            ? 'discover'
+            : null;
+
+  return { stage, done, total: milestones.length, percent: Math.round((done / milestones.length) * 100) };
+}
+
 export interface SessionStore {
   load(id: string): Promise<ProgramSession | null>;
   save(session: ProgramSession): Promise<void>;
@@ -224,12 +268,43 @@ export class LocalSessionStore implements SessionStore {
   }
 }
 
+/**
+ * Capability tags were renamed once, when the vocabulary was normalised onto
+ * knowledge points and away from product names. A stored scenario carrying an
+ * old tag would otherwise match no module and quietly drop out of the composed
+ * lab path — the customer's collected work would look thinner than it is.
+ */
+const CAPABILITY_RENAMES: Record<string, string> = {
+  'agent-basics': 'agent-instructions',
+  'topics-flow': 'deterministic-dialogue',
+  orchestration: 'tool-orchestration',
+  'actions-connectors': 'system-actions',
+  'structured-data': 'structured-data-query',
+  'power-automate': 'deterministic-automation',
+  'doc-extraction': 'document-extraction',
+  dataverse: 'structured-persistence',
+  'custom-tools': 'custom-tool-extension',
+  evaluation: 'test-evaluation',
+  'channels-publish': 'deployment-channels',
+  governance: 'governance-guardrails',
+  measurement: 'operational-measurement',
+};
+
 /** Upgrade an older stored record to the current shape. */
 function migrate(raw: unknown): ProgramSession {
   const s = raw as Partial<ProgramSession>;
+  const scenarios = (s.scenarios ?? []).map((scenario) => ({
+    ...scenario,
+    capabilities: scenario.capabilities?.map((c) => CAPABILITY_RENAMES[c] ?? c),
+  }));
   // Spread-over-defaults would keep an older record's missing keys missing, so
   // anything added since must be defaulted explicitly.
-  return createSession({ ...s, checklist: s.checklist ?? {}, version: SESSION_VERSION });
+  return createSession({
+    ...s,
+    scenarios,
+    checklist: s.checklist ?? {},
+    version: SESSION_VERSION,
+  });
 }
 
 /* -------- the active session, so instruments share one record -------- */

@@ -80,21 +80,48 @@ export interface Cadence {
  * The capabilities a Copilot Studio build can call on. Scenarios are tagged
  * with them and lab modules teach them, so this is the join that turns "what
  * the customer wants" into "what they need to be able to do".
+ *
+ * Every entry names a knowledge point — something a builder learns to do — at
+ * one level of granularity. Deliberately never a product name: a tag called
+ * `dataverse` is wrong the moment the store changes, and mixing products with
+ * patterns makes the vocabulary useless for composing a curriculum.
  * Kept in step with `CAPABILITIES` in src/content.config.ts.
  */
 export type CapabilityId =
-  | 'agent-basics'
+  | 'agent-instructions'
   | 'knowledge-grounding'
-  | 'topics-flow'
-  | 'orchestration'
-  | 'actions-connectors'
-  | 'power-automate'
-  | 'doc-extraction'
+  | 'deterministic-dialogue'
+  | 'tool-orchestration'
+  | 'system-actions'
+  | 'structured-data-query'
+  | 'deterministic-automation'
+  | 'document-extraction'
   | 'human-approval'
-  | 'dataverse'
-  | 'channels-publish'
-  | 'governance'
-  | 'measurement';
+  | 'structured-persistence'
+  | 'custom-tool-extension'
+  | 'test-evaluation'
+  | 'deployment-channels'
+  | 'governance-guardrails'
+  | 'operational-measurement';
+
+/** The functional groupings examples are shelved under. */
+export type DepartmentId = 'general' | 'crm' | 'finance' | 'hr' | 'it' | 'supply-chain';
+
+/**
+ * Every task in an engagement, in the order the journey runs them. Tasks with
+ * no tool yet are still listed — a roadmap that hides the parts nobody has
+ * built is not a roadmap.
+ */
+export type RoadmapTaskId =
+  | 'readiness'
+  | 'checklist'
+  | 'scenarios'
+  | 'prioritize'
+  | 'metrics'
+  | 'labs'
+  | 'present'
+  | 'gates'
+  | 'champions';
 
 export interface Scenario {
   name: string;
@@ -288,54 +315,41 @@ export interface Dictionary {
     title: string;
     lede: string;
 
-    /** The "you are here" rail above the steps. */
-    railLabel: string;
-    stateNow: string;
-    stateDone: string;
-    stateLocked: string;
-
-    /** Step 1 — the entry gate. The only thing that is live on arrival. */
-    step1: {
-      name: string;
+    /**
+     * THE ROADMAP — the open project's whole journey on one page: every task,
+     * what is already done, and the one to pick up next.
+     *
+     * Framed on the five stages rather than an invented set of steps. A second
+     * numbering scheme sitting beside the method's own is how a reader ends up
+     * unable to say which stage they are in.
+     */
+    roadmap: {
       title: string;
-      body: string;
-      cta: string;
-      retakeCta: string;
-      notStarted: string;
+      lede: string;
+      producesLabel: string;
+      gateLabel: string;
+      noGate: string;
+      /** "{done} of {total} done" */
+      summary: string;
+      nextLabel: string;
+      allDone: string;
+      /** Prefixes the tier the diagnosis settled on. */
       resultPrefix: string;
-      /** Way out for a reader who does not yet know the words the questions use. */
-      primer: string;
-      primerCta: string;
+      /** Reading the diagnosis leads to, rather than a step of its own. */
+      pathLink: string;
+      retakeCta: string;
+      states: {
+        done: string;
+        now: string;
+        open: string;
+        locked: string;
+        planned: string;
+      };
+      tasks: Record<
+        RoadmapTaskId,
+        { name: string; body: string; cta?: string; locked?: string }
+      >;
     };
-
-    /** Step 2 — the one delivery path the diagnosis points at. */
-    step2: {
-      name: string;
-      title: string;
-      body: string;
-      /** Shown in place of the path until step 1 has run. */
-      lockedBody: string;
-      othersLabel: string;
-      checkLead: string;
-      checkCta: string;
-    };
-
-    /** Step 3 — the method itself, collapsed until wanted. */
-    step3: {
-      name: string;
-      title: string;
-      body: string;
-      expandLabel: string;
-      liveLead: string;
-      liveCta: string;
-    };
-
-    inputsLabel: string;
-    producesLabel: string;
-    gateLabel: string;
-    noGateLabel: string;
-    /** Keyed by the stage ids in `journey.stages`. */
-    stageInputs: Record<string, string[]>;
 
     /**
      * Facilitator plumbing. Deliberately at the foot of the page: it is for
@@ -343,16 +357,42 @@ export interface Dictionary {
      * the story, and it used to be the first thing on the screen.
      */
     toolsLabel: string;
-    customerLabel: string;
-    customerPlaceholder: string;
+    /**
+     * PORTAL — the entry page. One card per engagement, because the first
+     * question on opening the tool is "which customer am I here for", not
+     * "what is step one".
+     */
+    portal: {
+      eyebrow: string;
+      title: string;
+      lede: string;
+      newCta: string;
+      openCta: string;
+      deleteLabel: string;
+      deleteConfirm: string;
+      untitled: string;
+      /** Label on the corner chip that names the open project. */
+      chipLabel: string;
+      backToPortal: string;
+      stageLabel: string;
+      startedLabel: string;
+      progressLabel: string;
+      /** Before the twelve questions have been answered. */
+      stageNotStarted: string;
+      emptyTitle: string;
+      emptyBody: string;
+      dialogTitle: string;
+      dialogLede: string;
+      nameLabel: string;
+      namePlaceholder: string;
+      facilitatorLabel: string;
+      facilitatorPlaceholder: string;
+      createCta: string;
+      cancelCta: string;
+      note: string;
+    };
     exportLabel: string;
-    resetLabel: string;
-    resetConfirm: string;
     savedNote: string;
-
-    upcomingLabel: string;
-    upcomingNote: string;
-    upcoming: { name: string; stage: string }[];
   };
 
   /**
@@ -360,6 +400,87 @@ export interface Dictionary {
    * scenarios and as module names on the lab shelf, and both need to scan.
    */
   capabilities: Record<CapabilityId, string>;
+
+  /**
+   * PRESENT MODE — the deck a facilitator runs in the room, composed from the
+   * session rather than exported. Slide bodies come from src/content/labs.json.
+   */
+  present: {
+    navLabel: string;
+    openCta: string;
+    openNote: string;
+    /** Title slide. */
+    kicker: string;
+    forLabel: string;
+    untitledCustomer: string;
+    agendaTitle: string;
+    /** Unit words for formatDuration — totals are written in hours, not minutes. */
+    duration: {
+      hour: string;
+      hours: string;
+      minute: string;
+      minutes: string;
+      sep: string;
+      join: string;
+    };
+    /** A sitting of roughly 90–120 minutes. "{n}" and "{total}" are substituted. */
+    sessionTitle: string;
+    sessionShort: string;
+    nowLabel: string;
+    doneLabel: string;
+    /** Shown only when the selected labs actually carry a captured demo. */
+    howTitle: string;
+    howBody: string;
+    objectiveLabel: string;
+    needsLabel: string;
+    skillsLabel: string;
+    toolsLabel: string;
+    materialsLabel: string;
+    stepsLabel: string;
+    summaryLabel: string;
+    /** Walkthrough slides — the click-by-click a facilitator demonstrates. */
+    whereLabel: string;
+    typeLabel: string;
+    seeLabel: string;
+    labLabel: string;
+    closeTitle: string;
+    closeBody: string;
+    emptyTitle: string;
+    emptyBody: string;
+    exitLabel: string;
+    hint: string;
+    /** "{n} / {total}" */
+    counter: string;
+  };
+
+  /**
+   * PRIORITISE — stage 03. Scores the collected scenarios and cuts to a Top 3;
+   * the artifact is the Use Case Canvas.
+   */
+  prioritize: {
+    navLabel: string;
+    eyebrow: string;
+    title: string;
+    lede: string;
+    emptyTitle: string;
+    emptyBody: string;
+    emptyCta: string;
+    /** The four axes. `up` marks the ones where higher is better. */
+    axes: Record<
+      'value' | 'dataReadiness' | 'complexity' | 'effort',
+      { label: string; help: string; up: boolean }
+    >;
+    betterHigh: string;
+    betterLow: string;
+    scoreLabel: string;
+    topLabel: string;
+    canvasTitle: string;
+    canvasNote: string;
+    tiedNote: string;
+    resetLabel: string;
+    nextCta: string;
+    backLabel: string;
+  };
 
   /**
    * THE LAB SHELF — composed, not authored. Modules live in
@@ -370,16 +491,36 @@ export interface Dictionary {
     eyebrow: string;
     title: string;
     lede: string;
+
+    /** Size of the engagement, answered before any list. */
+    tally: {
+      modules: string;
+      time: string;
+      sittings: string;
+    };
+
+    /** Shown before stage 03 has ranked anything. */
     composedTitle: string;
-    /** "{modules} modules · about {hours}" */
     composedNote: string;
     fromLabel: string;
     prereqNote: string;
     emptyTitle: string;
     emptyBody: string;
     emptyCta: string;
-    shelfTitle: string;
+    /** "The whole shelf · {n} modules" */
+    shelfSummary: string;
     shelfNote: string;
+    buildOrderTitle: string;
+    buildOrderNote: string;
+    buildStepLabel: string;
+    buildNoScoreNote: string;
+    buildNoScoreCta: string;
+    /**
+     * What the rest of the backlog will need beyond the Top 3 — stated rather
+     * than shown as a second full list.
+     */
+    restNote: string;
+    restNone: string;
     teachesLabel: string;
     buildLabel: string;
     afterLabel: string;
@@ -415,6 +556,9 @@ export interface Dictionary {
     removeLabel: string;
     examplesLabel: string;
     examplesNote: string;
+    casesLabel: string;
+    casesNote: string;
+    casesCta: string;
     allDepts: string;
     addedLabel: string;
     takeLabel: string;
@@ -425,7 +569,7 @@ export interface Dictionary {
     nextBody: string;
     nextCta: string;
     backLabel: string;
-    departments: Record<'general' | 'crm' | 'finance' | 'hr' | 'it', string>;
+    departments: Record<DepartmentId, string>;
   };
 
   /**
