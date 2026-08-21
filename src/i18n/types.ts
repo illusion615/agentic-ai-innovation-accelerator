@@ -272,6 +272,22 @@ export interface Dictionary {
     };
     items: Tier[];
   };
+  /**
+   * ENABLEMENT — the lab shelf, sized per department. Counts are derived from
+   * the scenarios and the module dependency graph, never written by hand.
+   */
+  enablement: {
+    eyebrow: string;
+    title: string;
+    lede: string;
+    /** "{n} modules in the library" */
+    totalLabel: string;
+    labsLabel: string;
+    scenariosLabel: string;
+    timeLabel: string;
+    note: string;
+    cta: string;
+  };
   assets: {
     eyebrow: string;
     titleLead: string;

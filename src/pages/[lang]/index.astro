@@ -23,6 +23,7 @@ import Positioning from '../../components/Positioning.astro';
 import Risks from '../../components/Risks.astro';
 import Rhythm from '../../components/Rhythm.astro';
 import Tiers from '../../components/Tiers.astro';
+import Enablement from '../../components/Enablement.astro';
 import Start from '../../components/Start.astro';
 
 export function getStaticPaths() {
@@ -43,5 +44,6 @@ const lang: Lang = isLang(raw) ? raw : 'en';
   <Risks lang={lang} />
   <Rhythm lang={lang} />
   <Tiers lang={lang} />
+  <Enablement lang={lang} />
   <Start lang={lang} />
 </Base>

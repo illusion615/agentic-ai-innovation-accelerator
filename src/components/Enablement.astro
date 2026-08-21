@@ -1,0 +1,193 @@
+---
+/**
+ * 10 — Enablement, sized per department.
+ *
+ * The counts are derived from the same graph the programme itself walks: a
+ * department's scenarios name capabilities, prerequisites are closed over, and
+ * what falls out is the set of modules those people actually have to sit
+ * through. Writing the numbers by hand would let this screen and the lab path
+ * disagree, which is the one thing a room notices.
+ */
+import { getCollection } from 'astro:content';
+import SectionHead from './SectionHead.astro';
+import { DEPARTMENTS } from '../content.config';
+import { localePath, type Lang } from '../i18n/config';
+import { useTranslations } from '../i18n/content';
+import { resolveLabPath } from '../lib/lab-path';
+import { formatDuration } from '../lib/duration';
+
+interface Props {
+  lang: Lang;
+}
+
+const { lang } = Astro.props;
+const t = useTranslations(lang);
+const e = t.enablement;
+
+const modules = await getCollection('labs');
+const scenarios = await getCollection('scenarios');
+const shelf = modules.map((m) => ({ id: m.id, order: m.data.order, requires: m.data.requires }));
+const minutesOf = new Map(modules.map((m) => [m.id, m.data.minutes]));
+
+const rows = DEPARTMENTS.map((department) => {
+  const owned = scenarios.filter((s) => s.data.department === department);
+  const path = resolveLabPath(
+    shelf,
+    owned.flatMap((s) => s.data.capabilities)
+  );
+  return {
+    department,
+    scenarios: owned.length,
+    labs: path.length,
+    minutes: path.reduce((sum, m) => sum + (minutesOf.get(m.id) ?? 0), 0),
+  };
+}).sort((a, b) => b.labs - a.labs);
+---
+
+<section id="enablement" class="section section--dark enablement">
+  <div class="shell">
+    <SectionHead eyebrow={e.eyebrow} title={e.title} lede={e.lede} measure="wide" />
+
+    <p class="enablement__total" data-reveal>
+      {e.totalLabel.replace('{n}', String(modules.length))}
+    </p>
+
+    <ul class="depts">
+      {
+        rows.map((row, i) => (
+          <li class="dept" data-reveal style={`--beat:${i}`}>
+            <p class="dept__name">{t.intake.departments[row.department]}</p>
+            <p class="dept__count display">
+              {row.labs}
+              <span class="dept__count-unit">{e.labsLabel}</span>
+            </p>
+            <dl class="dept__facts">
+              <div>
+                <dt>{e.scenariosLabel}</dt>
+                <dd>{row.scenarios}</dd>
+              </div>
+              <div>
+                <dt>{e.timeLabel}</dt>
+                <dd>{formatDuration(row.minutes, t.present.duration)}</dd>
+              </div>
+            </dl>
+          </li>
+        ))
+      }
+    </ul>
+
+    <div class="enablement__foot" data-reveal>
+      <p class="enablement__note">{e.note}</p>
+      <a class="btn btn--gold" href={localePath(lang, '/program/labs/library/')}>{e.cta}</a>
+    </div>
+  </div>
+</section>
+
+<style>
+  .enablement__total {
+    margin: clamp(1.75rem, 1.2rem + 2vw, 2.75rem) 0 0;
+    font-size: var(--text-micro);
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: var(--color-gold-bright);
+  }
+
+  .depts {
+    list-style: none;
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(min(100%, 15rem), 1fr));
+    gap: clamp(1.2rem, 0.9rem + 1.4vw, 2rem);
+    margin: clamp(1rem, 0.8rem + 1vw, 1.6rem) 0 0;
+    padding: 0;
+  }
+
+  /* Six departments: three across reads as two even rows, four leaves a hole. */
+  @media (min-width: 62rem) {
+    .depts {
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      column-gap: clamp(2rem, 1.2rem + 3vw, 4rem);
+    }
+  }
+
+  .dept {
+    padding-block-start: 1.1rem;
+    border-block-start: 1px solid color-mix(in srgb, var(--color-gold) 50%, transparent);
+  }
+
+  .dept__name {
+    /* Two lines everywhere, so the numerals below sit on one line. */
+    display: -webkit-box;
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 2;
+    line-clamp: 2;
+    overflow: hidden;
+    min-block-size: 2.9em;
+    margin: 0;
+    font-size: var(--text-small);
+    line-height: 1.45;
+    color: color-mix(in srgb, var(--color-parchment) 78%, transparent);
+  }
+
+  .dept__count {
+    display: flex;
+    align-items: baseline;
+    gap: 0.5rem;
+    margin: 0.35rem 0 0;
+    font-size: clamp(2.6rem, 1.6rem + 3.2vw, 4.2rem);
+    line-height: 0.9;
+    color: var(--color-gold);
+    font-variant-numeric: lining-nums;
+  }
+
+  .dept__count-unit {
+    font-family: var(--font-body);
+    font-size: var(--text-micro);
+    letter-spacing: 0.08em;
+    color: color-mix(in srgb, var(--color-parchment) 60%, transparent);
+  }
+
+  .dept__facts {
+    display: grid;
+    gap: 0.3rem;
+    margin: 1rem 0 0;
+  }
+
+  .dept__facts > div {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: 1rem;
+  }
+
+  .dept__facts dt {
+    font-size: var(--text-micro);
+    color: color-mix(in srgb, var(--color-parchment) 55%, transparent);
+  }
+
+  .dept__facts dd {
+    margin: 0;
+    font-size: var(--text-micro);
+    color: color-mix(in srgb, var(--color-parchment) 82%, transparent);
+    white-space: nowrap;
+  }
+
+  .enablement__foot {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1.2rem 2.5rem;
+    margin-block-start: clamp(2rem, 1.5rem + 2vw, 3.25rem);
+    padding-block-start: clamp(1.2rem, 0.9rem + 1.2vw, 1.8rem);
+    border-block-start: 1px solid color-mix(in srgb, var(--color-parchment) 20%, transparent);
+  }
+
+  .enablement__note {
+    flex: 1 1 32rem;
+    margin: 0;
+    max-inline-size: 66ch;
+    font-size: var(--text-small);
+    line-height: 1.65;
+    color: color-mix(in srgb, var(--color-parchment) 68%, transparent);
+  }
+</style>

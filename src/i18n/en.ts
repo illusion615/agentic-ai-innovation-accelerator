@@ -433,6 +433,17 @@ export const en: Dictionary = {
       },
     ],
   },
+  enablement: {
+    eyebrow: 'Enablement',
+    title: 'The Hands-On Labs Your Scenarios Ask For',
+    lede: 'A scenario names the work; a lab teaches the one capability that work needs. So a department does not sit through a course — it walks the modules its own scenarios call for, in the order they have to be taken.',
+    totalLabel: '{n} modules in the library',
+    labsLabel: 'Labs',
+    scenariosLabel: 'Scenarios',
+    timeLabel: 'Hands-on time',
+    note: 'Counts are derived, not decided: each department’s figure is the set of modules its scenarios require once prerequisites are closed over.',
+    cta: 'Open the Lab Library',
+  },
   assets: {
     eyebrow: 'Solution Asset Overview',
     titleLead: 'Three Assets,',

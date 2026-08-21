@@ -414,6 +414,17 @@ export const zh: Dictionary = {
       },
     ],
   },
+  enablement: {
+    eyebrow: '赋能',
+    title: '用匹配的动手实验营把人带出来',
+    lede: '场景说的是要做什么，一个 Lab 只教这件事需要的那一项能力。所以一个部门不是去上一门课，而是走完自己场景叫得到的那几个模块——并且按必须的顺序走。',
+    totalLabel: '馆藏共 {n} 个模块',
+    labsLabel: 'Lab 数',
+    scenariosLabel: '场景数',
+    timeLabel: '动手时长',
+    note: '这些数字是算出来的，不是定出来的：每个部门的 Lab 数，就是它的场景在补齐前置之后真正需要的那一组模块。',
+    cta: '打开 Lab Library',
+  },
   assets: {
     eyebrow: '方案资产总览',
     titleLead: '三份资产，',
