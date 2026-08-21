@@ -16,6 +16,7 @@ export const en: Dictionary = {
       { id: 'journey', label: 'The Model' },
       { id: 'rhythm', label: 'Rhythm' },
       { id: 'tiers', label: 'Scenarios' },
+      { id: 'enablement', label: 'Labs' },
       { id: 'start', label: 'Get Started' },
     ],
     skipToContent: 'Skip to content',

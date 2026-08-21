@@ -15,6 +15,7 @@ export const zh: Dictionary = {
       { id: 'journey', label: '运作模型' },
       { id: 'rhythm', label: '节奏' },
       { id: 'tiers', label: '场景' },
+      { id: 'enablement', label: '实验营' },
       { id: 'start', label: '开始' },
     ],
     skipToContent: '跳到正文',
